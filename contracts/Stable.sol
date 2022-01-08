@@ -12,11 +12,14 @@ contract Stable {
         // address user;
     }
 
+    uint32 public totalItems;
+    string public itemDetailsCid;
+
     // Mapping of itemId => quantity used for priceIndex calculation
     mapping(uint32 => uint32) public basket;
 
     // Mapping of itemId => price derived from submissions
-    mapping(uint32 => uint32) private prices;
+    mapping(uint32 => uint32) public prices;
 
     uint32 private lastUpdated;
 
@@ -26,12 +29,18 @@ contract Stable {
     // Currency used for all price submissions in this contract
     string private currency;
 
-    mapping(uint32 => mapping(uint32 => address[])) public submissions;
+    mapping(uint32 => uint32[]) public submittedPrices;
 
-    constructor(string memory _currency) {
+    mapping(uint32 => mapping(uint32 => address[])) public submittedUsers;
+
+    uint32 public currentDate;
+
+    constructor(string memory _currency, uint32 _currentDate, uint32 _totalItems, string memory _itemsCid) {
         owner = msg.sender;
         currency = _currency;
-        console.log("Deploying Stable protocol");
+        currentDate = _currentDate;
+        totalItems = _totalItems;
+        itemDetailsCid = _itemsCid;
     }
 
     function setQuantities(uint32[] memory quantities) public {
@@ -45,8 +54,59 @@ contract Stable {
     }
 
     function submitPrices(uint32 date, PriceData[] memory _prices) public {
+        require(date == currentDate, "Passed date is not current date");
+
         for (uint32 i = 0; i < _prices.length; i++) {
-            submissions[_prices[i].itemId][_prices[i].price].push(msg.sender);
+            submittedPrices[_prices[i].itemId].push(_prices[i].price);
+            submittedUsers[_prices[i].itemId][_prices[i].price].push(
+                msg.sender
+            );
         }
+    }
+
+    mapping(uint32 => uint32) private priceOccurenses;
+    uint32 private mostCommonPrice = 0;
+    uint32 private maxOccurenceCount = 0;
+    address[] public validSubmitters;
+    uint32 private totalValidPrice = 0;
+
+    function calculate() public returns (address) {
+        for (uint32 i = 0; i < totalItems; i++) {
+            for (uint32 j = 0; j < submittedPrices[i].length; j++) {
+                uint32 price = submittedPrices[i][j];
+
+                priceOccurenses[price]++;
+
+                if (priceOccurenses[price] > maxOccurenceCount) {
+                    maxOccurenceCount = priceOccurenses[price];
+                    mostCommonPrice = price;
+                }
+
+                submittedPrices[i][j] = 0;
+            }
+
+            if (mostCommonPrice != 0) {
+                prices[i] = mostCommonPrice;
+
+                for (uint32 k = 0; k < submittedUsers[i][mostCommonPrice].length; k++) {
+                    validSubmitters.push(submittedUsers[i][mostCommonPrice][k]);
+                }
+
+                totalValidPrice += mostCommonPrice;
+            }
+            
+            delete submittedPrices[i];
+            mostCommonPrice = 0;
+            maxOccurenceCount = 0;
+        }
+
+        address winner;
+        
+        if (validSubmitters.length > 0) {
+          winner = validSubmitters[totalValidPrice % validSubmitters.length];
+        }
+        totalValidPrice = 0;
+
+        return winner;
     }
 }
