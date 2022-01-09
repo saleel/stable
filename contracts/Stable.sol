@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 contract Stable {
+    event PriceUpdated(uint32 date, uint32 itemId, uint32 price, uint32 confirmations);
+
     address public owner;
 
     struct PriceData {
@@ -21,13 +23,11 @@ contract Stable {
     // Mapping of itemId => price derived from submissions
     mapping(uint32 => uint32) public prices;
 
-    uint32 private lastUpdated;
-
     // Calculated price index as of lastUpdated
-    uint32 private priceIndex = 0;
+    uint32 public priceIndex = 0;
 
     // Currency used for all price submissions in this contract
-    string private currency;
+    string public currency;
 
     mapping(uint32 => uint32[]) public submittedPrices;
 
@@ -87,6 +87,7 @@ contract Stable {
 
             if (mostCommonPrice != 0) {
                 prices[i] = mostCommonPrice;
+                emit PriceUpdated(currentDate, i, mostCommonPrice, maxOccurenceCount);
 
                 for (uint32 k = 0; k < submittedUsers[i][mostCommonPrice].length; k++) {
                     validSubmitters.push(submittedUsers[i][mostCommonPrice][k]);
@@ -99,6 +100,8 @@ contract Stable {
             mostCommonPrice = 0;
             maxOccurenceCount = 0;
         }
+
+        currentDate++;
 
         address winner;
         
