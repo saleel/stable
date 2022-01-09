@@ -1,0 +1,14 @@
+type PriceHistory @entity {
+  id: ID!
+  product: Product!
+  date: String!
+  price: BigInt!
+  confirmations: BigInt!
+}
+
+type Product @entity {
+  id: ID!
+  price: BigInt!
+  priceHistory: [PriceHistory!]! @derivedFrom(field: "product")
+  lastUpdated: String!
+}
