@@ -4,25 +4,25 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 contract Stable {
-    event PriceUpdated(uint32 date, uint32 productId, uint32 price, uint32 confirmations);
+    event PriceUpdated(uint32 date, string productId, uint32 price, uint32 confirmations);
     event PriceIndexUpdated(uint32 date, uint32 priceIndex);
 
     address public owner;
 
     struct PriceData {
-        uint32 productId;
+        string productId;
         uint32 price;
         // address user;
     }
 
-    uint32 public totalItems;
+    string[] public productIds;
     string public productDetailsCid;
 
-    // Mapping of productId => quantity used for priceIndex calculation
-    mapping(uint32 => uint32) public basket;
+    // Mapping of productId => weightage used for priceIndex calculation
+    mapping(string => uint32) public productWeightage;
 
     // Mapping of productId => price derived from submissions
-    mapping(uint32 => uint32) public prices;
+    mapping(string => uint32) public prices;
 
     // Calculated price index as of lastUpdated
     uint32 public priceIndex = 0;
@@ -30,42 +30,47 @@ contract Stable {
     // Currency used for all price submissions in this contract
     string public currency;
 
-    mapping(uint32 => uint32[]) public submittedPrices;
+    mapping(string => uint32[]) public submittedPrices;
 
-    mapping(uint32 => mapping(uint32 => address[])) public submittedUsers;
+    mapping(string => mapping(uint32 => address[])) public submittedUsers;
 
     uint32 public currentDate;
 
-    constructor(string memory _currency, uint32 _startDate, uint32 _totalItems, string memory _productDetailsCid) {
+    constructor(string memory _currency, uint32 _startDate, string[] memory _productIds, uint32[] memory _weightage, string memory _productDetailsCid) {
         owner = msg.sender;
         currency = _currency;
         currentDate = _startDate;
-        totalItems = _totalItems;
+        productIds = _productIds;
         productDetailsCid = _productDetailsCid;
-    }
 
-    function updateProdcuts(uint32 _totalItems, string memory _productDetailsCid) public {
-        require(_totalItems >= totalItems, "Cannot remove existing products");
-
-        totalItems = _totalItems;
-        productDetailsCid = _productDetailsCid;
-    }
-
-    function updateBasket(uint32[] memory quantities) public {
-        require(msg.sender == owner, "Unauthorized");
-        require(quantities.length == totalItems, "Should specify quantity for all items");
-
-        for (uint32 i = 0; i < totalItems; i++) {
-            basket[i] = quantities[i];
+        require(_weightage.length == _productIds.length, "Should specify weightage for all given products");
+        for (uint32 i = 0; i < _productIds.length; i++) {
+            productWeightage[_productIds[i]] = _weightage[i];
         }
     }
 
-    function submitPrices(uint32 date, PriceData[] memory _prices) public {
+    function addProduct(string memory _productId, string memory _updatedProductDetailsCid) public {
+        require(msg.sender == owner, "Unauthorized");
+
+        productIds.push(_productId);
+        productDetailsCid = _updatedProductDetailsCid;
+    }
+
+    function updateWeightage(string[] memory _productIds, uint32[] memory _weightage) public {
+        require(msg.sender == owner, "Unauthorized");
+        require(_weightage.length == _productIds.length, "Should specify weightage for all given products");
+
+        for (uint32 i = 0; i < _productIds.length; i++) {
+            productWeightage[_productIds[i]] = _weightage[i];
+        }
+    }
+
+    function submitPrices(uint32 date, string[] memory _productIds, uint32[] memory _prices) public {
         require(date == currentDate, "Passed date is not current date");
 
-        for (uint32 i = 0; i < _prices.length; i++) {
-            submittedPrices[_prices[i].productId].push(_prices[i].price);
-            submittedUsers[_prices[i].productId][_prices[i].price].push(
+        for (uint32 i = 0; i < _productIds.length; i++) {
+            submittedPrices[_productIds[i]].push(_prices[i]);
+            submittedUsers[_productIds[i]][_prices[i]].push(
                 msg.sender
             );
         }
@@ -78,9 +83,11 @@ contract Stable {
     uint32 private totalValidPrice = 0;
 
     function calculate() public {
-        for (uint32 i = 0; i < totalItems; i++) {
-            for (uint32 j = 0; j < submittedPrices[i].length; j++) {
-                uint32 price = submittedPrices[i][j];
+        for (uint32 i = 0; i < productIds.length; i++) {
+            string memory productId = productIds[i];
+
+            for (uint32 j = 0; j < submittedPrices[productId].length; j++) {
+                uint32 price = submittedPrices[productId][j];
 
                 priceOccurenses[price]++;
 
@@ -89,32 +96,46 @@ contract Stable {
                     mostCommonPrice = price;
                 }
 
-                submittedPrices[i][j] = 0;
+                submittedPrices[productId][j] = 0;
             }
 
             if (mostCommonPrice != 0) {
-                prices[i] = mostCommonPrice;
-                emit PriceUpdated(currentDate, i, mostCommonPrice, maxOccurenceCount);
+                if (mostCommonPrice != prices[productId]) {
+                    prices[productId] = mostCommonPrice;
+                    emit PriceUpdated(currentDate, productId, mostCommonPrice, maxOccurenceCount);
+                }
 
-                for (uint32 k = 0; k < submittedUsers[i][mostCommonPrice].length; k++) {
-                    validSubmitters.push(submittedUsers[i][mostCommonPrice][k]);
+                for (uint32 k = 0; k < submittedUsers[productId][mostCommonPrice].length; k++) {
+                    validSubmitters.push(submittedUsers[productId][mostCommonPrice][k]);
                 }
 
                 totalValidPrice += mostCommonPrice;
             }
             
-            delete submittedPrices[i];
+            delete submittedPrices[productId];
             mostCommonPrice = 0;
             maxOccurenceCount = 0;
+
+            for (uint32 k = 0; k < submittedPrices[productId].length; k++) {
+                delete priceOccurenses[submittedPrices[productId][k]];
+            }
         }
 
         // Calculate price index
-        uint32 totalPrice = 0;
-        for (uint32 i = 0; i < totalItems; i++) {
-            totalPrice += basket[i] * prices[i];
+        uint32 totalWeightedPrice = 0;
+        uint32 totalWeightage = 0;
+        for (uint32 i = 0; i < productIds.length; i++) {
+            if (prices[productIds[i]] != 0) {
+                totalWeightedPrice += productWeightage[productIds[i]] * prices[productIds[i]];
+                totalWeightage += productWeightage[productIds[i]];
+            }
         }
-        priceIndex = totalPrice;
-        emit PriceIndexUpdated(currentDate, priceIndex);
+        uint32 _priceIndex = totalWeightedPrice / totalWeightage;
+
+        if (_priceIndex != priceIndex) {
+            priceIndex = _priceIndex;
+            emit PriceIndexUpdated(currentDate, priceIndex);
+        }
         
         // Increment date
         currentDate++;
