@@ -4,23 +4,24 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 contract Stable {
-    event PriceUpdated(uint32 date, uint32 itemId, uint32 price, uint32 confirmations);
+    event PriceUpdated(uint32 date, uint32 productId, uint32 price, uint32 confirmations);
+    event PriceIndexUpdated(uint32 date, uint32 priceIndex);
 
     address public owner;
 
     struct PriceData {
-        uint32 itemId;
+        uint32 productId;
         uint32 price;
         // address user;
     }
 
     uint32 public totalItems;
-    string public itemDetailsCid;
+    string public productDetailsCid;
 
-    // Mapping of itemId => quantity used for priceIndex calculation
+    // Mapping of productId => quantity used for priceIndex calculation
     mapping(uint32 => uint32) public basket;
 
-    // Mapping of itemId => price derived from submissions
+    // Mapping of productId => price derived from submissions
     mapping(uint32 => uint32) public prices;
 
     // Calculated price index as of lastUpdated
@@ -35,12 +36,12 @@ contract Stable {
 
     uint32 public currentDate;
 
-    constructor(string memory _currency, uint32 _currentDate, uint32 _totalItems, string memory _itemsCid) {
+    constructor(string memory _currency, uint32 _currentDate, uint32 _totalItems, string memory _productsCid) {
         owner = msg.sender;
         currency = _currency;
         currentDate = _currentDate;
         totalItems = _totalItems;
-        itemDetailsCid = _itemsCid;
+        productDetailsCid = _productsCid;
     }
 
     function setQuantities(uint32[] memory quantities) public {
@@ -49,16 +50,16 @@ contract Stable {
         }
     }
 
-    function getBasketQuantity(uint32 itemId) public view returns (uint32) {
-        return basket[itemId];
+    function getBasketQuantity(uint32 productId) public view returns (uint32) {
+        return basket[productId];
     }
 
     function submitPrices(uint32 date, PriceData[] memory _prices) public {
         require(date == currentDate, "Passed date is not current date");
 
         for (uint32 i = 0; i < _prices.length; i++) {
-            submittedPrices[_prices[i].itemId].push(_prices[i].price);
-            submittedUsers[_prices[i].itemId][_prices[i].price].push(
+            submittedPrices[_prices[i].productId].push(_prices[i].price);
+            submittedUsers[_prices[i].productId][_prices[i].price].push(
                 msg.sender
             );
         }
@@ -70,7 +71,7 @@ contract Stable {
     address[] public validSubmitters;
     uint32 private totalValidPrice = 0;
 
-    function calculate() public returns (address) {
+    function calculate() public {
         for (uint32 i = 0; i < totalItems; i++) {
             for (uint32 j = 0; j < submittedPrices[i].length; j++) {
                 uint32 price = submittedPrices[i][j];
@@ -101,15 +102,24 @@ contract Stable {
             maxOccurenceCount = 0;
         }
 
+        // Calculate price index
+        uint32 totalPrice = 0;
+        for (uint32 i = 0; i < totalItems; i++) {
+            totalPrice += basket[i] * prices[i];
+        }
+        priceIndex = totalPrice;
+        emit PriceIndexUpdated(currentDate, priceIndex);
+        
+        // Increment date
         currentDate++;
 
+        // Pick a random submitter as winner
         address winner;
-        
         if (validSubmitters.length > 0) {
           winner = validSubmitters[totalValidPrice % validSubmitters.length];
         }
-        totalValidPrice = 0;
 
-        return winner;
+        // Reset temp variables
+        totalValidPrice = 0;
     }
 }
