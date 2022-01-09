@@ -29,6 +29,7 @@
     "typechain": "^6.1.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.1"
+    "@openzeppelin/contracts": "^4.4.1",
+    "hardhat-ethernal": "^0.3.12"
   }
 }
