@@ -36,22 +36,28 @@ contract Stable {
 
     uint32 public currentDate;
 
-    constructor(string memory _currency, uint32 _currentDate, uint32 _totalItems, string memory _productsCid) {
+    constructor(string memory _currency, uint32 _startDate, uint32 _totalItems, string memory _productDetailsCid) {
         owner = msg.sender;
         currency = _currency;
-        currentDate = _currentDate;
+        currentDate = _startDate;
         totalItems = _totalItems;
-        productDetailsCid = _productsCid;
+        productDetailsCid = _productDetailsCid;
     }
 
-    function setQuantities(uint32[] memory quantities) public {
-        for (uint32 i = 0; i < quantities.length; i++) {
+    function updateProdcuts(uint32 _totalItems, string memory _productDetailsCid) public {
+        require(_totalItems >= totalItems, "Cannot remove existing products");
+
+        totalItems = _totalItems;
+        productDetailsCid = _productDetailsCid;
+    }
+
+    function updateBasket(uint32[] memory quantities) public {
+        require(msg.sender == owner, "Unauthorized");
+        require(quantities.length == totalItems, "Should specify quantity for all items");
+
+        for (uint32 i = 0; i < totalItems; i++) {
             basket[i] = quantities[i];
         }
-    }
-
-    function getBasketQuantity(uint32 productId) public view returns (uint32) {
-        return basket[productId];
     }
 
     function submitPrices(uint32 date, PriceData[] memory _prices) public {

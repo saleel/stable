@@ -19,14 +19,14 @@ describe("Stable", function () {
     stable = await Stable.deploy("USD", START_DATE, 5, "cid");
     await stable.deployed();
 
-    await stable.setQuantities([1, 1, 1, 2, 1]);
+    await stable.updateBasket([1, 1, 1, 2, 1]);
   });
 
-  it("should return the updated basket quantity", async function () {
-    await stable.setQuantities([1, 1, 1, 2, 1, 1]);
+  it("should updated basket quantity", async function () {
+    await stable.updateBasket([1, 1, 1, 2, 1]);
 
-    expect(await stable.getBasketQuantity(1)).to.equal(1);
-    expect(await stable.getBasketQuantity(3)).to.equal(2);
+    expect(await stable.basket(1)).to.equal(1);
+    expect(await stable.basket(3)).to.equal(2);
   });
 
   it("should be able to add price for one product", async function () {
@@ -160,7 +160,7 @@ describe("Stable", function () {
   });
 
   it("should calculate price index correctly", async function () {
-    await stable.setQuantities([2, 3]);
+    await stable.updateBasket([2, 3, 0, 0, 0]);
 
     await stable.connect(addr1).submitPrices(20220101, [
       {
