@@ -1,7 +1,7 @@
 const { ethers } = require("ethers");
-const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
+const stableAbi = require("../core/artifacts/contracts/Stable.sol/Stable.json");
 
-const stableAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const stableAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 async function generate() {
   const provider = new ethers.providers.JsonRpcProvider();
@@ -27,23 +27,23 @@ async function generate() {
   await contractWithSigner.submitPrices(currentDate, [
     {
       itemId: 0,
-      price: 210,
+      price: 275,
     },
     {
       itemId: 1,
-      price: 2100,
+      price: 2750,
     },
     {
       itemId: 2,
-      price: 1510,
+      price: 1575,
     },
     {
       itemId: 3,
-      price: 5100,
+      price: 5750,
     },
     {
       itemId: 4,
-      price: 9510,
+      price: 9575,
     },
   ]);
 
