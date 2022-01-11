@@ -12,3 +12,9 @@ type Product @entity {
   priceHistory: [PriceHistory!]! @derivedFrom(field: "product")
   lastUpdated: String!
 }
+
+type PriceIndex @entity {
+  id: ID!
+  index: BigInt!
+  date: String!
+}

@@ -90,6 +90,8 @@ export class Product extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
+    this.set("name", Value.fromString(""));
+    this.set("category", Value.fromString(""));
     this.set("price", Value.fromBigInt(BigInt.zero()));
     this.set("lastUpdated", Value.fromString(""));
   }
@@ -120,6 +122,41 @@ export class Product extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get name(): string {
+    let value = this.get("name");
+    return value!.toString();
+  }
+
+  set name(value: string) {
+    this.set("name", Value.fromString(value));
+  }
+
+  get description(): string | null {
+    let value = this.get("description");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set description(value: string | null) {
+    if (!value) {
+      this.unset("description");
+    } else {
+      this.set("description", Value.fromString(<string>value));
+    }
+  }
+
+  get category(): string {
+    let value = this.get("category");
+    return value!.toString();
+  }
+
+  set category(value: string) {
+    this.set("category", Value.fromString(value));
+  }
+
   get price(): BigInt {
     let value = this.get("price");
     return value!.toBigInt();
@@ -145,5 +182,59 @@ export class Product extends Entity {
 
   set lastUpdated(value: string) {
     this.set("lastUpdated", Value.fromString(value));
+  }
+}
+
+export class PriceIndex extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("index", Value.fromBigInt(BigInt.zero()));
+    this.set("date", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save PriceIndex entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save PriceIndex entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("PriceIndex", id.toString(), this);
+    }
+  }
+
+  static load(id: string): PriceIndex | null {
+    return changetype<PriceIndex | null>(store.get("PriceIndex", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get index(): BigInt {
+    let value = this.get("index");
+    return value!.toBigInt();
+  }
+
+  set index(value: BigInt) {
+    this.set("index", Value.fromBigInt(value));
+  }
+
+  get date(): string {
+    let value = this.get("date");
+    return value!.toString();
+  }
+
+  set date(value: string) {
+    this.set("date", Value.fromString(value));
   }
 }

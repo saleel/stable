@@ -10,6 +10,28 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
+export class PriceIndexUpdated extends ethereum.Event {
+  get params(): PriceIndexUpdated__Params {
+    return new PriceIndexUpdated__Params(this);
+  }
+}
+
+export class PriceIndexUpdated__Params {
+  _event: PriceIndexUpdated;
+
+  constructor(event: PriceIndexUpdated) {
+    this._event = event;
+  }
+
+  get date(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get priceIndex(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
 export class PriceUpdated extends ethereum.Event {
   get params(): PriceUpdated__Params {
     return new PriceUpdated__Params(this);
@@ -27,8 +49,8 @@ export class PriceUpdated__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get itemId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+  get productId(): string {
+    return this._event.parameters[1].value.toString();
   }
 
   get price(): BigInt {
@@ -40,43 +62,49 @@ export class PriceUpdated__Params {
   }
 }
 
+export class ProductAdded extends ethereum.Event {
+  get params(): ProductAdded__Params {
+    return new ProductAdded__Params(this);
+  }
+}
+
+export class ProductAdded__Params {
+  _event: ProductAdded;
+
+  constructor(event: ProductAdded) {
+    this._event = event;
+  }
+
+  get productId(): string {
+    return this._event.parameters[0].value.toString();
+  }
+
+  get weightage(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
+export class ProductDetailsUpdated extends ethereum.Event {
+  get params(): ProductDetailsUpdated__Params {
+    return new ProductDetailsUpdated__Params(this);
+  }
+}
+
+export class ProductDetailsUpdated__Params {
+  _event: ProductDetailsUpdated;
+
+  constructor(event: ProductDetailsUpdated) {
+    this._event = event;
+  }
+
+  get productDetailsCid(): string {
+    return this._event.parameters[0].value.toString();
+  }
+}
+
 export class Stable extends ethereum.SmartContract {
   static bind(address: Address): Stable {
     return new Stable("Stable", address);
-  }
-
-  basket(param0: BigInt): BigInt {
-    let result = super.call("basket", "basket(uint32):(uint32)", [
-      ethereum.Value.fromUnsignedBigInt(param0)
-    ]);
-
-    return result[0].toBigInt();
-  }
-
-  try_basket(param0: BigInt): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("basket", "basket(uint32):(uint32)", [
-      ethereum.Value.fromUnsignedBigInt(param0)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  calculate(): Address {
-    let result = super.call("calculate", "calculate():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_calculate(): ethereum.CallResult<Address> {
-    let result = super.tryCall("calculate", "calculate():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
   currency(): string {
@@ -109,48 +137,6 @@ export class Stable extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getBasketQuantity(itemId: BigInt): BigInt {
-    let result = super.call(
-      "getBasketQuantity",
-      "getBasketQuantity(uint32):(uint32)",
-      [ethereum.Value.fromUnsignedBigInt(itemId)]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_getBasketQuantity(itemId: BigInt): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "getBasketQuantity",
-      "getBasketQuantity(uint32):(uint32)",
-      [ethereum.Value.fromUnsignedBigInt(itemId)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  itemDetailsCid(): string {
-    let result = super.call("itemDetailsCid", "itemDetailsCid():(string)", []);
-
-    return result[0].toString();
-  }
-
-  try_itemDetailsCid(): ethereum.CallResult<string> {
-    let result = super.tryCall(
-      "itemDetailsCid",
-      "itemDetailsCid():(string)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
-  }
-
   owner(): Address {
     let result = super.call("owner", "owner():(address)", []);
 
@@ -181,17 +167,17 @@ export class Stable extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  prices(param0: BigInt): BigInt {
-    let result = super.call("prices", "prices(uint32):(uint32)", [
-      ethereum.Value.fromUnsignedBigInt(param0)
+  prices(param0: string): BigInt {
+    let result = super.call("prices", "prices(string):(uint32)", [
+      ethereum.Value.fromString(param0)
     ]);
 
     return result[0].toBigInt();
   }
 
-  try_prices(param0: BigInt): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("prices", "prices(uint32):(uint32)", [
-      ethereum.Value.fromUnsignedBigInt(param0)
+  try_prices(param0: string): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("prices", "prices(string):(uint32)", [
+      ethereum.Value.fromString(param0)
     ]);
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -200,12 +186,77 @@ export class Stable extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  submittedPrices(param0: BigInt, param1: BigInt): BigInt {
+  productDetailsCid(): string {
+    let result = super.call(
+      "productDetailsCid",
+      "productDetailsCid():(string)",
+      []
+    );
+
+    return result[0].toString();
+  }
+
+  try_productDetailsCid(): ethereum.CallResult<string> {
+    let result = super.tryCall(
+      "productDetailsCid",
+      "productDetailsCid():(string)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toString());
+  }
+
+  productIds(param0: BigInt): string {
+    let result = super.call("productIds", "productIds(uint256):(string)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+
+    return result[0].toString();
+  }
+
+  try_productIds(param0: BigInt): ethereum.CallResult<string> {
+    let result = super.tryCall("productIds", "productIds(uint256):(string)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toString());
+  }
+
+  productWeightage(param0: string): BigInt {
+    let result = super.call(
+      "productWeightage",
+      "productWeightage(string):(uint32)",
+      [ethereum.Value.fromString(param0)]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_productWeightage(param0: string): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "productWeightage",
+      "productWeightage(string):(uint32)",
+      [ethereum.Value.fromString(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  submittedPrices(param0: string, param1: BigInt): BigInt {
     let result = super.call(
       "submittedPrices",
-      "submittedPrices(uint32,uint256):(uint32)",
+      "submittedPrices(string,uint256):(uint32)",
       [
-        ethereum.Value.fromUnsignedBigInt(param0),
+        ethereum.Value.fromString(param0),
         ethereum.Value.fromUnsignedBigInt(param1)
       ]
     );
@@ -214,14 +265,14 @@ export class Stable extends ethereum.SmartContract {
   }
 
   try_submittedPrices(
-    param0: BigInt,
+    param0: string,
     param1: BigInt
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "submittedPrices",
-      "submittedPrices(uint32,uint256):(uint32)",
+      "submittedPrices(string,uint256):(uint32)",
       [
-        ethereum.Value.fromUnsignedBigInt(param0),
+        ethereum.Value.fromString(param0),
         ethereum.Value.fromUnsignedBigInt(param1)
       ]
     );
@@ -232,12 +283,12 @@ export class Stable extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  submittedUsers(param0: BigInt, param1: BigInt, param2: BigInt): Address {
+  submittedUsers(param0: string, param1: BigInt, param2: BigInt): Address {
     let result = super.call(
       "submittedUsers",
-      "submittedUsers(uint32,uint32,uint256):(address)",
+      "submittedUsers(string,uint32,uint256):(address)",
       [
-        ethereum.Value.fromUnsignedBigInt(param0),
+        ethereum.Value.fromString(param0),
         ethereum.Value.fromUnsignedBigInt(param1),
         ethereum.Value.fromUnsignedBigInt(param2)
       ]
@@ -247,15 +298,15 @@ export class Stable extends ethereum.SmartContract {
   }
 
   try_submittedUsers(
-    param0: BigInt,
+    param0: string,
     param1: BigInt,
     param2: BigInt
   ): ethereum.CallResult<Address> {
     let result = super.tryCall(
       "submittedUsers",
-      "submittedUsers(uint32,uint32,uint256):(address)",
+      "submittedUsers(string,uint32,uint256):(address)",
       [
-        ethereum.Value.fromUnsignedBigInt(param0),
+        ethereum.Value.fromString(param0),
         ethereum.Value.fromUnsignedBigInt(param1),
         ethereum.Value.fromUnsignedBigInt(param2)
       ]
@@ -265,21 +316,6 @@ export class Stable extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  totalItems(): BigInt {
-    let result = super.call("totalItems", "totalItems():(uint32)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_totalItems(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("totalItems", "totalItems():(uint32)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   validSubmitters(param0: BigInt): Address {
@@ -327,16 +363,20 @@ export class ConstructorCall__Inputs {
     return this._call.inputValues[0].value.toString();
   }
 
-  get _currentDate(): BigInt {
+  get _startDate(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
   }
 
-  get _totalItems(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
+  get _productIds(): Array<string> {
+    return this._call.inputValues[2].value.toStringArray();
   }
 
-  get _itemsCid(): string {
-    return this._call.inputValues[3].value.toString();
+  get _weightage(): Array<BigInt> {
+    return this._call.inputValues[3].value.toBigIntArray();
+  }
+
+  get _productDetailsCid(): string {
+    return this._call.inputValues[4].value.toString();
   }
 }
 
@@ -344,6 +384,44 @@ export class ConstructorCall__Outputs {
   _call: ConstructorCall;
 
   constructor(call: ConstructorCall) {
+    this._call = call;
+  }
+}
+
+export class AddProductCall extends ethereum.Call {
+  get inputs(): AddProductCall__Inputs {
+    return new AddProductCall__Inputs(this);
+  }
+
+  get outputs(): AddProductCall__Outputs {
+    return new AddProductCall__Outputs(this);
+  }
+}
+
+export class AddProductCall__Inputs {
+  _call: AddProductCall;
+
+  constructor(call: AddProductCall) {
+    this._call = call;
+  }
+
+  get _productId(): string {
+    return this._call.inputValues[0].value.toString();
+  }
+
+  get _weightage(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get _updatedProductDetailsCid(): string {
+    return this._call.inputValues[2].value.toString();
+  }
+}
+
+export class AddProductCall__Outputs {
+  _call: AddProductCall;
+
+  constructor(call: AddProductCall) {
     this._call = call;
   }
 }
@@ -372,40 +450,6 @@ export class CalculateCall__Outputs {
   constructor(call: CalculateCall) {
     this._call = call;
   }
-
-  get value0(): Address {
-    return this._call.outputValues[0].value.toAddress();
-  }
-}
-
-export class SetQuantitiesCall extends ethereum.Call {
-  get inputs(): SetQuantitiesCall__Inputs {
-    return new SetQuantitiesCall__Inputs(this);
-  }
-
-  get outputs(): SetQuantitiesCall__Outputs {
-    return new SetQuantitiesCall__Outputs(this);
-  }
-}
-
-export class SetQuantitiesCall__Inputs {
-  _call: SetQuantitiesCall;
-
-  constructor(call: SetQuantitiesCall) {
-    this._call = call;
-  }
-
-  get quantities(): Array<BigInt> {
-    return this._call.inputValues[0].value.toBigIntArray();
-  }
-}
-
-export class SetQuantitiesCall__Outputs {
-  _call: SetQuantitiesCall;
-
-  constructor(call: SetQuantitiesCall) {
-    this._call = call;
-  }
 }
 
 export class SubmitPricesCall extends ethereum.Call {
@@ -429,10 +473,12 @@ export class SubmitPricesCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
-  get _prices(): Array<SubmitPricesCall_pricesStruct> {
-    return this._call.inputValues[1].value.toTupleArray<
-      SubmitPricesCall_pricesStruct
-    >();
+  get _productIds(): Array<string> {
+    return this._call.inputValues[1].value.toStringArray();
+  }
+
+  get _prices(): Array<BigInt> {
+    return this._call.inputValues[2].value.toBigIntArray();
   }
 }
 
@@ -444,12 +490,36 @@ export class SubmitPricesCall__Outputs {
   }
 }
 
-export class SubmitPricesCall_pricesStruct extends ethereum.Tuple {
-  get itemId(): BigInt {
-    return this[0].toBigInt();
+export class UpdateWeightageCall extends ethereum.Call {
+  get inputs(): UpdateWeightageCall__Inputs {
+    return new UpdateWeightageCall__Inputs(this);
   }
 
-  get price(): BigInt {
-    return this[1].toBigInt();
+  get outputs(): UpdateWeightageCall__Outputs {
+    return new UpdateWeightageCall__Outputs(this);
+  }
+}
+
+export class UpdateWeightageCall__Inputs {
+  _call: UpdateWeightageCall;
+
+  constructor(call: UpdateWeightageCall) {
+    this._call = call;
+  }
+
+  get _productIds(): Array<string> {
+    return this._call.inputValues[0].value.toStringArray();
+  }
+
+  get _weightage(): Array<BigInt> {
+    return this._call.inputValues[1].value.toBigIntArray();
+  }
+}
+
+export class UpdateWeightageCall__Outputs {
+  _call: UpdateWeightageCall;
+
+  constructor(call: UpdateWeightageCall) {
+    this._call = call;
   }
 }

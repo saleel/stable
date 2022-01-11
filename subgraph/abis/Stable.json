@@ -8,17 +8,22 @@
       },
       {
         "internalType": "uint32",
-        "name": "_currentDate",
+        "name": "_startDate",
         "type": "uint32"
       },
       {
-        "internalType": "uint32",
-        "name": "_totalItems",
-        "type": "uint32"
+        "internalType": "string[]",
+        "name": "_productIds",
+        "type": "string[]"
+      },
+      {
+        "internalType": "uint32[]",
+        "name": "_weightage",
+        "type": "uint32[]"
       },
       {
         "internalType": "string",
-        "name": "_itemsCid",
+        "name": "_productDetailsCid",
         "type": "string"
       }
     ],
@@ -37,8 +42,27 @@
       {
         "indexed": false,
         "internalType": "uint32",
-        "name": "itemId",
+        "name": "priceIndex",
         "type": "uint32"
+      }
+    ],
+    "name": "PriceIndexUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "date",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "productId",
+        "type": "string"
       },
       {
         "indexed": false,
@@ -57,34 +81,64 @@
     "type": "event"
   },
   {
+    "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "string",
+        "name": "productId",
+        "type": "string"
+      },
+      {
+        "indexed": false,
         "internalType": "uint32",
-        "name": "",
+        "name": "weightage",
         "type": "uint32"
       }
     ],
-    "name": "basket",
-    "outputs": [
+    "name": "ProductAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "productDetailsCid",
+        "type": "string"
+      }
+    ],
+    "name": "ProductDetailsUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_productId",
+        "type": "string"
+      },
       {
         "internalType": "uint32",
-        "name": "",
+        "name": "_weightage",
         "type": "uint32"
+      },
+      {
+        "internalType": "string",
+        "name": "_updatedProductDetailsCid",
+        "type": "string"
       }
     ],
-    "stateMutability": "view",
+    "name": "addProduct",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "calculate",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -109,38 +163,6 @@
         "internalType": "uint32",
         "name": "",
         "type": "uint32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "itemId",
-        "type": "uint32"
-      }
-    ],
-    "name": "getBasketQuantity",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "itemDetailsCid",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -175,9 +197,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint32",
+        "internalType": "string",
         "name": "",
-        "type": "uint32"
+        "type": "string"
       }
     ],
     "name": "prices",
@@ -192,16 +214,54 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "productDetailsCid",
+    "outputs": [
       {
-        "internalType": "uint32[]",
-        "name": "quantities",
-        "type": "uint32[]"
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
-    "name": "setQuantities",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "productIds",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "productWeightage",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -212,21 +272,14 @@
         "type": "uint32"
       },
       {
-        "components": [
-          {
-            "internalType": "uint32",
-            "name": "itemId",
-            "type": "uint32"
-          },
-          {
-            "internalType": "uint32",
-            "name": "price",
-            "type": "uint32"
-          }
-        ],
-        "internalType": "struct Stable.PriceData[]",
+        "internalType": "string[]",
+        "name": "_productIds",
+        "type": "string[]"
+      },
+      {
+        "internalType": "uint32[]",
         "name": "_prices",
-        "type": "tuple[]"
+        "type": "uint32[]"
       }
     ],
     "name": "submitPrices",
@@ -237,9 +290,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint32",
+        "internalType": "string",
         "name": "",
-        "type": "uint32"
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -261,9 +314,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint32",
+        "internalType": "string",
         "name": "",
-        "type": "uint32"
+        "type": "string"
       },
       {
         "internalType": "uint32",
@@ -288,16 +341,21 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "totalItems",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
+        "internalType": "string[]",
+        "name": "_productIds",
+        "type": "string[]"
+      },
+      {
+        "internalType": "uint32[]",
+        "name": "_weightage",
+        "type": "uint32[]"
       }
     ],
-    "stateMutability": "view",
+    "name": "updateWeightage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

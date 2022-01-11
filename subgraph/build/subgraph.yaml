@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 description: Stable
 repository: https://github.com/saleel/stable/subgraph
 schema:
@@ -8,7 +8,7 @@ dataSources:
     name: Stable
     network: mainnet
     source:
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+      address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
       abi: Stable
       startBlock: 1
     mapping:
@@ -21,6 +21,8 @@ dataSources:
         - name: Stable
           file: Stable/abis/Stable.json
       eventHandlers:
-        - event: PriceUpdated(uint32,uint32,uint32,uint32)
+        - event: PriceUpdated(uint32,string,uint32,uint32)
           handler: handlePriceUpdated
+        - event: PriceIndexUpdated(uint32,uint32)
+          handler: handlePriceIndexUpdated
       file: Stable/Stable.wasm
