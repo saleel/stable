@@ -36,7 +36,7 @@ async function main() {
     20220101,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1),
-    "bafybeifkg2ved7zkznmai3m2buo3deejc6p6s5foz5p6b3hfbv7uxikrfe"
+    productDetailsCid,
   );
 
   await stable.deployed();
