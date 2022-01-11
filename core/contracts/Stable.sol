@@ -4,16 +4,12 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 contract Stable {
+    event ProductDetailsUpdated(string productDetailsCid);
+    event ProductAdded(string productId, uint32 weightage);
     event PriceUpdated(uint32 date, string productId, uint32 price, uint32 confirmations);
     event PriceIndexUpdated(uint32 date, uint32 priceIndex);
 
     address public owner;
-
-    struct PriceData {
-        string productId;
-        uint32 price;
-        // address user;
-    }
 
     string[] public productIds;
     string public productDetailsCid;
@@ -47,13 +43,19 @@ contract Stable {
         for (uint32 i = 0; i < _productIds.length; i++) {
             productWeightage[_productIds[i]] = _weightage[i];
         }
+
+        emit ProductDetailsUpdated(productDetailsCid);
     }
 
-    function addProduct(string memory _productId, string memory _updatedProductDetailsCid) public {
+    function addProduct(string memory _productId, uint32 _weightage, string memory _updatedProductDetailsCid) public {
         require(msg.sender == owner, "Unauthorized");
 
         productIds.push(_productId);
         productDetailsCid = _updatedProductDetailsCid;
+        productWeightage[_productId] = _weightage;
+
+        emit ProductAdded(_productId, _weightage);
+        emit ProductDetailsUpdated(productDetailsCid);
     }
 
     function updateWeightage(string[] memory _productIds, uint32[] memory _weightage) public {
@@ -95,8 +97,6 @@ contract Stable {
                     maxOccurenceCount = priceOccurenses[price];
                     mostCommonPrice = price;
                 }
-
-                submittedPrices[productId][j] = 0;
             }
 
             if (mostCommonPrice != 0) {
@@ -112,11 +112,13 @@ contract Stable {
                 totalValidPrice += mostCommonPrice;
             }
             
-            delete submittedPrices[productId];
             mostCommonPrice = 0;
             maxOccurenceCount = 0;
 
+            // Cleanup
             for (uint32 k = 0; k < submittedPrices[productId].length; k++) {
+                delete submittedUsers[productId][submittedPrices[productId][k]];
+                delete submittedPrices[productId][k];
                 delete priceOccurenses[submittedPrices[productId][k]];
             }
         }

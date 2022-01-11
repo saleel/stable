@@ -6,8 +6,12 @@
 const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
-const ethernal = require("hardhat-ethernal");
+const axios = require("axios");
+// require("hardhat-ethernal");
 const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
+
+const productDetailsCid =
+  "bafybeidieiu2fmyy4w3ut6srbx5gffap7mmpxazswajxkbs4fd2igt3bp4";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -17,16 +21,30 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
+  const productDetailsJson = await axios.get(
+    "https://ipfs.io/ipfs/" + productDetailsCid + "/products.json"
+  );
+
+  const productDetails = productDetailsJson.data;
+
+  console.log("Products", productDetails);
+
   // We get the contract to deploy
   const Stable = await hre.ethers.getContractFactory("Stable");
-  const stable = await Stable.deploy("USD", 20220101, 5, "cid");
+  const stable = await Stable.deploy(
+    "USD",
+    20220101,
+    productDetails.map((p) => p.id),
+    productDetails.map(() => 1),
+    "bafybeifkg2ved7zkznmai3m2buo3deejc6p6s5foz5p6b3hfbv7uxikrfe"
+  );
 
   await stable.deployed();
 
-  await hre.ethernal.push({
-    name: "Stable",
-    address: stable.address,
-  });
+  // await hre.ethernal.push({
+  //   name: "Stable",
+  //   address: stable.address,
+  // });
 
   console.log("Stable deployed to:", stable.address);
 

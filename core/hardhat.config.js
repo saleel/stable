@@ -4,10 +4,11 @@ require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
-require('@typechain/hardhat');
-require('@nomiclabs/hardhat-ethers');
-require('@nomiclabs/hardhat-waffle');
-require('hardhat-ethernal');
+require("@typechain/hardhat");
+require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-waffle");
+// require("hardhat-ethernal");
+require("@nomiclabs/hardhat-web3");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
