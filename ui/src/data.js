@@ -25,7 +25,9 @@ export async function getProducts() {
   const { data: productsDetails } = await axios.get(ipfsUrl);
 
   // Get latest price from graph
-  const { products: productsWithPrices } = await axiosGraphql({ data: { query: `
+  const { products: productsWithPrices } = await axiosGraphql({
+    data: {
+      query: `
     {
       products {
         id
@@ -34,19 +36,52 @@ export async function getProducts() {
       }
     }
   `
-  }});
+    }
+  });
 
   const products = productsDetails.map(pd => {
     const productWithPrice = productsWithPrices.find(p => p.id === pd.id);
 
-    console.log(pd, productWithPrice)
-
     if (productWithPrice) {
-      return { ...pd, ... productWithPrice}
+      return { ...pd, ...productWithPrice };
     }
 
     return pd;
   })
 
   return products;
+}
+
+
+export async function getProduct(id) {
+  // Get product details from IPFS (Graph don't allow IPFS queries now)
+  const ipfsCid = await stableContract.productDetailsCid();
+  const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}/products.json`;
+  const { data: productsDetails } = await axios.get(ipfsUrl);
+
+  // Get latest price from graph
+  const { products: productsWithPrices } = await axiosGraphql({
+    data: {
+      query: `
+    {
+      products {
+        id
+        price
+        lastUpdated
+        priceHistory {
+          id
+          price
+          date
+          confirmations
+        }
+      }
+    }
+  `
+    }
+  });
+
+  const product = productsDetails.find(p => p.id === id);
+  const productWithPrice = productsWithPrices.find(p => p.id === id);
+
+  return { ...product, ...productWithPrice };
 }

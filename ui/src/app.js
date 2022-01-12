@@ -1,23 +1,17 @@
 import React from 'react';
-import { getProducts } from './data';
-import usePromise from './hooks/use-promise';
+import { Route, Routes } from "react-router-dom";
+import HomePage from './pages/home';
+import Layout from './pages/layout';
+import ProductPage from './pages/product';
 
 function App() {
-  const [products] = usePromise(() => getProducts(), {
-    defaultValue: [],
-  });
-
-  
-
   return (
-    <div className="">
-      {products.map(product => (
-        <div>
-          {product.name}
-          {product.price}
-        </div>
-      ))}
-    </div>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<HomePage />} />
+        <Route path="/products/:productId" index element={<ProductPage />} />
+      </Route>
+    </Routes>
   );
 }
 
