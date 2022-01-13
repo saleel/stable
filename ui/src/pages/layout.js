@@ -21,7 +21,7 @@ function Layout() {
         <div id="navbar" className="navbar-menu">
           <div className="navbar-start">
             <Link className='navbar-item' to="/">Home</Link>
-            <Link className='navbar-item' to="/">Submit Price</Link>
+            <Link className='navbar-item' to="/add-price">Add Price</Link>
             <Link className='navbar-item' to="/">Exchange</Link>
           </div>
         </div>

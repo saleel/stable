@@ -5,6 +5,8 @@ import stableContractAbi from "./abis/Stable.json";
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_ETH_PROVIDER || window.ethereum);
 const stableContract = new ethers.Contract(process.env.REACT_APP_STABLE_CONTRACT_ADDRESS, stableContractAbi, provider);
+const signer = provider.getSigner();
+const stableContractWithSigner = stableContract.connect(signer);
 
 const axiosGraphql = axios.create({
   baseURL: process.env.REACT_APP_GRAPHQL_ENDPOINT,
@@ -84,4 +86,15 @@ export async function getProduct(id) {
   const productWithPrice = productsWithPrices.find(p => p.id === id);
 
   return { ...product, ...productWithPrice };
+}
+
+export function getContractCurrentDate() {
+  return stableContract.currentDate();
+}
+
+export async function addPrices(date, priceMapping) {
+  const productsIds = Object.keys(priceMapping);
+  const prices = Object.keys(priceMapping).map(k => priceMapping[k].price);
+
+  await stableContractWithSigner.submitPrices(date, productsIds, prices);
 }
