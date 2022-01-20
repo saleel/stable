@@ -1,20 +1,40 @@
-type PriceHistory @entity {
+type Stable @entity {
   id: ID!
-  product: Product!
-  date: String!
+  country: String!
+  currency: String!
+  address: String!
+}
+
+type LatestPrice @entity {
+  id: ID!
+  country: String!
+  currency: String!
   price: BigInt!
-  confirmations: BigInt!
+  product: Product!
+  updatedAt: String!
 }
 
 type Product @entity {
   id: ID!
-  price: BigInt!
+  latestPrice: [LatestPrice!]! @derivedFrom(field: "product")
   priceHistory: [PriceHistory!]! @derivedFrom(field: "product")
-  lastUpdated: String!
+  updatedAt: String!
 }
 
 type PriceIndex @entity {
   id: ID!
+  country: String!
+  currency: String!
   index: BigInt!
   date: String!
+}
+
+type PriceHistory @entity {
+  id: ID!
+  country: String!
+  currency: String!
+  product: Product!
+  date: String!
+  price: BigInt!
+  confirmations: BigInt!
 }

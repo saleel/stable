@@ -1,26 +1,56 @@
-const { ethers } = require("ethers");
-const stableAbi = require("../core/artifacts/contracts/Stable.sol/Stable.json");
+const { ethers } = require('ethers');
+const products = require('./products.json');
+const stableFactoryAbi = require('../core/artifacts/contracts/Stable.sol/StableFactory.json');
+const stableAbi = require('../core/artifacts/contracts/Stable.sol/Stable.json');
 
-const stableAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const stableFactoryAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
 async function generate() {
+  const args = process.argv.slice(2);
+
+  const [endDateStr, avgInflation] = args;
+
+  console.log('Generating sample data', {
+    endDate: endDateStr, avgInflation,
+  });
+
   const provider = new ethers.providers.JsonRpcProvider();
   const signer = provider.getSigner();
 
-  console.log("Staring at block", await provider.getBlockNumber());
+  const stableFactoryContract = new ethers.Contract(
+    stableFactoryAddress,
+    stableFactoryAbi.abi,
+    provider,
+  );
+
+  const usAddress = await stableFactoryContract.childContracts('US');
+
+  console.log("US Adress", usAddress);
 
   const stableContract = new ethers.Contract(
-    stableAddress,
+    usAddress,
     stableAbi.abi,
-    provider
+    provider,
   );
 
   const contractWithSigner = await stableContract.connect(signer);
 
-  console.log(
-    "Contract loaded. Currency:",
-    await contractWithSigner.currency()
-  );
+  console.log('Staring at block', await provider.getBlockNumber());
+
+  // let currentDate = await contractWithSigner.currentDate();
+  // const endDate = Number(endDateStr);
+  // const dailyIncrement = avgInflation / (endDate - currentDate);
+
+  // while (currentDate <= endDate) {
+  //   for (const product of products) {
+  //     const lastPrice = await contractWithSigner.prices(product.id) || (Math.round(Math.random() * 1000));
+  //     const newPrice = lastPrice * (1 + (dailyIncrement * (Math.random() + 0.5)));
+
+  //     console.log(product.name, lastPrice, newPrice);
+  //   }
+
+  //   currentDate++;
+  // }
 
   let currentDate = await contractWithSigner.currentDate();
 

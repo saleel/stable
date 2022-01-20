@@ -5,16 +5,36 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Stable
+    name: StableFactory
     network: mainnet
     source:
-      address: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
-      abi: Stable
-      startBlock: 1
+      address: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+      abi: StableFactory
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
+      file: ./src/mappings/factory.ts
+      entities:
+        - StableFactory
+      abis:
+        - name: StableFactory
+          file: ./abis/StableFactory.json
+      eventHandlers:
+        - event: StableCreated(string,string,address)
+          handler: handleStableCreated
+
+templates:
+  - name: Stable
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: Stable
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/mappings/stable.ts
       entities:
         - Stable
       abis:
@@ -27,5 +47,3 @@ dataSources:
           handler: handlePriceIndexUpdated
         # - event: ProductDetailsUpdated(string)
         #   handler: handleProductDetailsUpdated
-
-      file: ./src/mapping.ts
