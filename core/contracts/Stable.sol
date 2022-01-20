@@ -2,6 +2,23 @@
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+
+contract StableFactory is Ownable {
+  mapping(string => address) public childContracts;
+
+  event StableCreated(string country, string currency, address stableAddress);
+
+  function createStable(string memory _country, string memory _currency, uint32 _startDate, string[] memory _productIds, uint32[] memory _weightage, string memory _productDetailsCid) public onlyOwner returns (address) {
+    Stable _stable = new Stable(_currency, _country,  _startDate,  _productIds,  _weightage, _productDetailsCid);
+    childContracts[_country] = address(_stable);
+    
+    emit StableCreated(_country, _currency, address(_stable));
+
+    return address(_stable);
+  }
+}
 
 contract Stable {
     event ProductDetailsUpdated(string productDetailsCid);
@@ -25,6 +42,7 @@ contract Stable {
 
     // Currency used for all price submissions in this contract
     string public currency;
+    string public country;
 
     mapping(string => uint32[]) public submittedPrices;
 
@@ -32,8 +50,9 @@ contract Stable {
 
     uint32 public currentDate;
 
-    constructor(string memory _currency, uint32 _startDate, string[] memory _productIds, uint32[] memory _weightage, string memory _productDetailsCid) {
+    constructor(string memory _currency, string memory _country, uint32 _startDate, string[] memory _productIds, uint32[] memory _weightage, string memory _productDetailsCid) {
         owner = msg.sender;
+        country = _country;
         currency = _currency;
         currentDate = _startDate;
         productIds = _productIds;
@@ -91,6 +110,10 @@ contract Stable {
             for (uint32 j = 0; j < submittedPrices[productId].length; j++) {
                 uint32 price = submittedPrices[productId][j];
 
+                if (price == 0) {
+                    continue;
+                }
+
                 priceOccurenses[price]++;
 
                 if (priceOccurenses[price] > maxOccurenceCount) {
@@ -117,9 +140,9 @@ contract Stable {
 
             // Cleanup
             for (uint32 k = 0; k < submittedPrices[productId].length; k++) {
-                delete submittedUsers[productId][submittedPrices[productId][k]];
                 delete submittedPrices[productId][k];
                 delete priceOccurenses[submittedPrices[productId][k]];
+                delete submittedUsers[productId][submittedPrices[productId][k]];
             }
         }
 

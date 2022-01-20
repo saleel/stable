@@ -9,6 +9,7 @@ const path = require("path");
 const axios = require("axios");
 // require("hardhat-ethernal");
 const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
+const stableFactoryArtifact = require("../artifacts/contracts/Stable.sol/StableFactory.json");
 
 const productDetailsCid =
   "bafybeidieiu2fmyy4w3ut6srbx5gffap7mmpxazswajxkbs4fd2igt3bp4";
@@ -20,6 +21,7 @@ async function main() {
   // If this script is run directly using `node` you may want to call compile
   // manually to make sure everything is compiled
   // await hre.run('compile');
+  await hre.network.provider.send("hardhat_reset")
 
   const productDetailsJson = await axios.get(
     "https://ipfs.io/ipfs/" + productDetailsCid + "/products.json"
@@ -29,26 +31,35 @@ async function main() {
 
   console.log("Products", productDetails);
 
+  const StableFactory = await hre.ethers.getContractFactory("StableFactory");
+
+  const stableFactory = await StableFactory.deploy();
+
+  console.log("Stable factory deployed to:", stableFactory.address);
+
   // We get the contract to deploy
-  const Stable = await hre.ethers.getContractFactory("Stable");
-  const stable = await Stable.deploy(
+  const address = await stableFactory.createStable(
+    "US",
     "USD",
     20220101,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1),
-    productDetailsCid,
+    productDetailsCid
   );
-
-  await stable.deployed();
 
   // await hre.ethernal.push({
   //   name: "Stable",
-  //   address: stable.address,
+  //   address: address,
   // });
 
-  console.log("Stable deployed to:", stable.address);
+  console.log("Stable deployed to:", address);
 
   console.log("Updating subgraph ABI");
+
+  fs.writeFileSync(
+    path.join(__dirname, "../../subgraph/abis/StableFactory.json"),
+    JSON.stringify(stableFactoryArtifact.abi, null, 2)
+  );
 
   fs.writeFileSync(
     path.join(__dirname, "../../subgraph/abis/Stable.json"),

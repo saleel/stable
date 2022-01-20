@@ -3,6 +3,28 @@ const { ethers } = require("hardhat");
 
 const START_DATE = 20220101;
 
+describe("StableFactory", function () {
+  it("should be able to create child contracts", async function () {
+    const StableFactory = await ethers.getContractFactory("StableFactory");
+
+    /** @type{import("../typechain-types/StableFactory").StableFactory} */
+    const stableFactory = await StableFactory.deploy();
+
+    await stableFactory.createStable(
+      "US",
+      "USD",
+      START_DATE,
+      ["ZC", "ZW", "ZR", "ZS", "KE"],
+      [1, 1, 1, 1, 1],
+      "cid"
+    );
+
+    const address = await stableFactory.childContracts("US");
+
+    expect(address).to.not.equal("0x0000000000000000000000000000000000000000");
+  });
+});
+
 describe("Stable", function () {
   /** @type{import("../typechain-types/Stable").Stable} */
   let stable;
@@ -17,6 +39,7 @@ describe("Stable", function () {
     const Stable = await ethers.getContractFactory("Stable");
 
     stable = await Stable.deploy(
+      "US",
       "USD",
       START_DATE,
       ["ZC", "ZW", "ZR", "ZS", "KE"],
@@ -130,9 +153,12 @@ describe("Stable", function () {
     expect(await stable.priceIndex()).to.equal(expectedIndex);
 
     await stable.connect(addr1).submitPrices(20220102, ["ZC"], [2500]);
-
     await stable.calculate();
+
     const newExpectedIndex = Math.floor((9 * 2500 + 7 * 1000) / (9 + 7));
     expect(await stable.priceIndex()).to.equal(newExpectedIndex);
+
+    await stable.connect(addr1).submitPrices(20220103, ["ZC"], [1500]);
+    await stable.calculate();
   });
 });
