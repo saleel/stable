@@ -12,7 +12,7 @@ const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
 const stableFactoryArtifact = require("../artifacts/contracts/Stable.sol/StableFactory.json");
 
 const productDetailsCid =
-  "bafybeidieiu2fmyy4w3ut6srbx5gffap7mmpxazswajxkbs4fd2igt3bp4";
+  "bafkreid43zvcrxhfemobxktdi7wtkproeebi3asanp3b7wyet5nwglxvzq";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -21,10 +21,10 @@ async function main() {
   // If this script is run directly using `node` you may want to call compile
   // manually to make sure everything is compiled
   // await hre.run('compile');
-  await hre.network.provider.send("hardhat_reset")
+  await hre.network.provider.send("hardhat_reset");
 
   const productDetailsJson = await axios.get(
-    "https://ipfs.io/ipfs/" + productDetailsCid + "/products.json"
+    "https://ipfs.io/ipfs/" + productDetailsCid
   );
 
   const productDetails = productDetailsJson.data;

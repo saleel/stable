@@ -3,6 +3,8 @@ description: Stable
 repository: https://github.com/saleel/stable/subgraph
 schema:
   file: ./schema.graphql
+features:
+  - ipfsOnEthereumContracts
 dataSources:
   - kind: ethereum/contract
     name: StableFactory
@@ -45,5 +47,5 @@ templates:
           handler: handlePriceUpdated
         - event: PriceIndexUpdated(uint32,uint32)
           handler: handlePriceIndexUpdated
-        # - event: ProductDetailsUpdated(string)
-        #   handler: handleProductDetailsUpdated
+        - event: ProductDetailsUpdated(string)
+          handler: handleProductDetailsUpdated

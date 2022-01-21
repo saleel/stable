@@ -87,8 +87,8 @@ export class StableFactory extends ethereum.SmartContract {
   }
 
   createStable(
-    _currency: string,
     _country: string,
+    _currency: string,
     _startDate: BigInt,
     _productIds: Array<string>,
     _weightage: Array<BigInt>,
@@ -98,8 +98,8 @@ export class StableFactory extends ethereum.SmartContract {
       "createStable",
       "createStable(string,string,uint32,string[],uint32[],string):(address)",
       [
-        ethereum.Value.fromString(_currency),
         ethereum.Value.fromString(_country),
+        ethereum.Value.fromString(_currency),
         ethereum.Value.fromUnsignedBigInt(_startDate),
         ethereum.Value.fromStringArray(_productIds),
         ethereum.Value.fromUnsignedBigIntArray(_weightage),
@@ -111,8 +111,8 @@ export class StableFactory extends ethereum.SmartContract {
   }
 
   try_createStable(
-    _currency: string,
     _country: string,
+    _currency: string,
     _startDate: BigInt,
     _productIds: Array<string>,
     _weightage: Array<BigInt>,
@@ -122,8 +122,8 @@ export class StableFactory extends ethereum.SmartContract {
       "createStable",
       "createStable(string,string,uint32,string[],uint32[],string):(address)",
       [
-        ethereum.Value.fromString(_currency),
         ethereum.Value.fromString(_country),
+        ethereum.Value.fromString(_currency),
         ethereum.Value.fromUnsignedBigInt(_startDate),
         ethereum.Value.fromStringArray(_productIds),
         ethereum.Value.fromUnsignedBigIntArray(_weightage),
@@ -170,11 +170,11 @@ export class CreateStableCall__Inputs {
     this._call = call;
   }
 
-  get _currency(): string {
+  get _country(): string {
     return this._call.inputValues[0].value.toString();
   }
 
-  get _country(): string {
+  get _currency(): string {
     return this._call.inputValues[1].value.toString();
   }
 

@@ -56,43 +56,43 @@ export function handlePriceIndexUpdated(event: PriceIndexUpdated): void {
 }
 
 // Parse product details JSON from IPFS
-// export function processIPFSData(value: JSONValue): void {
-//   const productDetails = value.toArray();
+export function processIPFSData(value: JSONValue, userData: Value): void {
+  const productDetails = value.toArray();
 
-//   productDetails.forEach(detail => {
-//     const productData = detail.toObject();
-//     const productId = productData.get('id');
+  productDetails.forEach(detail => {
+    const productData = detail.toObject();
+    const productId = productData.get('id');
 
-//     if (!productId) {
-//       return;
-//     }
+    if (!productId) {
+      return;
+    }
 
-//     const name = productData.get('name');
-//     const description = productData.get('description');
-//     const category = productData.get('category');
+    const name = productData.get('name');
+    const description = productData.get('description');
+    const category = productData.get('category');
 
-//     let product = Product.load(productId.toString());
-//     if (product == null) {
-//       product = new Product(productId.toString());
-//     }
+    let product = Product.load(productId.toString());
+    if (product == null) {
+      product = new Product(productId.toString());
+    }
 
-//     if (name) {
-//       product.name = name.toString();
-//     }
-//     if (description) {
-//       product.description = description.toString();
-//     }
-//     if (category) {
-//       product.category = category.toString();
-//     }
+    if (name) {
+      product.name = name.toString();
+    }
+    if (description) {
+      product.description = description.toString();
+    }
+    if (category) {
+      product.category = category.toString();
+    }
 
-//     product.save();
-//   });
+    product.save();
+  });
 
-// }
+}
 
 
-// export function handleProductDetailsUpdated(event: ProductDetailsUpdated): void {
-//   // ipfs.mapJSON(event.params.productDetailsCid, 'processIPFSData', Value.fromString(''));
-// }
+export function handleProductDetailsUpdated(event: ProductDetailsUpdated): void {
+  ipfs.mapJSON(event.params.productDetailsCid, 'processIPFSData', Value.fromString(''));
+}
 

@@ -19,6 +19,9 @@ type Product @entity {
   latestPrice: [LatestPrice!]! @derivedFrom(field: "product")
   priceHistory: [PriceHistory!]! @derivedFrom(field: "product")
   updatedAt: String!
+  name: String
+  description: String
+  category: String
 }
 
 type PriceIndex @entity {

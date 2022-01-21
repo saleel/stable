@@ -219,6 +219,57 @@ export class Product extends Entity {
   set updatedAt(value: string) {
     this.set("updatedAt", Value.fromString(value));
   }
+
+  get name(): string | null {
+    let value = this.get("name");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set name(value: string | null) {
+    if (!value) {
+      this.unset("name");
+    } else {
+      this.set("name", Value.fromString(<string>value));
+    }
+  }
+
+  get description(): string | null {
+    let value = this.get("description");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set description(value: string | null) {
+    if (!value) {
+      this.unset("description");
+    } else {
+      this.set("description", Value.fromString(<string>value));
+    }
+  }
+
+  get category(): string | null {
+    let value = this.get("category");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set category(value: string | null) {
+    if (!value) {
+      this.unset("category");
+    } else {
+      this.set("category", Value.fromString(<string>value));
+    }
+  }
 }
 
 export class PriceIndex extends Entity {
