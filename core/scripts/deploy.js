@@ -35,7 +35,6 @@ async function main() {
 
   const stableFactory = await StableFactory.deploy(
     productDetails.map((p) => p.id),
-    productDetails.map(() => 1),
     productDetailsCid,
     "TOP3_AVG",
     1
@@ -43,11 +42,32 @@ async function main() {
 
   console.log("Stable factory deployed to:", stableFactory.address);
 
-  await stableFactory.createStable("US", "USD", 20220101, 10);
+  await stableFactory.createStable(
+    "US",
+    "USD",
+    20220101,
+    10,
+    productDetails.map((p) => p.id),
+    productDetails.map(() => 1)
+  );
 
-  await stableFactory.createStable("UK", "GBP", 20220101, 10);
+  await stableFactory.createStable(
+    "UK",
+    "GBP",
+    20220101,
+    10,
+    productDetails.map((p) => p.id),
+    productDetails.map(() => 1)
+  );
 
-  await stableFactory.createStable("IN", "INR", 20220101, 10);
+  await stableFactory.createStable(
+    "IN",
+    "INR",
+    20220101,
+    10,
+    productDetails.map((p) => p.id),
+    productDetails.map(() => 1)
+  );
 
   // await hre.ethernal.push({
   //   name: "Stable",
