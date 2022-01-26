@@ -1,3 +1,6 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable max-len */
+/* eslint-disable no-restricted-syntax */
 const { ethers } = require('ethers');
 const products = require('./products.json');
 const stableFactoryAbi = require('../core/artifacts/contracts/Stable.sol/StableFactory.json');
@@ -5,10 +8,14 @@ const stableAbi = require('../core/artifacts/contracts/Stable.sol/Stable.json');
 
 const stableFactoryAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
+function generateRandomPrice(product) {
+  return Math.round(Math.random() * 1000); // Price with no decimals
+}
+
 async function generate() {
   const args = process.argv.slice(2);
 
-  const [endDateStr, avgInflation] = args;
+  const [endDateStr = 20220101, avgInflation = 5] = args;
 
   console.log('Generating sample data', {
     endDate: endDateStr, avgInflation,
@@ -23,45 +30,54 @@ async function generate() {
     provider,
   );
 
-  const usAddress = await stableFactoryContract.childContracts('US');
+  const countries = ['US', 'UK', 'IN'];
 
-  console.log("US Adress", usAddress);
+  for (const country of countries) {
+    const contractAddress = await stableFactoryContract.childContracts(country);
 
-  const stableContract = new ethers.Contract(
-    usAddress,
-    stableAbi.abi,
-    provider,
-  );
+    const stableContract = new ethers.Contract(
+      contractAddress,
+      stableAbi.abi,
+      provider,
+    );
 
-  const contractWithSigner = await stableContract.connect(signer);
+    const contractWithSigner = await stableContract.connect(signer);
 
-  console.log('Staring at block', await provider.getBlockNumber());
+    let currentDate = await contractWithSigner.currentDate();
+    const endDate = Number(endDateStr);
+    const dateDiff = (endDate - currentDate);
 
-  // let currentDate = await contractWithSigner.currentDate();
-  // const endDate = Number(endDateStr);
-  // const dailyIncrement = avgInflation / (endDate - currentDate);
+    // Required daily increment needed for expected inflation over period
+    const dailyIncrement = (100 ** (dateDiff - 1) * (100 + avgInflation)) ** (1 / dateDiff) / 100;
 
-  // while (currentDate <= endDate) {
-  //   for (const product of products) {
-  //     const lastPrice = await contractWithSigner.prices(product.id) || (Math.round(Math.random() * 1000));
-  //     const newPrice = lastPrice * (1 + (dailyIncrement * (Math.random() + 0.5)));
+    const productIds = products.map((p) => p.id);
 
-  //     console.log(product.name, lastPrice, newPrice);
-  //   }
+    while (currentDate <= endDate) {
+      const prices = [];
 
-  //   currentDate++;
-  // }
+      for (const product of products) {
+        const lastPrice = await contractWithSigner.prices(product.id);
 
-  let currentDate = await contractWithSigner.currentDate();
+        let newPrice;
 
-  await contractWithSigner.submitPrices(currentDate, ["ZW", "ZC"], [275, 575]);
-  await contractWithSigner.calculate();
-  currentDate++;
+        if (lastPrice) {
+          // A random number between 0.95 and 1.05 to be apply a +-5% diff
+          const variant = (Math.random() * (1.05 - 0.95)) + 0.9;
+          newPrice = lastPrice * dailyIncrement * variant;
+        } else {
+          newPrice = generateRandomPrice(product);
+        }
 
-  await contractWithSigner.submitPrices(currentDate, ["ZW", "ZC"], [1275, 975]);
-  await contractWithSigner.calculate();
+        console.log(country, currentDate, product.name, lastPrice, newPrice);
+        prices.push(Math.round(newPrice));
+      }
+
+      console.log('/n/nSubmitting...', currentDate);
+      await contractWithSigner.submitPrices(currentDate, productIds, prices, 'manual');
+
+      currentDate += 1;
+    }
+  }
 }
 
 generate();
-
-//

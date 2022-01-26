@@ -12,7 +12,7 @@ const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
 const stableFactoryArtifact = require("../artifacts/contracts/Stable.sol/StableFactory.json");
 
 const productDetailsCid =
-  "bafkreid43zvcrxhfemobxktdi7wtkproeebi3asanp3b7wyet5nwglxvzq";
+  "bafkreibtqzflynmgaboqfbkfxhrhygherd4bht6egvlxlonl32dac5oxoy";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -24,7 +24,7 @@ async function main() {
   await hre.network.provider.send("hardhat_reset");
 
   const productDetailsJson = await axios.get(
-    "https://ipfs.io/ipfs/" + productDetailsCid
+    `https://ipfs.io/ipfs/${productDetailsCid}`
   );
 
   const productDetails = productDetailsJson.data;
@@ -33,36 +33,21 @@ async function main() {
 
   const StableFactory = await hre.ethers.getContractFactory("StableFactory");
 
-  const stableFactory = await StableFactory.deploy();
+  const stableFactory = await StableFactory.deploy(
+    productDetails.map((p) => p.id),
+    productDetails.map(() => 1),
+    productDetailsCid,
+    "TOP3_AVG",
+    1
+  );
 
   console.log("Stable factory deployed to:", stableFactory.address);
 
-  await stableFactory.createStable(
-    "US",
-    "USD",
-    20220101,
-    productDetails.map((p) => p.id),
-    productDetails.map(() => 1),
-    productDetailsCid
-  );
+  await stableFactory.createStable("US", "USD", 20220101, 10);
 
-  await stableFactory.createStable(
-    "UK",
-    "GBP",
-    20220101,
-    productDetails.map((p) => p.id),
-    productDetails.map(() => 1),
-    productDetailsCid
-  );
+  await stableFactory.createStable("UK", "GBP", 20220101, 10);
 
-  await stableFactory.createStable(
-    "IN",
-    "INR",
-    20220101,
-    productDetails.map((p) => p.id),
-    productDetails.map(() => 1),
-    productDetailsCid
-  );
+  await stableFactory.createStable("IN", "INR", 20220101, 10);
 
   // await hre.ethernal.push({
   //   name: "Stable",
