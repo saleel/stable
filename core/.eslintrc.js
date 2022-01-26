@@ -6,9 +6,8 @@ module.exports = {
     node: true,
   },
   extends: [
-    "standard",
-    "plugin:prettier/recommended",
-    "plugin:node/recommended",
+    "airbnb-base",
+    "plugin:prettier/recommended"
   ],
   parserOptions: {
     ecmaVersion: 12,

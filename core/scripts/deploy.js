@@ -37,10 +37,27 @@ async function main() {
 
   console.log("Stable factory deployed to:", stableFactory.address);
 
-  // We get the contract to deploy
-  const address = await stableFactory.createStable(
+  await stableFactory.createStable(
     "US",
     "USD",
+    20220101,
+    productDetails.map((p) => p.id),
+    productDetails.map(() => 1),
+    productDetailsCid
+  );
+
+  await stableFactory.createStable(
+    "UK",
+    "GBP",
+    20220101,
+    productDetails.map((p) => p.id),
+    productDetails.map(() => 1),
+    productDetailsCid
+  );
+
+  await stableFactory.createStable(
+    "IN",
+    "INR",
     20220101,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1),
@@ -51,8 +68,6 @@ async function main() {
   //   name: "Stable",
   //   address: address,
   // });
-
-  console.log("Stable deployed to:", address);
 
   console.log("Updating subgraph ABI");
 

@@ -4,174 +4,152 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-
 contract StableFactory is Ownable {
-  mapping(string => address) public childContracts;
-
-  event StableCreated(string country, string currency, address stableAddress);
-
-  function createStable(string memory _country, string memory _currency, uint32 _startDate, string[] memory _productIds, uint32[] memory _weightage, string memory _productDetailsCid) public onlyOwner returns (address) {
-    Stable _stable = new Stable(_currency, _country,  _startDate,  _productIds,  _weightage, _productDetailsCid);
-    childContracts[_country] = address(_stable);
-    
-    emit StableCreated(_country, _currency, address(_stable));
-
-    return address(_stable);
-  }
-}
-
-contract Stable {
-    event ProductDetailsUpdated(string productDetailsCid);
-    event ProductAdded(string productId, uint32 weightage);
-    event PriceUpdated(uint32 date, string productId, uint32 price, uint32 confirmations);
-    event PriceIndexUpdated(uint32 date, uint32 priceIndex);
-
-    address public owner;
-
+    string[] public countries;
+    mapping(string => address) public childContracts;
+    mapping(string => uint8) public countryWeightage;
     string[] public productIds;
+    mapping(string => uint8) public productBasket; // Mapping of productId -> quantity(weightage)
+    string public priceAggregationMethod;
+    uint8 public mininumPriceConfirmations;
     string public productDetailsCid;
 
-    // Mapping of productId => weightage used for priceIndex calculation
-    mapping(string => uint32) public productWeightage;
+    event StableCreated(string country, string currency, address stableAddress);
+    event ProductDetailsUpdated(string productDetailsCid);
+    event ProductBasketUpdated();
+    event AggregationSettingsUpdated(
+        string priceAggregationMethod,
+        uint8 mininumPriceConfirmations
+    );
 
-    // Mapping of productId => price derived from submissions
-    mapping(string => uint32) public prices;
+    constructor(
+        string[] memory _productIds,
+        uint8[] memory _productWeightages,
+        string memory _productDetailsCid,
+        string memory _priceAggregationMethod,
+        uint8 _mininumPriceConfirmations
+    ) {
+        productIds = _productIds;
+        productDetailsCid = _productDetailsCid;
+        priceAggregationMethod = _priceAggregationMethod;
+        mininumPriceConfirmations = _mininumPriceConfirmations;
 
-    // Calculated price index as of lastUpdated
-    uint32 public priceIndex = 0;
+        for (uint16 i = 0; i < _productIds.length; i++) {
+            productBasket[_productIds[i]] = _productWeightages[i];
+        }
 
-    // Currency used for all price submissions in this contract
+        emit ProductDetailsUpdated(productDetailsCid);
+        emit ProductBasketUpdated();
+        emit AggregationSettingsUpdated(
+            priceAggregationMethod,
+            mininumPriceConfirmations
+        );
+    }
+
+    function createStable(
+        string memory _country,
+        string memory _currency,
+        uint32 _startDate,
+        uint8 _countryWeightage
+    ) public onlyOwner {
+        Stable _stable = new Stable(_currency, _country, _startDate);
+
+        countries.push(_country);
+        childContracts[_country] = address(_stable);
+        countryWeightage[_country] = _countryWeightage;
+
+        emit StableCreated(_country, _currency, address(_stable));
+    }
+
+    function addProduct(
+        string memory _productId,
+        uint8 _weightage,
+        string memory _updatedProductDetailsCid
+    ) public onlyOwner {
+        productIds.push(_productId);
+        productBasket[_productId] = _weightage;
+        productDetailsCid = _updatedProductDetailsCid;
+
+        emit ProductDetailsUpdated(productDetailsCid);
+        emit ProductBasketUpdated();
+    }
+
+    function updateBasket(string memory _productId, uint8 _weightage)
+        public
+        onlyOwner
+    {
+        productBasket[_productId] = _weightage;
+        emit ProductBasketUpdated();
+    }
+
+    function updateAggregationSettings(
+        string memory _priceAggregationMethod,
+        uint8 _mininumPriceConfirmations
+    ) public onlyOwner {
+        priceAggregationMethod = _priceAggregationMethod;
+        mininumPriceConfirmations = _mininumPriceConfirmations;
+
+        emit AggregationSettingsUpdated(
+            priceAggregationMethod,
+            mininumPriceConfirmations
+        );
+    }
+
+    function globalPriceIndex() public view returns (uint32) {
+        uint32 weightedSum = 0;
+        for (uint8 i = 0; i < countries.length; i++) {
+            weightedSum += Stable(childContracts[countries[i]]).priceIndex();
+        }
+
+        return uint32(weightedSum / countries.length);
+    }
+}
+
+contract Stable is Ownable {
     string public currency;
     string public country;
-
-    mapping(string => uint32[]) public submittedPrices;
-
-    mapping(string => mapping(uint32 => address[])) public submittedUsers;
-
     uint32 public currentDate;
+    uint16 public priceIndex;
+    mapping(string => uint16) public prices;
 
-    constructor(string memory _currency, string memory _country, uint32 _startDate, string[] memory _productIds, uint32[] memory _weightage, string memory _productDetailsCid) {
-        owner = msg.sender;
+    event PricesUpdated(uint32 date, string[] productIds, uint16[] prices);
+    event PricesSubmitted(string[] productIds, uint16[] prices, string source);
+    event PriceIndexUpdated(uint32 date, uint16 priceIndex);
+
+    constructor(
+        string memory _country,
+        string memory _currency,
+        uint32 _startDate
+    ) {
         country = _country;
         currency = _currency;
         currentDate = _startDate;
-        productIds = _productIds;
-        productDetailsCid = _productDetailsCid;
-
-        require(_weightage.length == _productIds.length, "Should specify weightage for all given products");
-        for (uint32 i = 0; i < _productIds.length; i++) {
-            productWeightage[_productIds[i]] = _weightage[i];
-        }
-
-        emit ProductDetailsUpdated(productDetailsCid);
     }
 
-    function addProduct(string memory _productId, uint32 _weightage, string memory _updatedProductDetailsCid) public {
-        require(msg.sender == owner, "Unauthorized");
+    function submitPrices(
+        uint32 _date,
+        string[] memory _productIds,
+        uint16[] memory _prices,
+        string memory _source
+    ) public {
+        require(_date == currentDate, "Passed date is not current date");
 
-        productIds.push(_productId);
-        productDetailsCid = _updatedProductDetailsCid;
-        productWeightage[_productId] = _weightage;
-
-        emit ProductAdded(_productId, _weightage);
-        emit ProductDetailsUpdated(productDetailsCid);
+        emit PricesSubmitted(_productIds, _prices, _source);
     }
 
-    function updateWeightage(string[] memory _productIds, uint32[] memory _weightage) public {
-        require(msg.sender == owner, "Unauthorized");
-        require(_weightage.length == _productIds.length, "Should specify weightage for all given products");
+    function updatePrices(
+        uint32 _date,
+        string[] memory _productIds,
+        uint16[] memory _prices,
+        uint16 _priceIndex
+    ) public {
+        require(_date == currentDate, "Passed date is not current date");
 
-        for (uint32 i = 0; i < _productIds.length; i++) {
-            productWeightage[_productIds[i]] = _weightage[i];
-        }
-    }
-
-    function submitPrices(uint32 date, string[] memory _productIds, uint32[] memory _prices) public {
-        require(date == currentDate, "Passed date is not current date");
-
-        for (uint32 i = 0; i < _productIds.length; i++) {
-            submittedPrices[_productIds[i]].push(_prices[i]);
-            submittedUsers[_productIds[i]][_prices[i]].push(
-                msg.sender
-            );
-        }
-    }
-
-    mapping(uint32 => uint32) private priceOccurenses;
-    uint32 private mostCommonPrice = 0;
-    uint32 private maxOccurenceCount = 0;
-    address[] public validSubmitters;
-    uint32 private totalValidPrice = 0;
-
-    function calculate() public {
-        for (uint32 i = 0; i < productIds.length; i++) {
-            string memory productId = productIds[i];
-
-            for (uint32 j = 0; j < submittedPrices[productId].length; j++) {
-                uint32 price = submittedPrices[productId][j];
-
-                if (price == 0) {
-                    continue;
-                }
-
-                priceOccurenses[price]++;
-
-                if (priceOccurenses[price] > maxOccurenceCount) {
-                    maxOccurenceCount = priceOccurenses[price];
-                    mostCommonPrice = price;
-                }
-            }
-
-            if (mostCommonPrice != 0) {
-                if (mostCommonPrice != prices[productId]) {
-                    prices[productId] = mostCommonPrice;
-                    emit PriceUpdated(currentDate, productId, mostCommonPrice, maxOccurenceCount);
-                }
-
-                for (uint32 k = 0; k < submittedUsers[productId][mostCommonPrice].length; k++) {
-                    validSubmitters.push(submittedUsers[productId][mostCommonPrice][k]);
-                }
-
-                totalValidPrice += mostCommonPrice;
-            }
-            
-            mostCommonPrice = 0;
-            maxOccurenceCount = 0;
-
-            // Cleanup
-            for (uint32 k = 0; k < submittedPrices[productId].length; k++) {
-                delete submittedPrices[productId][k];
-                delete priceOccurenses[submittedPrices[productId][k]];
-                delete submittedUsers[productId][submittedPrices[productId][k]];
-            }
+        for (uint16 i = 0; i < _productIds.length; i++) {
+            prices[_productIds[i]] = _prices[i];
         }
 
-        // Calculate price index
-        uint32 totalWeightedPrice = 0;
-        uint32 totalWeightage = 0;
-        for (uint32 i = 0; i < productIds.length; i++) {
-            if (prices[productIds[i]] != 0) {
-                totalWeightedPrice += productWeightage[productIds[i]] * prices[productIds[i]];
-                totalWeightage += productWeightage[productIds[i]];
-            }
-        }
-        uint32 _priceIndex = totalWeightedPrice / totalWeightage;
-
-        if (_priceIndex != priceIndex) {
-            priceIndex = _priceIndex;
-            emit PriceIndexUpdated(currentDate, priceIndex);
-        }
-        
-        // Increment date
+        priceIndex = _priceIndex;
         currentDate++;
-
-        // Pick a random submitter as winner
-        address winner;
-        if (validSubmitters.length > 0) {
-          winner = validSubmitters[totalValidPrice % validSubmitters.length];
-        }
-
-        // Reset temp variables
-        totalValidPrice = 0;
     }
 }
