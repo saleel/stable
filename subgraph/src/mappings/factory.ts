@@ -1,7 +1,7 @@
 import { DataSourceContext, ipfs, JSONValue, Value } from '@graphprotocol/graph-ts';
 import { ProductDetailsUpdated, StableCreated } from '../../generated/StableFactory/StableFactory';
 import { Stable } from '../../generated/templates';
-import { Product, Stable as StableEntity } from '../../generated/schema';
+import { Product, ProductBasketItem, Stable as StableEntity } from '../../generated/schema';
 
 
 export function handleStableCreated(event: StableCreated): void {
@@ -13,8 +13,24 @@ export function handleStableCreated(event: StableCreated): void {
   stable.address = event.params.stableAddress.toHex();
   stable.createdAt = event.block.timestamp;
   stable.updatedAt = event.block.timestamp;
-  stable.save();
 
+  for (let i = 0; i < event.params.productIds.length; i++) {
+    const productId = event.params.productIds[i]
+    const basketItemId = stable.id + "-" + productId;
+
+    let basketItem = ProductBasketItem.load(basketItemId);
+
+    if (basketItem == null) {
+      basketItem = new ProductBasketItem(basketItemId);
+      basketItem.productId = productId;
+      basketItem.stable = stable.id;
+    }
+
+    basketItem.weightage = event.params.weightages[i];
+    basketItem.save();
+  }
+
+  stable.save();
 
   let context = new DataSourceContext()
   context.setString('stableId', id);

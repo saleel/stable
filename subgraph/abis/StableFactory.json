@@ -96,6 +96,18 @@
         "internalType": "address",
         "name": "stableAddress",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string[]",
+        "name": "productIds",
+        "type": "string[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8[]",
+        "name": "weightages",
+        "type": "uint8[]"
       }
     ],
     "name": "StableCreated",

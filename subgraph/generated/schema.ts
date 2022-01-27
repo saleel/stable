@@ -96,22 +96,21 @@ export class Product extends Entity {
     }
   }
 
-  get latestPrice(): Array<string> {
+  get latestPrice(): Array<string> | null {
     let value = this.get("latestPrice");
-    return value!.toStringArray();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
   }
 
-  set latestPrice(value: Array<string>) {
-    this.set("latestPrice", Value.fromStringArray(value));
-  }
-
-  get priceHistory(): Array<string> {
-    let value = this.get("priceHistory");
-    return value!.toStringArray();
-  }
-
-  set priceHistory(value: Array<string>) {
-    this.set("priceHistory", Value.fromStringArray(value));
+  set latestPrice(value: Array<string> | null) {
+    if (!value) {
+      this.unset("latestPrice");
+    } else {
+      this.set("latestPrice", Value.fromStringArray(<Array<string>>value));
+    }
   }
 
   get createdAt(): BigInt {
@@ -661,13 +660,21 @@ export class Stable extends Entity {
     this.set("address", Value.fromString(value));
   }
 
-  get latestPriceIndex(): string {
+  get latestPriceIndex(): string | null {
     let value = this.get("latestPriceIndex");
-    return value!.toString();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
   }
 
-  set latestPriceIndex(value: string) {
-    this.set("latestPriceIndex", Value.fromString(value));
+  set latestPriceIndex(value: string | null) {
+    if (!value) {
+      this.unset("latestPriceIndex");
+    } else {
+      this.set("latestPriceIndex", Value.fromString(<string>value));
+    }
   }
 
   get productBasket(): Array<string> {

@@ -96,6 +96,14 @@ export class StableCreated__Params {
   get stableAddress(): Address {
     return this._event.parameters[2].value.toAddress();
   }
+
+  get productIds(): Array<string> {
+    return this._event.parameters[3].value.toStringArray();
+  }
+
+  get weightages(): Array<i32> {
+    return this._event.parameters[4].value.toI32Array();
+  }
 }
 
 export class StableFactory extends ethereum.SmartContract {

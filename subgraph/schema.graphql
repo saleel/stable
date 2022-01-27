@@ -4,7 +4,6 @@ type Product @entity {
   description: String
   category: String
   latestPrice: [LatestPrice!] @derivedFrom(field: "product")
-  priceHistory: [Price!] @derivedFrom(field: "product")
   createdAt: BigInt!
 }
 

@@ -13,7 +13,13 @@ contract StableFactory is Ownable {
     uint8 public mininumPriceConfirmations;
     string public productDetailsCid;
 
-    event StableCreated(string country, string currency, address stableAddress);
+    event StableCreated(
+        string country,
+        string currency,
+        address stableAddress,
+        string[] productIds,
+        uint8[] weightages
+    );
     event ProductDetailsUpdated(string productDetailsCid);
     event AggregationSettingsUpdated(
         string priceAggregationMethod,
@@ -59,7 +65,7 @@ contract StableFactory is Ownable {
         childContracts[_country] = address(_stable);
         countryWeightage[_country] = _countryWeightage;
 
-        emit StableCreated(_country, _currency, address(_stable));
+        emit StableCreated(_country, _currency, address(_stable), _productIds, _productWeightages);
     }
 
     function addProduct(
@@ -130,13 +136,12 @@ contract Stable is Ownable {
         }
 
         _transferOwnership(owner);
-        emit ProductBasketUpdated(_productIds, _productWeightages);
     }
 
-    function updateBasket(string[] memory _productIds, uint8[] memory _weightages)
-        public
-        onlyOwner
-    {
+    function updateBasket(
+        string[] memory _productIds,
+        uint8[] memory _weightages
+    ) public onlyOwner {
         for (uint16 i = 0; i < _productIds.length; i++) {
             productBasket[_productIds[i]] = _weightages[i];
         }

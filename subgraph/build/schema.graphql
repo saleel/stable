@@ -3,8 +3,7 @@ type Product @entity {
   name: String
   description: String
   category: String
-  latestPrice: [LatestPrice!]! @derivedFrom(field: "product")
-  priceHistory: [Price!]! @derivedFrom(field: "product")
+  latestPrice: [LatestPrice!] @derivedFrom(field: "product")
   createdAt: BigInt!
 }
 
@@ -63,7 +62,7 @@ type Stable @entity {
   country: String!
   currency: String!
   address: String!
-  latestPriceIndex: PriceIndex! @derivedFrom(field: "stable")
+  latestPriceIndex: PriceIndex @derivedFrom(field: "stable")
   productBasket: [ProductBasketItem!]! @derivedFrom(field: "stable")
   createdAt: BigInt!
   updatedAt: BigInt!

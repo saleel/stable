@@ -20,15 +20,12 @@ export function handleProductBasketUpdated(event: ProductBasketUpdated): void {
     if (basketItem == null) {
       basketItem = new ProductBasketItem(basketItemId);
       basketItem.productId = productId;
-
-      stable.productBasket.push(basketItem.id);
+      basketItem.stable = stable.id;
     }
 
     basketItem.weightage = event.params.weightages[i];
     basketItem.save();
   }
-
-  stable.save();
 }
 
 export function handlePricesSubmitted(event: PricesSubmitted): void {
@@ -105,9 +102,6 @@ export function handlePricesUpdated(event: PricesUpdated): void {
     latestPrice.price = price.id;
     latestPrice.product = productId;
     latestPrice.save();
-
-    product.priceHistory.push(price.id);
-    product.save();
   }
 }
 
@@ -119,9 +113,9 @@ export function handlePriceIndexUpdated(event: PriceIndexUpdated): void {
   if (stable == null) {
     return;
   }
-  
+
   const priceIndex = new PriceIndex(event.params.date.toString());
-  
+
   priceIndex.stable = stable.id;
   priceIndex.value = event.params.priceIndex;
   priceIndex.date = event.params.date.toString();

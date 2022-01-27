@@ -23,7 +23,7 @@ dataSources:
         - name: StableFactory
           file: StableFactory/abis/StableFactory.json
       eventHandlers:
-        - event: StableCreated(string,string,address)
+        - event: StableCreated(string,string,address,string[],uint8[])
           handler: handleStableCreated
         - event: ProductDetailsUpdated(string)
           handler: handleProductDetailsUpdated
