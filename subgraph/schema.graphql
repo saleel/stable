@@ -1,43 +1,70 @@
-type Stable @entity {
+type Product @entity {
   id: ID!
+  name: String
+  description: String
+  category: String
+  latestPrice: [LatestPrice!] @derivedFrom(field: "product")
+  priceHistory: [Price!] @derivedFrom(field: "product")
+  createdAt: BigInt!
+}
+
+type PriceSubmission @entity {
+  id: ID!
+  stable: Stable!
   country: String!
   currency: String!
-  address: String!
+  price: Int!
+  product: Product!
+  source: String!
+  createdBy: String!
+  createdAt: BigInt!
+}
+
+type Price @entity {
+  id: ID!
+  stable: Stable!
+  country: String!
+  currency: String!
+  product: Product!
+  value: Int!
+  confirmations: Int!
+  date: String!
+  createdBy: BigInt!
+  createdAt: BigInt!
 }
 
 type LatestPrice @entity {
   id: ID!
   country: String!
   currency: String!
-  price: BigInt!
   product: Product!
-  updatedAt: String!
-}
-
-type Product @entity {
-  id: ID!
-  latestPrice: [LatestPrice!]! @derivedFrom(field: "product")
-  priceHistory: [PriceHistory!]! @derivedFrom(field: "product")
-  updatedAt: String!
-  name: String
-  description: String
-  category: String
+  price: Price!
+  updatedAt: BigInt!
 }
 
 type PriceIndex @entity {
   id: ID!
+  stable: Stable!
   country: String!
   currency: String!
-  index: BigInt!
+  value: Int!
   date: String!
 }
 
-type PriceHistory @entity {
+type ProductBasketItem @entity {
+  id: ID!
+  stable: Stable!
+  productId: String!
+  weightage: Int!
+}
+
+type Stable @entity {
   id: ID!
   country: String!
   currency: String!
-  product: Product!
-  date: String!
-  price: BigInt!
-  confirmations: BigInt!
+  address: String!
+  latestPriceIndex: PriceIndex @derivedFrom(field: "stable")
+  productBasket: [ProductBasketItem!]! @derivedFrom(field: "stable")
+  createdAt: BigInt!
+  updatedAt: BigInt!
 }

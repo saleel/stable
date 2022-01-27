@@ -25,6 +25,8 @@ dataSources:
       eventHandlers:
         - event: StableCreated(string,string,address)
           handler: handleStableCreated
+        - event: ProductDetailsUpdated(string)
+          handler: handleProductDetailsUpdated
 
 templates:
   - name: Stable
@@ -43,9 +45,11 @@ templates:
         - name: Stable
           file: ./abis/Stable.json
       eventHandlers:
-        - event: PriceUpdated(uint32,string,uint32,uint32)
-          handler: handlePriceUpdated
-        - event: PriceIndexUpdated(uint32,uint32)
+        - event: PricesSubmitted(string[],uint16[],string)
+          handler: handlePricesSubmitted
+        - event: PricesUpdated(uint32,string[],uint16[],uint16[])
+          handler: handlePricesUpdated
+        - event: PriceIndexUpdated(uint32,uint16)
           handler: handlePriceIndexUpdated
-        - event: ProductDetailsUpdated(string)
-          handler: handleProductDetailsUpdated
+        - event: ProductBasketUpdated(string[],uint8[])
+          handler: handleProductBasketUpdated

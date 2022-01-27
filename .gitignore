@@ -30,3 +30,6 @@ cache
 artifacts
 
 typechain-types
+
+subgraph/data
+subgraph/build

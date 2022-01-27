@@ -128,15 +128,12 @@ describe("Stable", () => {
   });
 
   it.only("should update product basket correctly", async () => {
-    // expect(await usStable.productBasket("ZC")).to.equal(1);
-    // expect(await usStable.productBasket("KE")).to.equal(1);
+    expect(await usStable.productBasket("ZC")).to.equal(1);
+    expect(await usStable.productBasket("KE")).to.equal(1);
 
-    expect(await usStable.updateBasket("ZC", 4)).to.emit(
-      ukStable,
-      "ProductBasketUpdated"
-    );
-
-    await usStable.updateBasket("KE", 3);
+    expect(await usStable.updateBasket(["ZC", "KE"], [4, 3]))
+      .to.emit(ukStable, "ProductBasketUpdated")
+      .withArgs(["ZC", "KE"], [4, 3]);
 
     expect(await usStable.productBasket("ZC")).to.equal(4);
     expect(await usStable.productBasket("KE")).to.equal(3);
@@ -169,5 +166,15 @@ describe("Stable", () => {
     expect(await ukStable.prices("ZW")).to.equal(2350);
     expect(await ukStable.prices("BTC")).to.equal(36000);
     expect(await ukStable.priceIndex()).to.equal(15000);
+  });
+
+  it("should emit events on price and price index update", async () => {
+    expect(
+      await ukStable.updatePrices(20220101, ["ZW", "BTC"], [2350, 36000], 15000)
+    )
+      .to.emit(ukStable, "PricesUpdated")
+      .withArgs(20220101, ["ZW", "BTC"], [2350, 36000])
+      .to.emit(ukStable, "PriceIndexUpdated")
+      .withArgs(20220101, 15000);
   });
 });

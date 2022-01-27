@@ -103,10 +103,15 @@ contract Stable is Ownable {
     mapping(string => uint8) public productBasket; // Mapping of productId -> weightage
     mapping(string => uint16) public prices;
 
-    event PricesUpdated(uint32 date, string[] productIds, uint16[] prices);
     event PricesSubmitted(string[] productIds, uint16[] prices, string source);
+    event PricesUpdated(
+        uint32 date,
+        string[] productIds,
+        uint16[] prices,
+        uint16[] confirmations
+    );
     event PriceIndexUpdated(uint32 date, uint16 priceIndex);
-    event ProductBasketUpdated();
+    event ProductBasketUpdated(string[] productIds, uint8[] weightages);
 
     constructor(
         address owner,
@@ -125,15 +130,18 @@ contract Stable is Ownable {
         }
 
         _transferOwnership(owner);
-        emit ProductBasketUpdated();
+        emit ProductBasketUpdated(_productIds, _productWeightages);
     }
 
-    function updateBasket(string memory _productId, uint8 _weightage)
+    function updateBasket(string[] memory _productIds, uint8[] memory _weightages)
         public
         onlyOwner
     {
-        productBasket[_productId] = _weightage;
-        emit ProductBasketUpdated();
+        for (uint16 i = 0; i < _productIds.length; i++) {
+            productBasket[_productIds[i]] = _weightages[i];
+        }
+
+        emit ProductBasketUpdated(_productIds, _weightages);
     }
 
     function submitPrices(
@@ -151,9 +159,18 @@ contract Stable is Ownable {
         uint32 _date,
         string[] memory _productIds,
         uint16[] memory _prices,
+        uint16[] memory _confirmations,
         uint16 _priceIndex
     ) public {
         require(_date == currentDate, "Passed date is not current date");
+        require(
+            _productIds.length == _prices.length,
+            "Should have price for all passed products"
+        );
+        require(
+            _productIds.length == _confirmations.length,
+            "Should have confirmations for all passed products"
+        );
 
         for (uint16 i = 0; i < _productIds.length; i++) {
             prices[_productIds[i]] = _prices[i];
@@ -161,5 +178,8 @@ contract Stable is Ownable {
 
         priceIndex = _priceIndex;
         currentDate++;
+
+        emit PricesUpdated(_date, _productIds, _prices, _confirmations);
+        emit PriceIndexUpdated(_date, _priceIndex);
     }
 }
