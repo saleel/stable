@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const START_DATE = 20220101;
+const now = Math.round(new Date().getTime() / 1000);
 
 describe("StableFactory", () => {
   /** @type{import("../typechain-types/StableFactory").StableFactory} */
@@ -31,7 +31,7 @@ describe("StableFactory", () => {
     await stableFactory.createStable(
       "US",
       "USD",
-      START_DATE,
+      now,
       10,
       ["ZC", "ZW", "ZR", "ZS", "KE"],
       [1, 1, 1, 1, 1]
@@ -99,7 +99,7 @@ describe("Stable", () => {
     await stableFactory.createStable(
       "UK",
       "GBP",
-      20220101,
+      now,
       10,
       ["BTC", "ETH"],
       [1, 1]
@@ -131,8 +131,8 @@ describe("Stable", () => {
     expect(await usStable.productBasket("ZC")).to.equal(1);
     expect(await usStable.productBasket("KE")).to.equal(1);
 
-    expect(await usStable.updateBasket(["ZC", "KE"], [4, 3]))
-      .to.emit(ukStable, "ProductBasketUpdated")
+    await expect(usStable.updateBasket(["ZC", "KE"], [4, 3]))
+      .to.emit(usStable, "ProductBasketUpdated")
       .withArgs(["ZC", "KE"], [4, 3]);
 
     expect(await usStable.productBasket("ZC")).to.equal(4);
@@ -142,39 +142,63 @@ describe("Stable", () => {
   });
 
   it("should be able to add price for one product", async () => {
-    expect(await ukStable.submitPrices(20220101, ["ZW"], [2350], "manual"))
+    const roundId = await ukStable.previousAggregationRoundId();
+    await expect(ukStable.submitPrices(["ZW"], [2350], "manual"))
       .to.emit(ukStable, "PricesSubmitted")
-      .withArgs(["ZW"], [2350], "manual");
+      .withArgs(roundId, ["ZW"], [2350], "manual");
   });
 
   it("should be able to add price for multiple products", async () => {
-    expect(
-      await ukStable.submitPrices(
-        20220101,
-        ["ZW", "BTC"],
-        [2350, 36000],
-        "manual"
-      )
-    )
+    const roundId = await ukStable.previousAggregationRoundId();
+    await expect(ukStable.submitPrices(["ZW", "BTC"], [2350, 36000], "manual"))
       .to.emit(ukStable, "PricesSubmitted")
-      .withArgs(["ZW", "BTC"], [2350, 36000], "manual");
+      .withArgs(roundId, ["ZW", "BTC"], [2350, 36000], "manual");
   });
 
   it("should be able to update price and price index", async () => {
-    await ukStable.updatePrices(20220101, ["ZW", "BTC"], [2350, 36000], 15000);
+    const roundId = await ukStable.previousAggregationRoundId();
+    await ukStable.updatePrices(
+      roundId,
+      ["ZW", "BTC"],
+      [2350, 36000],
+      [2, 2],
+      15000
+    );
 
     expect(await ukStable.prices("ZW")).to.equal(2350);
     expect(await ukStable.prices("BTC")).to.equal(36000);
     expect(await ukStable.priceIndex()).to.equal(15000);
   });
 
-  it("should emit events on price and price index update", async () => {
-    expect(
-      await ukStable.updatePrices(20220101, ["ZW", "BTC"], [2350, 36000], 15000)
+  it("should emit PricesUpdated on price and price index update", async () => {
+    const roundId = await ukStable.previousAggregationRoundId();
+
+    await expect(
+      ukStable.updatePrices(
+        roundId,
+        ["ZW", "BTC"],
+        [2350, 36000],
+        [10, 5],
+        15000
+      )
     )
       .to.emit(ukStable, "PricesUpdated")
-      .withArgs(20220101, ["ZW", "BTC"], [2350, 36000])
+      .withArgs(roundId, ["ZW", "BTC"], [2350, 36000], [10, 5]);
+  });
+
+  it("should emit PriceIndexUpdated on price and price index update", async () => {
+    const roundId = await ukStable.previousAggregationRoundId();
+
+    await expect(
+      ukStable.updatePrices(
+        roundId,
+        ["ZW", "BTC"],
+        [2350, 36000],
+        [10, 5],
+        15000
+      )
+    )
       .to.emit(ukStable, "PriceIndexUpdated")
-      .withArgs(20220101, 15000);
+      .withArgs(roundId, 15000);
   });
 });

@@ -47,7 +47,7 @@ contract StableFactory is Ownable {
     function createStable(
         string memory _country,
         string memory _currency,
-        uint32 _startDate,
+        uint32 _initialAggregationRoundId,
         uint8 _countryWeightage,
         string[] memory _productIds,
         uint8[] memory _productWeightages
@@ -56,7 +56,7 @@ contract StableFactory is Ownable {
             owner(),
             _country,
             _currency,
-            _startDate,
+            _initialAggregationRoundId,
             _productIds,
             _productWeightages
         );
@@ -65,7 +65,13 @@ contract StableFactory is Ownable {
         childContracts[_country] = address(_stable);
         countryWeightage[_country] = _countryWeightage;
 
-        emit StableCreated(_country, _currency, address(_stable), _productIds, _productWeightages);
+        emit StableCreated(
+            _country,
+            _currency,
+            address(_stable),
+            _productIds,
+            _productWeightages
+        );
     }
 
     function addProduct(
@@ -104,32 +110,37 @@ contract StableFactory is Ownable {
 contract Stable is Ownable {
     string public currency;
     string public country;
-    uint32 public currentDate;
     uint16 public priceIndex;
     mapping(string => uint8) public productBasket; // Mapping of productId -> weightage
     mapping(string => uint16) public prices;
+    uint32 public aggregationRoundId; // Start date (timestamp) of the aggregation round
+    uint32 public previousAggregationRoundId;
+    uint32 public aggregationDuration = 1 days; // Hardcoded for now
 
-    event PricesSubmitted(string[] productIds, uint16[] prices, string source);
+    event ProductBasketUpdated(string[] productIds, uint8[] weightages);
+    event PricesSubmitted(uint32 aggregationRoundId, string[] productIds, uint16[] prices, string source);
     event PricesUpdated(
-        uint32 date,
+        uint32 aggregationRoundId,
         string[] productIds,
         uint16[] prices,
         uint16[] confirmations
     );
-    event PriceIndexUpdated(uint32 date, uint16 priceIndex);
-    event ProductBasketUpdated(string[] productIds, uint8[] weightages);
+    event PriceIndexUpdated(uint32 aggregationRoundId, uint16 priceIndex);
+    event AggregationRoundStarted(uint32 aggregationRoundId);
+    event AggregationRoundCompleted(uint32 aggregationRoundId);
 
     constructor(
         address owner,
         string memory _country,
         string memory _currency,
-        uint32 _startDate,
+        uint32 _initialAggregationRoundId,
         string[] memory _productIds,
         uint8[] memory _productWeightages
     ) {
         country = _country;
         currency = _currency;
-        currentDate = _startDate;
+        aggregationRoundId = _initialAggregationRoundId;
+        previousAggregationRoundId = _initialAggregationRoundId;
 
         for (uint16 i = 0; i < _productIds.length; i++) {
             productBasket[_productIds[i]] = _productWeightages[i];
@@ -150,24 +161,34 @@ contract Stable is Ownable {
     }
 
     function submitPrices(
-        uint32 _date,
         string[] memory _productIds,
         uint16[] memory _prices,
         string memory _source
     ) public {
-        require(_date == currentDate, "Passed date is not current date");
+        emit PricesSubmitted(aggregationRoundId, _productIds, _prices, _source);
+    }
 
-        emit PricesSubmitted(_productIds, _prices, _source);
+    function checkAggregationStatus() public {
+        if (block.timestamp > (aggregationRoundId + aggregationDuration)) {
+            previousAggregationRoundId = aggregationRoundId;
+            aggregationRoundId += aggregationDuration; // aggregationRoundId is the timestamp when round start
+
+            emit AggregationRoundCompleted(previousAggregationRoundId);
+            emit AggregationRoundStarted(aggregationRoundId);
+        }
     }
 
     function updatePrices(
-        uint32 _date,
+        uint32 _aggregationRoundId,
         string[] memory _productIds,
         uint16[] memory _prices,
         uint16[] memory _confirmations,
         uint16 _priceIndex
     ) public {
-        require(_date == currentDate, "Passed date is not current date");
+        require(
+            _aggregationRoundId == previousAggregationRoundId,
+            "Invalid aggregation round or already updated"
+        );
         require(
             _productIds.length == _prices.length,
             "Should have price for all passed products"
@@ -178,13 +199,14 @@ contract Stable is Ownable {
         );
 
         for (uint16 i = 0; i < _productIds.length; i++) {
+            // TODO: Check min confirmations
             prices[_productIds[i]] = _prices[i];
         }
 
         priceIndex = _priceIndex;
-        currentDate++;
+        previousAggregationRoundId = 0; // Unset this variable so no further update can be done for this aggregation round
 
-        emit PricesUpdated(_date, _productIds, _prices, _confirmations);
-        emit PriceIndexUpdated(_date, _priceIndex);
+        emit PricesUpdated(_aggregationRoundId, _productIds, _prices, _confirmations);
+        emit PriceIndexUpdated(_aggregationRoundId, _priceIndex);
     }
 }
