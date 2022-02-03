@@ -1,12 +1,14 @@
 import axios from "axios";
 import { ethers } from "ethers";
+import stableFactoryContractAbi from "./abis/StableFactory.json";
 import stableContractAbi from "./abis/Stable.json";
 
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_ETH_PROVIDER || window.ethereum);
-const stableContract = new ethers.Contract(process.env.REACT_APP_STABLE_CONTRACT_ADDRESS, stableContractAbi, provider);
+const stableFactorContract = new ethers.Contract(process.env.REACT_APP_STABLE_CONTRACT_ADDRESS, stableFactoryContractAbi, provider);
 const signer = provider.getSigner();
-const stableContractWithSigner = stableContract.connect(signer);
+const stableFactorContractWithSigner = stableFactorContract.connect(signer);
+console.log(stableFactorContract)
 
 const axiosGraphql = axios.create({
   baseURL: process.env.REACT_APP_GRAPHQL_ENDPOINT,
@@ -19,57 +21,75 @@ axiosGraphql.interceptors.response.use(function (response) {
   return Promise.reject(error);
 });
 
+async function getClientForChildContract(country) {
+  const address = await stableFactorContractWithSigner.childContracts(country);
+  const stableContract = new ethers.Contract(address, stableContractAbi, provider);
+  return stableContract.connect(signer);
+}
 
-export async function getProducts() {
+export async function getProducts(country = 'US') {
+  // await stableContractWithSigner.calculate();
+  // const stableContract = await getClientForChildContract(country);
+
+  // console.log(stableContract)
+
   // Get product details from IPFS (Graph don't allow IPFS queries now)
-  const ipfsCid = await stableContract.productDetailsCid();
-  const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}/products.json`;
-  const { data: productsDetails } = await axios.get(ipfsUrl);
+  // const ipfsCid = await stableContract.productDetailsCid();
+  // const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}`;
+  // const { data: productsDetails } = await axios.get(ipfsUrl);
 
   // Get latest price from graph
-  const { products: productsWithPrices } = await axiosGraphql({
+  const { products } = await axiosGraphql({
     data: {
       query: `
-    {
-      products {
-        id
-        price
-        lastUpdated
+      {
+        products {
+          id
+          name
+          category
+          description
+          latestPrice(where: { country: "${country}" }) {
+            value
+          }
+        }
       }
-    }
   `
     }
   });
 
-  const products = productsDetails.map(pd => {
-    const productWithPrice = productsWithPrices.find(p => p.id === pd.id);
+  // const products = productsDetails.map(pd => {
+  //   const productWithPrice = productsWithPrices.find(p => p.id === pd.id);
 
-    if (productWithPrice) {
-      return { ...pd, ...productWithPrice };
-    }
+  //   if (productWithPrice) {
+  //     return { ...pd, ...productWithPrice };
+  //   }
 
-    return pd;
-  })
+  //   return pd;
+  // })
 
   return products;
 }
 
 
-export async function getProduct(id) {
+export async function getProduct(id, country = 'US') {
+  // const stableContract = await getClientForChildContract(country)
+
   // Get product details from IPFS (Graph don't allow IPFS queries now)
-  const ipfsCid = await stableContract.productDetailsCid();
-  const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}/products.json`;
-  const { data: productsDetails } = await axios.get(ipfsUrl);
+  // const ipfsCid = await stableContract.productDetailsCid();
+  // const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}/products.json`;
+  // const { data: productsDetails } = await axios.get(ipfsUrl);
 
   // Get latest price from graph
-  const { products: productsWithPrices } = await axiosGraphql({
+  const { product } = await axiosGraphql({
     data: {
       query: `
     {
-      products {
+      product(id: "${id}") {
         id
-        price
-        lastUpdated
+        latestPrice {
+          id
+          price
+        }
         priceHistory {
           id
           price
@@ -82,19 +102,24 @@ export async function getProduct(id) {
     }
   });
 
-  const product = productsDetails.find(p => p.id === id);
-  const productWithPrice = productsWithPrices.find(p => p.id === id);
-
-  return { ...product, ...productWithPrice };
+ return product;
 }
 
-export function getContractCurrentDate() {
+export async function getContractCurrentDate(country = 'US') {
+  const stableContract = await getClientForChildContract(country)
   return stableContract.currentDate();
 }
 
-export async function addPrices(date, priceMapping) {
+export async function addPrices(date, priceMapping, country = 'US') {
+  const stableContract = await getClientForChildContract(country)
+
   const productsIds = Object.keys(priceMapping);
   const prices = Object.keys(priceMapping).map(k => priceMapping[k].price);
 
-  await stableContractWithSigner.submitPrices(date, productsIds, prices);
+  await stableContract.submitPrices(date, productsIds, prices);
+}
+
+export async function getPriceIndex(country = 'US') {
+  const stableContract = await getClientForChildContract(country)
+  return stableContract.priceIndex();
 }

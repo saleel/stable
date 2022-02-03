@@ -32,7 +32,7 @@ function ProductPage() {
         </div>
 
         <div className='tag is-light is-large'>
-          <h2 className='title is-3'>${product.price}</h2>
+          <h2 className='title is-3'>${product?.latestPrice?.[0]?.price}</h2>
         </div>
       </div>
       <hr />

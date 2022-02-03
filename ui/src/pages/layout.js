@@ -5,7 +5,7 @@ function Layout() {
   return (
     <div>
 
-      <nav className="navbar mb-5 px-5" role="navigation" aria-label="main navigation">
+      {/* <nav className="navbar mb-5 px-5" role="navigation" aria-label="main navigation">
         <div className="navbar-brand">
           <Link className='navbar-item' to="/">
             <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28" />
@@ -25,7 +25,7 @@ function Layout() {
             <Link className='navbar-item' to="/">Exchange</Link>
           </div>
         </div>
-      </nav>
+      </nav> */}
 
       <div className='container'>
         <Outlet />
