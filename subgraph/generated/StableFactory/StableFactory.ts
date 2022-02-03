@@ -404,7 +404,7 @@ export class CreateStableCall__Inputs {
     return this._call.inputValues[1].value.toString();
   }
 
-  get _startDate(): BigInt {
+  get _initialAggregationRoundId(): BigInt {
     return this._call.inputValues[2].value.toBigInt();
   }
 

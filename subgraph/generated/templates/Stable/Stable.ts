@@ -10,6 +10,42 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
+export class AggregationRoundCompleted extends ethereum.Event {
+  get params(): AggregationRoundCompleted__Params {
+    return new AggregationRoundCompleted__Params(this);
+  }
+}
+
+export class AggregationRoundCompleted__Params {
+  _event: AggregationRoundCompleted;
+
+  constructor(event: AggregationRoundCompleted) {
+    this._event = event;
+  }
+
+  get aggregationRoundId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+}
+
+export class AggregationRoundStarted extends ethereum.Event {
+  get params(): AggregationRoundStarted__Params {
+    return new AggregationRoundStarted__Params(this);
+  }
+}
+
+export class AggregationRoundStarted__Params {
+  _event: AggregationRoundStarted;
+
+  constructor(event: AggregationRoundStarted) {
+    this._event = event;
+  }
+
+  get aggregationRoundId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+}
+
 export class OwnershipTransferred extends ethereum.Event {
   get params(): OwnershipTransferred__Params {
     return new OwnershipTransferred__Params(this);
@@ -45,7 +81,7 @@ export class PriceIndexUpdated__Params {
     this._event = event;
   }
 
-  get date(): BigInt {
+  get aggregationRoundId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
@@ -67,16 +103,20 @@ export class PricesSubmitted__Params {
     this._event = event;
   }
 
+  get aggregationRoundId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
   get productIds(): Array<string> {
-    return this._event.parameters[0].value.toStringArray();
+    return this._event.parameters[1].value.toStringArray();
   }
 
   get prices(): Array<i32> {
-    return this._event.parameters[1].value.toI32Array();
+    return this._event.parameters[2].value.toI32Array();
   }
 
   get source(): string {
-    return this._event.parameters[2].value.toString();
+    return this._event.parameters[3].value.toString();
   }
 }
 
@@ -93,7 +133,7 @@ export class PricesUpdated__Params {
     this._event = event;
   }
 
-  get date(): BigInt {
+  get aggregationRoundId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
@@ -103,10 +143,6 @@ export class PricesUpdated__Params {
 
   get prices(): Array<i32> {
     return this._event.parameters[2].value.toI32Array();
-  }
-
-  get confirmations(): Array<i32> {
-    return this._event.parameters[3].value.toI32Array();
   }
 }
 
@@ -135,6 +171,52 @@ export class ProductBasketUpdated__Params {
 export class Stable extends ethereum.SmartContract {
   static bind(address: Address): Stable {
     return new Stable("Stable", address);
+  }
+
+  aggregationDuration(): BigInt {
+    let result = super.call(
+      "aggregationDuration",
+      "aggregationDuration():(uint32)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_aggregationDuration(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "aggregationDuration",
+      "aggregationDuration():(uint32)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  aggregationRoundId(): BigInt {
+    let result = super.call(
+      "aggregationRoundId",
+      "aggregationRoundId():(uint32)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_aggregationRoundId(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "aggregationRoundId",
+      "aggregationRoundId():(uint32)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   country(): string {
@@ -167,21 +249,6 @@ export class Stable extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toString());
   }
 
-  currentDate(): BigInt {
-    let result = super.call("currentDate", "currentDate():(uint32)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_currentDate(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("currentDate", "currentDate():(uint32)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   owner(): Address {
     let result = super.call("owner", "owner():(address)", []);
 
@@ -195,6 +262,29 @@ export class Stable extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  previousAggregationRoundId(): BigInt {
+    let result = super.call(
+      "previousAggregationRoundId",
+      "previousAggregationRoundId():(uint32)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_previousAggregationRoundId(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "previousAggregationRoundId",
+      "previousAggregationRoundId():(uint32)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   priceIndex(): i32 {
@@ -282,7 +372,7 @@ export class ConstructorCall__Inputs {
     return this._call.inputValues[2].value.toString();
   }
 
-  get _startDate(): BigInt {
+  get _initialAggregationRoundId(): BigInt {
     return this._call.inputValues[3].value.toBigInt();
   }
 
@@ -346,20 +436,16 @@ export class SubmitPricesCall__Inputs {
     this._call = call;
   }
 
-  get _date(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
   get _productIds(): Array<string> {
-    return this._call.inputValues[1].value.toStringArray();
+    return this._call.inputValues[0].value.toStringArray();
   }
 
   get _prices(): Array<i32> {
-    return this._call.inputValues[2].value.toI32Array();
+    return this._call.inputValues[1].value.toI32Array();
   }
 
   get _source(): string {
-    return this._call.inputValues[3].value.toString();
+    return this._call.inputValues[2].value.toString();
   }
 }
 
@@ -397,6 +483,32 @@ export class TransferOwnershipCall__Outputs {
   _call: TransferOwnershipCall;
 
   constructor(call: TransferOwnershipCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateAggregationRoundCall extends ethereum.Call {
+  get inputs(): UpdateAggregationRoundCall__Inputs {
+    return new UpdateAggregationRoundCall__Inputs(this);
+  }
+
+  get outputs(): UpdateAggregationRoundCall__Outputs {
+    return new UpdateAggregationRoundCall__Outputs(this);
+  }
+}
+
+export class UpdateAggregationRoundCall__Inputs {
+  _call: UpdateAggregationRoundCall;
+
+  constructor(call: UpdateAggregationRoundCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateAggregationRoundCall__Outputs {
+  _call: UpdateAggregationRoundCall;
+
+  constructor(call: UpdateAggregationRoundCall) {
     this._call = call;
   }
 }
@@ -452,7 +564,7 @@ export class UpdatePricesCall__Inputs {
     this._call = call;
   }
 
-  get _date(): BigInt {
+  get _aggregationRoundId(): BigInt {
     return this._call.inputValues[0].value.toBigInt();
   }
 
@@ -464,12 +576,8 @@ export class UpdatePricesCall__Inputs {
     return this._call.inputValues[2].value.toI32Array();
   }
 
-  get _confirmations(): Array<i32> {
-    return this._call.inputValues[3].value.toI32Array();
-  }
-
   get _priceIndex(): i32 {
-    return this._call.inputValues[4].value.toI32();
+    return this._call.inputValues[3].value.toI32();
   }
 }
 

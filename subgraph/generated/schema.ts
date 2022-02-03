@@ -134,8 +134,10 @@ export class PriceSubmission extends Entity {
     this.set("price", Value.fromI32(0));
     this.set("product", Value.fromString(""));
     this.set("source", Value.fromString(""));
+    this.set("aggregationRound", Value.fromString(""));
     this.set("createdBy", Value.fromString(""));
     this.set("createdAt", Value.fromBigInt(BigInt.zero()));
+    this.set("updatedAt", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -218,6 +220,15 @@ export class PriceSubmission extends Entity {
     this.set("source", Value.fromString(value));
   }
 
+  get aggregationRound(): string {
+    let value = this.get("aggregationRound");
+    return value!.toString();
+  }
+
+  set aggregationRound(value: string) {
+    this.set("aggregationRound", Value.fromString(value));
+  }
+
   get createdBy(): string {
     let value = this.get("createdBy");
     return value!.toString();
@@ -235,6 +246,15 @@ export class PriceSubmission extends Entity {
   set createdAt(value: BigInt) {
     this.set("createdAt", Value.fromBigInt(value));
   }
+
+  get updatedAt(): BigInt {
+    let value = this.get("updatedAt");
+    return value!.toBigInt();
+  }
+
+  set updatedAt(value: BigInt) {
+    this.set("updatedAt", Value.fromBigInt(value));
+  }
 }
 
 export class Price extends Entity {
@@ -247,10 +267,8 @@ export class Price extends Entity {
     this.set("currency", Value.fromString(""));
     this.set("product", Value.fromString(""));
     this.set("value", Value.fromI32(0));
-    this.set("confirmations", Value.fromI32(0));
-    this.set("date", Value.fromString(""));
-    this.set("createdBy", Value.fromBigInt(BigInt.zero()));
     this.set("createdAt", Value.fromBigInt(BigInt.zero()));
+    this.set("createdBy", Value.fromString(""));
   }
 
   save(): void {
@@ -324,33 +342,6 @@ export class Price extends Entity {
     this.set("value", Value.fromI32(value));
   }
 
-  get confirmations(): i32 {
-    let value = this.get("confirmations");
-    return value!.toI32();
-  }
-
-  set confirmations(value: i32) {
-    this.set("confirmations", Value.fromI32(value));
-  }
-
-  get date(): string {
-    let value = this.get("date");
-    return value!.toString();
-  }
-
-  set date(value: string) {
-    this.set("date", Value.fromString(value));
-  }
-
-  get createdBy(): BigInt {
-    let value = this.get("createdBy");
-    return value!.toBigInt();
-  }
-
-  set createdBy(value: BigInt) {
-    this.set("createdBy", Value.fromBigInt(value));
-  }
-
   get createdAt(): BigInt {
     let value = this.get("createdAt");
     return value!.toBigInt();
@@ -359,6 +350,15 @@ export class Price extends Entity {
   set createdAt(value: BigInt) {
     this.set("createdAt", Value.fromBigInt(value));
   }
+
+  get createdBy(): string {
+    let value = this.get("createdBy");
+    return value!.toString();
+  }
+
+  set createdBy(value: string) {
+    this.set("createdBy", Value.fromString(value));
+  }
 }
 
 export class LatestPrice extends Entity {
@@ -366,10 +366,11 @@ export class LatestPrice extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
+    this.set("stable", Value.fromString(""));
     this.set("country", Value.fromString(""));
     this.set("currency", Value.fromString(""));
     this.set("product", Value.fromString(""));
-    this.set("price", Value.fromString(""));
+    this.set("value", Value.fromI32(0));
     this.set("updatedAt", Value.fromBigInt(BigInt.zero()));
   }
 
@@ -399,6 +400,15 @@ export class LatestPrice extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get stable(): string {
+    let value = this.get("stable");
+    return value!.toString();
+  }
+
+  set stable(value: string) {
+    this.set("stable", Value.fromString(value));
+  }
+
   get country(): string {
     let value = this.get("country");
     return value!.toString();
@@ -426,13 +436,13 @@ export class LatestPrice extends Entity {
     this.set("product", Value.fromString(value));
   }
 
-  get price(): string {
-    let value = this.get("price");
-    return value!.toString();
+  get value(): i32 {
+    let value = this.get("value");
+    return value!.toI32();
   }
 
-  set price(value: string) {
-    this.set("price", Value.fromString(value));
+  set value(value: i32) {
+    this.set("value", Value.fromI32(value));
   }
 
   get updatedAt(): BigInt {
@@ -454,7 +464,7 @@ export class PriceIndex extends Entity {
     this.set("country", Value.fromString(""));
     this.set("currency", Value.fromString(""));
     this.set("value", Value.fromI32(0));
-    this.set("date", Value.fromString(""));
+    this.set("updatedAt", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -519,13 +529,13 @@ export class PriceIndex extends Entity {
     this.set("value", Value.fromI32(value));
   }
 
-  get date(): string {
-    let value = this.get("date");
-    return value!.toString();
+  get updatedAt(): BigInt {
+    let value = this.get("updatedAt");
+    return value!.toBigInt();
   }
 
-  set date(value: string) {
-    this.set("date", Value.fromString(value));
+  set updatedAt(value: BigInt) {
+    this.set("updatedAt", Value.fromBigInt(value));
   }
 }
 
@@ -592,6 +602,106 @@ export class ProductBasketItem extends Entity {
 
   set weightage(value: i32) {
     this.set("weightage", Value.fromI32(value));
+  }
+}
+
+export class AggregationRound extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("stable", Value.fromString(""));
+    this.set("startTime", Value.fromBigInt(BigInt.zero()));
+    this.set("endTime", Value.fromBigInt(BigInt.zero()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save AggregationRound entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save AggregationRound entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("AggregationRound", id.toString(), this);
+    }
+  }
+
+  static load(id: string): AggregationRound | null {
+    return changetype<AggregationRound | null>(
+      store.get("AggregationRound", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get stable(): string {
+    let value = this.get("stable");
+    return value!.toString();
+  }
+
+  set stable(value: string) {
+    this.set("stable", Value.fromString(value));
+  }
+
+  get startTime(): BigInt {
+    let value = this.get("startTime");
+    return value!.toBigInt();
+  }
+
+  set startTime(value: BigInt) {
+    this.set("startTime", Value.fromBigInt(value));
+  }
+
+  get endTime(): BigInt {
+    let value = this.get("endTime");
+    return value!.toBigInt();
+  }
+
+  set endTime(value: BigInt) {
+    this.set("endTime", Value.fromBigInt(value));
+  }
+
+  get status(): string | null {
+    let value = this.get("status");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set status(value: string | null) {
+    if (!value) {
+      this.unset("status");
+    } else {
+      this.set("status", Value.fromString(<string>value));
+    }
+  }
+
+  get priceSubmissions(): Array<string> | null {
+    let value = this.get("priceSubmissions");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set priceSubmissions(value: Array<string> | null) {
+    if (!value) {
+      this.unset("priceSubmissions");
+    } else {
+      this.set("priceSubmissions", Value.fromStringArray(<Array<string>>value));
+    }
   }
 }
 

@@ -45,11 +45,15 @@ templates:
         - name: Stable
           file: ./abis/Stable.json
       eventHandlers:
-        - event: PricesSubmitted(string[],uint16[],string)
+        - event: PricesSubmitted(uint32,string[],uint16[],string)
           handler: handlePricesSubmitted
-        - event: PricesUpdated(uint32,string[],uint16[],uint16[])
+        - event: PricesUpdated(uint32,string[],uint16[])
           handler: handlePricesUpdated
         - event: PriceIndexUpdated(uint32,uint16)
           handler: handlePriceIndexUpdated
         - event: ProductBasketUpdated(string[],uint8[])
           handler: handleProductBasketUpdated
+        - event: AggregationRoundStarted(uint32)
+          handler: handleAggregationRoundStarted
+        - event: AggregationRoundCompleted(uint32)
+          handler: handleAggregationRoundCompleted
