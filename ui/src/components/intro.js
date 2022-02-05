@@ -5,7 +5,7 @@ function Intro(props) {
       <h4 className="subtitle">
         Inflate is a decentralized, crowd-sourced, price tracker dashboard.
         <br/>
-        Tracks price history of multiple assets in various categories across multiple countries.
+        Tracks price changes of daily-use products, assets, in various categories across multiple countries.
       </h4>
     </div>
   )

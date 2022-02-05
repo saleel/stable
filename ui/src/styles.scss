@@ -3,12 +3,21 @@
 $widthAmounts: (1, 2.5, 3, 4, 5, 6, 7);
 $widthUnit: "%";
 
-$gray100: rgba(240, 240, 240);
-$gray200: rgba(225, 225, 225);
+$gray100: #F7FAFC;
+$gray200: #EDF2F7;
 $gray300: rgba(215, 215, 215);
 $gray400: rgba(225, 225, 225);
 $gray500: rgba(230, 230, 230);
 $gray600: rgba(235, 235, 235);
+
+$red300: #F56565;
+$green400: #48BB78;
+
+:root {
+  --gray-200: #EDF2F7;
+  --red-300: #F56565;
+  --green-300: #48BB78;
+}
 
 body {
   color: #021E2D;
@@ -26,7 +35,7 @@ body {
 .home-page {
   display: flex;
   flex-direction: column;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding-bottom: 2rem;
 }
@@ -56,17 +65,24 @@ body {
   overflow: hidden;
   align-items: center;
   margin: 0.5rem 0;
-  height: 4rem;
+  height: 4.25rem;
   padding: 0 0.5rem;
   background-color: $gray100;
+  border: 2px solid $gray200;
 
   &:hover {
     background-color: $gray200;
-    cursor: pointer;
+    cursor: pointer !important;
+  }
+
+  .column {
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 4rem;
   }
 }
 
-.pli-id {
+.pli-id, .pli-currency, .pli-label {
   font-size: 10px;
   font-weight: 600;
   opacity: 0.6;
@@ -74,8 +90,68 @@ body {
 }
 
 .pli-name {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 500;
+  line-height: 1.75rem;
+}
+
+.pli-price {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+}
+
+.pli-image {
+  display: flex;
+  justify-content: flex-start;
+  align-self: center;
+  
+  img {
+    height: 40px;
+    width: auto;
+  }
+}
+
+.pli-change {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 500;
+}
+
+.pli-change-up {
+  color: $red300;
+}
+
+.pli-change-down {
+  color: $green400;
+}
+
+.pli-change-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.pli-icon-up {
+  width: 0; 
+  height: 0; 
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  margin-right: 3px;
+  
+  border-bottom: 5px solid $red300;
+}
+
+.pli-icon-down {
+  width: 0; 
+  height: 0; 
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  margin-right: 3px;
+  
+  border-top: 5px solid $green400;
 }
 
 .add-price-form {

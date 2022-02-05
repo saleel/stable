@@ -22,7 +22,7 @@ function HomePage() {
       <Intro />
 
       <div className="metrics">
-        <MetricBox label="Global Price Index" value="133" />
+        <MetricBox style={{ backgroundColor: '#C6F6D5'}} label="Global Price Index" value="133" />
         <MetricBox label="USA Price Index" value="75" />
         <MetricBox label="SZR" value="75" unit="USD" />
         <MetricBox label="USA Price Index" value="75" />

@@ -1,25 +1,20 @@
-import axios from "axios";
-import { ethers } from "ethers";
-import stableFactoryContractAbi from "./abis/StableFactory.json";
-import stableContractAbi from "./abis/Stable.json";
-
+import axios from 'axios';
+import { ethers } from 'ethers';
+import stableFactoryContractAbi from './abis/StableFactory.json';
+import stableContractAbi from './abis/Stable.json';
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_ETH_PROVIDER || window.ethereum);
 const stableFactorContract = new ethers.Contract(process.env.REACT_APP_STABLE_CONTRACT_ADDRESS, stableFactoryContractAbi, provider);
 const signer = provider.getSigner();
 const stableFactorContractWithSigner = stableFactorContract.connect(signer);
-console.log(stableFactorContract)
+console.log(stableFactorContract);
 
 const axiosGraphql = axios.create({
   baseURL: process.env.REACT_APP_GRAPHQL_ENDPOINT,
   method: 'POST',
 });
 
-axiosGraphql.interceptors.response.use(function (response) {
-  return response.data.data;
-}, function (error) {
-  return Promise.reject(error);
-});
+axiosGraphql.interceptors.response.use((response) => response.data.data, (error) => Promise.reject(error));
 
 async function getClientForChildContract(country) {
   const address = await stableFactorContractWithSigner.childContracts(country);
@@ -48,13 +43,15 @@ export async function getProducts(country = 'US') {
           name
           category
           description
-          latestPrice(where: { country: "${country}" }) {
+          prices(where: { country: "${country}" }, first: 7, orderBy: createdAt, orderDirection: desc) {
             value
+            createdAt
+            currency
           }
         }
       }
-  `
-    }
+      `,
+    },
   });
 
   // const products = productsDetails.map(pd => {
@@ -69,7 +66,6 @@ export async function getProducts(country = 'US') {
 
   return products;
 }
-
 
 export async function getProduct(id, country = 'US') {
   // const stableContract = await getClientForChildContract(country)
@@ -98,28 +94,28 @@ export async function getProduct(id, country = 'US') {
         }
       }
     }
-  `
-    }
+  `,
+    },
   });
 
- return product;
+  return product;
 }
 
 export async function getContractCurrentDate(country = 'US') {
-  const stableContract = await getClientForChildContract(country)
+  const stableContract = await getClientForChildContract(country);
   return stableContract.currentDate();
 }
 
 export async function addPrices(date, priceMapping, country = 'US') {
-  const stableContract = await getClientForChildContract(country)
+  const stableContract = await getClientForChildContract(country);
 
   const productsIds = Object.keys(priceMapping);
-  const prices = Object.keys(priceMapping).map(k => priceMapping[k].price);
+  const prices = Object.keys(priceMapping).map((k) => priceMapping[k].price);
 
   await stableContract.submitPrices(date, productsIds, prices);
 }
 
 export async function getPriceIndex(country = 'US') {
-  const stableContract = await getClientForChildContract(country)
+  const stableContract = await getClientForChildContract(country);
   return stableContract.priceIndex();
 }
