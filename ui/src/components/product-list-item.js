@@ -1,5 +1,6 @@
 import React from 'react';
-import { Line, LineChart, ResponsiveContainer } from 'recharts';
+import { Line, LineChart } from 'recharts';
+import { calculatePriceChange } from '../utils';
 
 function ProductListItem(props) {
   const { product, onClick } = props;
@@ -13,12 +14,7 @@ function ProductListItem(props) {
   const currentPrice = todaysPrice.value !== undefined ? (todaysPrice.value / 100).toFixed(2) : '-';
   const currency = prices[0]?.currency ?? '';
 
-  console.log(prices);
-
-  let priceChange24 = '';
-  if (todaysPrice.value && yesterdaysPrice.value) {
-    priceChange24 = (((todaysPrice.value / yesterdaysPrice.value) - 1) * 100).toFixed(1);
-  }
+  const priceChange24 = calculatePriceChange(yesterdaysPrice, todaysPrice);
 
   let priceTrendColor = 'var(--gray-200)';
   if (oldestPrice.value < todaysPrice.value) {
@@ -41,7 +37,7 @@ function ProductListItem(props) {
           }}
         />
       </div>
-      <div className="column">
+      <div className="column is-5">
         <div className="pli-name">{product.name}</div>
         <div className="pli-id">
           {product.id}
@@ -49,7 +45,7 @@ function ProductListItem(props) {
           {product.description}
         </div>
       </div>
-      <div className="column is-2">
+      <div className="column is-3">
         <div className="pli-price">
           {currentPrice}
         </div>

@@ -1,5 +1,50 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "string[]",
+        "name": "_productIds",
+        "type": "string[]"
+      },
+      {
+        "internalType": "string",
+        "name": "_productDetailsCid",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_priceAggregationMethod",
+        "type": "string"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_mininumPriceConfirmations",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "priceAggregationMethod",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "mininumPriceConfirmations",
+        "type": "uint8"
+      }
+    ],
+    "name": "AggregationSettingsUpdated",
+    "type": "event"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -24,6 +69,19 @@
       {
         "indexed": false,
         "internalType": "string",
+        "name": "productDetailsCid",
+        "type": "string"
+      }
+    ],
+    "name": "ProductDetailsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
         "name": "country",
         "type": "string"
       },
@@ -38,10 +96,40 @@
         "internalType": "address",
         "name": "stableAddress",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string[]",
+        "name": "productIds",
+        "type": "string[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8[]",
+        "name": "weightages",
+        "type": "uint8[]"
       }
     ],
     "name": "StableCreated",
     "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_productId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_updatedProductDetailsCid",
+        "type": "string"
+      }
+    ],
+    "name": "addProduct",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -65,6 +153,44 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "countries",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "countryWeightage",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_country",
         "type": "string"
@@ -76,8 +202,13 @@
       },
       {
         "internalType": "uint32",
-        "name": "_startDate",
+        "name": "_initialAggregationRoundId",
         "type": "uint32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_countryWeightage",
+        "type": "uint8"
       },
       {
         "internalType": "string[]",
@@ -85,25 +216,40 @@
         "type": "string[]"
       },
       {
-        "internalType": "uint32[]",
-        "name": "_weightage",
-        "type": "uint32[]"
-      },
-      {
-        "internalType": "string",
-        "name": "_productDetailsCid",
-        "type": "string"
+        "internalType": "uint8[]",
+        "name": "_productWeightages",
+        "type": "uint8[]"
       }
     ],
     "name": "createStable",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "globalPriceIndex",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "uint32",
         "name": "",
-        "type": "address"
+        "type": "uint32"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "mininumPriceConfirmations",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -114,6 +260,51 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "priceAggregationMethod",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "productDetailsCid",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "productIds",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -135,6 +326,24 @@
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_priceAggregationMethod",
+        "type": "string"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_mininumPriceConfirmations",
+        "type": "uint8"
+      }
+    ],
+    "name": "updateAggregationSettings",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

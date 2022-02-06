@@ -7,7 +7,6 @@ const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_ETH_
 const stableFactorContract = new ethers.Contract(process.env.REACT_APP_STABLE_CONTRACT_ADDRESS, stableFactoryContractAbi, provider);
 const signer = provider.getSigner();
 const stableFactorContractWithSigner = stableFactorContract.connect(signer);
-console.log(stableFactorContract);
 
 const axiosGraphql = axios.create({
   baseURL: process.env.REACT_APP_GRAPHQL_ENDPOINT,
@@ -22,18 +21,7 @@ async function getClientForChildContract(country) {
   return stableContract.connect(signer);
 }
 
-export async function getProducts(country = 'US') {
-  // await stableContractWithSigner.calculate();
-  // const stableContract = await getClientForChildContract(country);
-
-  // console.log(stableContract)
-
-  // Get product details from IPFS (Graph don't allow IPFS queries now)
-  // const ipfsCid = await stableContract.productDetailsCid();
-  // const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}`;
-  // const { data: productsDetails } = await axios.get(ipfsUrl);
-
-  // Get latest price from graph
+export async function getProducts(country) {
   const { products } = await axiosGraphql({
     data: {
       query: `
@@ -54,46 +42,28 @@ export async function getProducts(country = 'US') {
     },
   });
 
-  // const products = productsDetails.map(pd => {
-  //   const productWithPrice = productsWithPrices.find(p => p.id === pd.id);
-
-  //   if (productWithPrice) {
-  //     return { ...pd, ...productWithPrice };
-  //   }
-
-  //   return pd;
-  // })
-
   return products;
 }
 
-export async function getProduct(id, country = 'US') {
-  // const stableContract = await getClientForChildContract(country)
-
-  // Get product details from IPFS (Graph don't allow IPFS queries now)
-  // const ipfsCid = await stableContract.productDetailsCid();
-  // const ipfsUrl = `https://ipfs.io/ipfs/${ipfsCid}/products.json`;
-  // const { data: productsDetails } = await axios.get(ipfsUrl);
-
-  // Get latest price from graph
+export async function getProduct(id) {
   const { product } = await axiosGraphql({
     data: {
       query: `
-    {
-      product(id: "${id}") {
-        id
-        latestPrice {
+      {
+        product(id: "${id}") {
           id
-          price
-        }
-        priceHistory {
-          id
-          price
-          date
-          confirmations
+          name
+          category
+          description
+          prices(orderBy: createdAt, orderDirection: desc) {
+            id
+            value
+            createdAt
+            currency
+            country
+          }
         }
       }
-    }
   `,
     },
   });
@@ -101,21 +71,48 @@ export async function getProduct(id, country = 'US') {
   return product;
 }
 
-export async function getContractCurrentDate(country = 'US') {
+export async function getPriceIndex(country) {
+  const { priceIndexes } = await axiosGraphql({
+    data: {
+      query: `
+    {
+      priceIndexes(where: { country: "${country}" }, first: 1, orderBy:updatedAt, orderDirection:desc) {
+        value
+      }
+    }
+  `,
+    },
+  });
+
+  return priceIndexes[0]?.value;
+}
+
+export async function getGlobalPriceIndex() {
+  const { globalPriceIndexes } = await axiosGraphql({
+    data: {
+      query: `
+    {
+      globalPriceIndexes(first: 1, orderBy:createdAt, orderDirection:desc) {
+        value
+      }
+    }
+  `,
+    },
+  });
+
+  return globalPriceIndexes[0]?.value;
+}
+
+export async function getContractCurrentDate(country) {
   const stableContract = await getClientForChildContract(country);
   return stableContract.currentDate();
 }
 
-export async function addPrices(date, priceMapping, country = 'US') {
+export async function addPrices(date, priceMapping, country) {
   const stableContract = await getClientForChildContract(country);
 
   const productsIds = Object.keys(priceMapping);
   const prices = Object.keys(priceMapping).map((k) => priceMapping[k].price);
 
   await stableContract.submitPrices(date, productsIds, prices);
-}
-
-export async function getPriceIndex(country = 'US') {
-  const stableContract = await getClientForChildContract(country);
-  return stableContract.priceIndex();
 }

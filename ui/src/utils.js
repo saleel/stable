@@ -6,11 +6,14 @@ export function contractDateToJsDate(integerDate) {
 }
 
 export function formatContractDate(integerDate) {
-  if (Number.isNaN(integerDate)) {
-    return '';
+  console.log(integerDate)
+  return format(new Date(integerDate * 1000), 'MMM dd');
+}
+
+export function calculatePriceChange(oldPrice, newPrice) {
+  if (newPrice?.value && oldPrice?.value) {
+    return (((newPrice.value / oldPrice.value) - 1) * 100).toFixed(1);
   }
 
-  const jsDate = contractDateToJsDate(integerDate);
-
-  return format(jsDate, "MMM dd");
+  return 0;
 }

@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/client": "^3.5.8",
     "axios": "^0.24.0",
     "bulma": "^0.9.3",
     "date-fns": "^2.28.0",
     "ethers": "^5.5.3",
+    "graphql": "^16.3.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-router": "^6.2.1",
     "react-router-dom": "^6.2.1",
     "react-scripts": "5.0.0",
     "recharts": "^2.1.8",
@@ -21,11 +24,20 @@
   },
   "eslintConfig": {
     "extends": [
-      "airbnb",
-      "react-app"
+      "react-app",
+      "airbnb"
     ],
     "rules": {
-      "react/jsx-filename-extension": [0]
+      "react/jsx-filename-extension": [
+        0
+      ],
+      "max-len": [
+        1,
+        {
+          "code": 200
+        }
+      ],
+      "react/react-in-jsx-scope": [0]
     }
   },
   "browserslist": {
