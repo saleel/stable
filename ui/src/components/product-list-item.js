@@ -1,6 +1,7 @@
 import React from 'react';
 import { Line, LineChart } from 'recharts';
 import { calculatePriceChange } from '../utils';
+import ProductImage from './product-image';
 
 function ProductListItem(props) {
   const { product, onClick } = props;
@@ -27,15 +28,7 @@ function ProductListItem(props) {
   return (
     <div className="product-list-item columns" onClick={onClick}>
       <div className="column is-1 pli-image">
-        <img
-          src={`/assets/${product.id}.png`}
-          alt={product.name}
-          onError={function onError(e) {
-            if (e.target.src !== '/assets/default-product.png') {
-              e.target.src = '/assets/default-product.png';
-            }
-          }}
-        />
+        <ProductImage product={product} />
       </div>
       <div className="column is-5">
         <div className="pli-name">{product.name}</div>

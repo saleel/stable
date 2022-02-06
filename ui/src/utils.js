@@ -6,8 +6,11 @@ export function contractDateToJsDate(integerDate) {
 }
 
 export function formatContractDate(integerDate) {
-  console.log(integerDate)
   return format(new Date(integerDate * 1000), 'MMM dd');
+}
+
+export function formatContractDateWithYear(integerDate) {
+  return format(new Date(integerDate * 1000), 'MMM dd, yyyy');
 }
 
 export function calculatePriceChange(oldPrice, newPrice) {

@@ -103,6 +103,26 @@ export async function getGlobalPriceIndex() {
   return globalPriceIndexes[0]?.value;
 }
 
+export async function getPriceSubmissions() {
+  const { priceSubmissions } = await axiosGraphql({
+    data: {
+      query: `
+    {
+      priceSubmissions(where: { country: "US", product: "APPLE" }) {
+        price
+        currency
+        createdBy
+        createdAt
+      }
+    }
+  `,
+    },
+  });
+
+  return priceSubmissions;
+}
+
+
 export async function getContractCurrentDate(country) {
   const stableContract = await getClientForChildContract(country);
   return stableContract.currentDate();
@@ -116,3 +136,16 @@ export async function addPrices(date, priceMapping, country) {
 
   await stableContract.submitPrices(date, productsIds, prices);
 }
+
+// TODO: Fetch from some API
+const USDConversionRates = {
+  USD: 1,
+  GBP: 0.74,
+  INR: 0.013,
+};
+
+export function getUSDRate(currency, amount) {
+  return USDConversionRates[currency] * amount;
+}
+
+

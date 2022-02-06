@@ -17,7 +17,7 @@ function Table(props) {
         {data.map((d) => (
           <tr key={d.id}>
             {Object.entries(fields).map(([fieldName, resolver]) => (
-              <td>{typeof resolver === 'function' ? resolver(d[fieldName], d) : d[fieldName] }</td>
+              <td key={fieldName}>{typeof resolver === 'function' ? resolver(d[fieldName], d) : d[fieldName] }</td>
             ))}
           </tr>
         ))}

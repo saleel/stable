@@ -4,7 +4,7 @@ import {
 
 function Chart(props) {
   const {
-    data, xAxisKey, yAxisKey, xAxisFormatter, yAxisFormatter
+    data, xAxisKey, yAxisKeys, xAxisFormatter, yAxisFormatter,
   } = props;
 
   return (
@@ -23,19 +23,24 @@ function Chart(props) {
         </defs>
         <XAxis dataKey={xAxisKey} tickFormatter={xAxisFormatter} />
         <YAxis tickFormatter={yAxisFormatter} />
-        <Tooltip />
+        <Tooltip labelFormatter={xAxisFormatter} formatter={yAxisFormatter} />
 
-        <Line
-          type="monotone"
-          unit="$"
-          strokeLinecap="round"
-          strokeWidth={2}
-          dataKey={yAxisKey}
-          stroke="var(--blue-500)"
-          dot={false}
-          legendType="none"
-        />
-        <Area type="monotone" dataKey={yAxisKey} tooltipType="none" fillOpacity={1} fill="url(#colorUv)" />
+        {yAxisKeys.map((yAxisKey) => (
+          <Line
+            key={yAxisKey}
+            type="monotone"
+            strokeLinecap="round"
+            strokeWidth={2}
+            dataKey={yAxisKey}
+            stroke="var(--blue-500)"
+            dot={false}
+            legendType="none"
+          />
+        ))}
+
+        {/* {yAxisKeys.map((yAxisKey) => (
+          <Area key={yAxisKey} type="monotone" dataKey={yAxisKey} tooltipType="none" fillOpacity={1} fill="url(#colorUv)" />
+        ))} */}
       </ComposedChart>
     </ResponsiveContainer>
   );

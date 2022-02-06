@@ -1,13 +1,14 @@
-import { format } from 'date-fns';
 import React from 'react';
 import { useParams } from 'react-router';
 import MetricBox from '../components/metric-box';
 import Chart from '../components/chart';
-import { getProduct } from '../data';
+import { getProduct, getUSDRate, getPriceSubmissions } from '../data';
 import useLocalStorage from '../hooks/use-local-storage';
 import usePromise from '../hooks/use-promise';
-import { calculatePriceChange, formatContractDate } from '../utils';
+import { calculatePriceChange, formatContractDate, formatContractDateWithYear } from '../utils';
 import Table from '../components/table';
+import { Countries } from '../constants';
+import ProductImage from '../components/product-image';
 
 function ProductPage() {
   const { productId } = useParams();
@@ -16,6 +17,12 @@ function ProductPage() {
   const [product] = usePromise(() => getProduct(productId), {
     dependencies: [productId],
     conditions: [productId],
+  });
+
+  const [priceSubmissions] = usePromise(() => getPriceSubmissions(productId, country), {
+    dependencies: [productId],
+    conditions: [productId],
+    defaultValue: [],
   });
 
   if (!product) {
@@ -28,15 +35,102 @@ function ProductPage() {
   const priceChange7D = calculatePriceChange(pricesForCurrentCountry[6], latestPrice);
   const priceChange30D = calculatePriceChange(pricesForCurrentCountry[29], latestPrice);
 
-  console.log(country, latestPrice);
+  function priceHistoryView() {
+    return (
+      <>
+        <div className="price-history-chart mb-3">
+          <Chart
+            data={[...pricesForCurrentCountry].reverse()}
+            xAxisKey="createdAt"
+            yAxisKeys={['value']}
+            xAxisFormatter={formatContractDate}
+            yAxisFormatter={(d) => (d / 100).toFixed(2)}
+          />
+        </div>
+
+        <Table
+          data={pricesForCurrentCountry}
+          fields={{
+            createdAt: (value) => formatContractDateWithYear(value),
+            value: (value, row) => `${row.currency} ${value}`,
+          }}
+          labels={{
+            createdAt: 'Date',
+            value: 'Price',
+          }}
+        />
+
+      </>
+    );
+  }
+
+  function priceComparisonView() {
+    const pricesPerCountries = product.prices.map((p) => ({
+      ...p,
+      [p.country]: +(p.value / 100).toFixed(2),
+      usdEquivalent: +getUSDRate(p.currency, p.value / 100).toFixed(2),
+    })).reverse();
+
+    const latestPricesForCountry = Object.keys(Countries).map((c) => pricesPerCountries.find((p) => p.country === c));
+
+    return (
+      <>
+        <div className="price-history-chart mb-3">
+          <Chart
+            data={pricesPerCountries}
+            xAxisKey="createdAt"
+            yAxisKeys={Object.keys(Countries)}
+            xAxisFormatter={formatContractDate}
+            yAxisFormatter={(d) => d.toFixed(2)}
+          />
+        </div>
+
+        <Table
+          data={latestPricesForCountry}
+          fields={{
+            country: (value) => Countries[value],
+            value: (_, row) => `${row.currency} ${row[row.country]}`,
+            usdEquivalent: (value) => `${value}`,
+          }}
+          labels={{
+            country: 'Country',
+            value: 'Price',
+            usdEquivalent: 'USD Equivalent',
+          }}
+        />
+
+      </>
+    );
+  }
+
+  function priceSubmissionsView() {
+    return (
+      <Table
+        data={priceSubmissions}
+        fields={{
+          createdAt: (value) => formatContractDateWithYear(value),
+          price: (value, row) => `${row.currency} ${(value / 100).toFixed(2)}`,
+          createdBy: (value) => `${value.slice(0, 5)}...${value.slice(-5)}`,
+        }}
+        labels={{
+          createdAt: 'Date',
+          createdBy: 'User',
+          value: 'Price',
+        }}
+      />
+    );
+  }
 
   return (
     <div className="container product-page">
 
-      <div>
-        <h1 className="title">{product.name}</h1>
-        <div className="subtitle is-6">
-          {product.description}
+      <div className="is-flex" justifyContent>
+        <ProductImage product={product} width={60} />
+        <div className="pl-3">
+          <h1 className="title">{product.name}</h1>
+          <div className="subtitle is-6">
+            {product.description}
+          </div>
         </div>
       </div>
 
@@ -81,35 +175,10 @@ function ProductPage() {
         )}
       </div>
 
-      {pricesForCurrentCountry && (
-        <>
-          <h3 className="title is-5">Price history</h3>
+      {pricesForCurrentCountry && priceHistoryView()}
+      {pricesForCurrentCountry && priceComparisonView()}
 
-          <div className="price-history-chart mb-3">
-            <Chart
-              data={[...pricesForCurrentCountry].reverse()}
-              xAxisKey="createdAt"
-              yAxisKey="value"
-              xAxisFormatter={formatContractDate}
-              yAxisFormatter={(d) => (d / 100).toFixed(2)}
-            />
-          </div>
-
-          <Table
-            data={pricesForCurrentCountry}
-            fields={{
-              createdAt: (value) => formatContractDate(value),
-              value: (value, row) => `${row.currency} ${value}`,
-            }}
-            labels={{
-              createdAt: 'Date',
-              value: 'Price',
-            }}
-          />
-
-        </>
-      )}
-
+      {priceSubmissionsView()}
     </div>
   );
 }
