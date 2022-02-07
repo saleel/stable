@@ -127,7 +127,7 @@ describe("Stable", () => {
     );
   });
 
-  it.only("should update product basket correctly", async () => {
+  it("should update product basket correctly", async () => {
     expect(await usStable.productBasket("ZC")).to.equal(1);
     expect(await usStable.productBasket("KE")).to.equal(1);
 
@@ -157,13 +157,7 @@ describe("Stable", () => {
 
   it("should be able to update price and price index", async () => {
     const roundId = await ukStable.previousAggregationRoundId();
-    await ukStable.updatePrices(
-      roundId,
-      ["ZW", "BTC"],
-      [2350, 36000],
-      [2, 2],
-      15000
-    );
+    await ukStable.updatePrices(roundId, ["ZW", "BTC"], [2350, 36000], 15000);
 
     expect(await ukStable.prices("ZW")).to.equal(2350);
     expect(await ukStable.prices("BTC")).to.equal(36000);
@@ -174,29 +168,17 @@ describe("Stable", () => {
     const roundId = await ukStable.previousAggregationRoundId();
 
     await expect(
-      ukStable.updatePrices(
-        roundId,
-        ["ZW", "BTC"],
-        [2350, 36000],
-        [10, 5],
-        15000
-      )
+      ukStable.updatePrices(roundId, ["ZW", "BTC"], [2350, 36000], 15000)
     )
       .to.emit(ukStable, "PricesUpdated")
-      .withArgs(roundId, ["ZW", "BTC"], [2350, 36000], [10, 5]);
+      .withArgs(roundId, ["ZW", "BTC"], [2350, 36000]);
   });
 
   it("should emit PriceIndexUpdated on price and price index update", async () => {
     const roundId = await ukStable.previousAggregationRoundId();
 
     await expect(
-      ukStable.updatePrices(
-        roundId,
-        ["ZW", "BTC"],
-        [2350, 36000],
-        [10, 5],
-        15000
-      )
+      ukStable.updatePrices(roundId, ["ZW", "BTC"], [2350, 36000], 15000)
     )
       .to.emit(ukStable, "PriceIndexUpdated")
       .withArgs(roundId, 15000);

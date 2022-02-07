@@ -122,8 +122,7 @@ contract Stable is Ownable {
     event PricesUpdated(
         uint32 aggregationRoundId,
         string[] productIds,
-        uint16[] prices,
-        uint16[] confirmations
+        uint16[] prices
     );
     event PriceIndexUpdated(uint32 aggregationRoundId, uint16 priceIndex);
     event AggregationRoundStarted(uint32 aggregationRoundId);
@@ -146,6 +145,7 @@ contract Stable is Ownable {
             productBasket[_productIds[i]] = _productWeightages[i];
         }
 
+        emit AggregationRoundStarted(_initialAggregationRoundId);
         _transferOwnership(owner);
     }
 
@@ -168,7 +168,7 @@ contract Stable is Ownable {
         emit PricesSubmitted(aggregationRoundId, _productIds, _prices, _source);
     }
 
-    function checkAggregationStatus() public {
+    function updateAggregationRound() public {
         if (block.timestamp > (aggregationRoundId + aggregationDuration)) {
             previousAggregationRoundId = aggregationRoundId;
             aggregationRoundId += aggregationDuration; // aggregationRoundId is the timestamp when round start
@@ -182,7 +182,6 @@ contract Stable is Ownable {
         uint32 _aggregationRoundId,
         string[] memory _productIds,
         uint16[] memory _prices,
-        uint16[] memory _confirmations,
         uint16 _priceIndex
     ) public {
         require(
@@ -193,20 +192,16 @@ contract Stable is Ownable {
             _productIds.length == _prices.length,
             "Should have price for all passed products"
         );
-        require(
-            _productIds.length == _confirmations.length,
-            "Should have confirmations for all passed products"
-        );
 
         for (uint16 i = 0; i < _productIds.length; i++) {
-            // TODO: Check min confirmations
+            // TODO: Optionally verify min confirmations
             prices[_productIds[i]] = _prices[i];
         }
 
         priceIndex = _priceIndex;
         previousAggregationRoundId = 0; // Unset this variable so no further update can be done for this aggregation round
 
-        emit PricesUpdated(_aggregationRoundId, _productIds, _prices, _confirmations);
+        emit PricesUpdated(_aggregationRoundId, _productIds, _prices);
         emit PriceIndexUpdated(_aggregationRoundId, _priceIndex);
     }
 }

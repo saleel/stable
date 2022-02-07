@@ -21,7 +21,7 @@ async function main() {
   // If this script is run directly using `node` you may want to call compile
   // manually to make sure everything is compiled
   // await hre.run('compile');
-  await hre.network.provider.send("hardhat_reset");
+  // await hre.network.provider.send("hardhat_reset");
 
   const productDetailsJson = await axios.get(
     `https://ipfs.io/ipfs/${productDetailsCid}`
@@ -45,7 +45,7 @@ async function main() {
   await stableFactory.createStable(
     "US",
     "USD",
-    20220101,
+    Math.round(new Date("2022-01-01T00:00-06:00").getTime() / 1000),
     10,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1)
@@ -54,7 +54,7 @@ async function main() {
   await stableFactory.createStable(
     "UK",
     "GBP",
-    20220101,
+    Math.round(new Date("2022-01-01T00:00+00:00").getTime() / 1000),
     10,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1)
@@ -63,7 +63,7 @@ async function main() {
   await stableFactory.createStable(
     "IN",
     "INR",
-    20220101,
+    Math.round(new Date("2022-01-01T00:00+05:30").getTime() / 1000),
     10,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1)
@@ -83,6 +83,16 @@ async function main() {
 
   fs.writeFileSync(
     path.join(__dirname, "../../subgraph/abis/Stable.json"),
+    JSON.stringify(stableArtifact.abi, null, 2)
+  );
+
+  fs.writeFileSync(
+    path.join(__dirname, "../../aggregator/abis/StableFactory.json"),
+    JSON.stringify(stableFactoryArtifact.abi, null, 2)
+  );
+
+  fs.writeFileSync(
+    path.join(__dirname, "../../aggregator/abis/Stable.json"),
     JSON.stringify(stableArtifact.abi, null, 2)
   );
 
