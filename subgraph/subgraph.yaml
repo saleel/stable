@@ -44,6 +44,8 @@ templates:
       abis:
         - name: Stable
           file: ./abis/Stable.json
+        - name: StableFactory
+          file: ./abis/StableFactory.json
       eventHandlers:
         - event: PricesSubmitted(uint32,string[],uint16[],string)
           handler: handlePricesSubmitted

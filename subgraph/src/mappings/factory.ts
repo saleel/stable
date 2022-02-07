@@ -11,8 +11,8 @@ export function handleStableCreated(event: StableCreated): void {
   stable.country = event.params.country;
   stable.currency = event.params.currency;
   stable.address = event.params.stableAddress.toHex();
-  stable.createdAt = event.block.timestamp;
-  stable.updatedAt = event.block.timestamp;
+  stable.createdAt = event.block.timestamp.toI32();
+  stable.updatedAt = event.block.timestamp.toI32();
 
   for (let i = 0; i < event.params.productIds.length; i++) {
     const productId = event.params.productIds[i]
@@ -34,6 +34,7 @@ export function handleStableCreated(event: StableCreated): void {
 
   let context = new DataSourceContext()
   context.setString('stableId', id);
+  context.setString('stableFactoryAddress', event.address.toHex());
   Stable.createWithContext(event.params.stableAddress, context);
 }
 
