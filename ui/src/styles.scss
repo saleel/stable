@@ -3,8 +3,8 @@
 :root {
   --gray-100: #f7fafc;
   --gray-200: #edf2f7;
-  --gray-300: #CBD5E0;
-  --gray-400: #A0AEC0;
+  --gray-300: #cbd5e0;
+  --gray-400: #a0aec0;
   --red-200: #feb2b2;
   --red-300: #f56565;
   --green-200: #9ae6b4;
@@ -13,6 +13,8 @@
   --blue-400: #4299e1;
   --blue-500: #3182ce;
   --blue-600: #2b6cb0;
+  --blue-700: #2C5282;
+  --yellow-500: #D69E2E;
 }
 
 body {
@@ -278,6 +280,33 @@ body {
         padding: 0.75rem 0.8rem;
         border-bottom: 1px solid var(--gray-300);
         opacity: 0.9;
+      }
+    }
+  }
+}
+
+.product-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--gray-300);
+  margin-bottom: 2rem;
+
+  li {
+    margin-bottom: -2px;
+
+    a {
+      display: block;
+      font-size: 1.25rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem 0.5rem 0;
+      margin-right: 1rem;
+      color: var(--text-color);
+    }
+
+    &.active {
+      a {
+        font-weight: 600;
+        border-bottom: 2px solid var(--blue-400);
+        color: var(--blue-700);
       }
     }
   }

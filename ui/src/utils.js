@@ -20,3 +20,7 @@ export function calculatePriceChange(oldPrice, newPrice) {
 
   return 0;
 }
+
+export function formatPrice(priceValue) {
+  return +Number(priceValue / 100).toFixed(2);
+}

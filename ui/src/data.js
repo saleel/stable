@@ -103,12 +103,13 @@ export async function getGlobalPriceIndex() {
   return globalPriceIndexes[0]?.value;
 }
 
-export async function getPriceSubmissions() {
+export async function getPriceSubmissions({ country, productId }) {
   const { priceSubmissions } = await axiosGraphql({
     data: {
       query: `
     {
-      priceSubmissions(where: { country: "US", product: "APPLE" }) {
+      priceSubmissions(where: { country: "${country}", product: "${productId}" }) {
+        transactionId
         price
         currency
         createdBy
@@ -147,5 +148,3 @@ const USDConversionRates = {
 export function getUSDRate(currency, amount) {
   return USDConversionRates[currency] * amount;
 }
-
-

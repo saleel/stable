@@ -1,6 +1,6 @@
 function Table(props) {
   const {
-    data = [], fields = {}, labels={}
+    data = [], fields = {}, labels = {},
   } = props;
 
   return (
@@ -14,11 +14,23 @@ function Table(props) {
       </thead>
 
       <tbody>
-        {data.map((d) => (
-          <tr key={d.id}>
-            {Object.entries(fields).map(([fieldName, resolver]) => (
-              <td key={fieldName}>{typeof resolver === 'function' ? resolver(d[fieldName], d) : d[fieldName] }</td>
-            ))}
+        {data.map((d, i) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <tr key={i}>
+            {Object.entries(fields).map(([fieldName, resolver]) => {
+              let content = d[fieldName];
+              if (typeof resolver === 'function') {
+                const resolved = resolver(d[fieldName], d, i);
+                if (typeof resolved === 'function') {
+                  content = <resolved />;
+                }
+                content = resolved;
+              }
+
+              return (
+                <td key={fieldName}>{content}</td>
+              );
+            })}
           </tr>
         ))}
       </tbody>

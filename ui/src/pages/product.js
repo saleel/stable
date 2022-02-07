@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react';
 import { useParams } from 'react-router';
 import MetricBox from '../components/metric-box';
@@ -5,21 +6,31 @@ import Chart from '../components/chart';
 import { getProduct, getUSDRate, getPriceSubmissions } from '../data';
 import useLocalStorage from '../hooks/use-local-storage';
 import usePromise from '../hooks/use-promise';
-import { calculatePriceChange, formatContractDate, formatContractDateWithYear } from '../utils';
+import {
+  calculatePriceChange, formatContractDate, formatContractDateWithYear, formatPrice,
+} from '../utils';
 import Table from '../components/table';
 import { Countries } from '../constants';
 import ProductImage from '../components/product-image';
 
+const Tabs = {
+  PriceHistory: 'Price History',
+  PriceComparison: 'Price Comparison',
+  PriceSubmissions: 'Price Submissions',
+};
+
 function ProductPage() {
   const { productId } = useParams();
   const [country] = useLocalStorage('country', 'US');
+
+  const [activeTab, setActiveTab] = React.useState(Tabs.PriceHistory);
 
   const [product] = usePromise(() => getProduct(productId), {
     dependencies: [productId],
     conditions: [productId],
   });
 
-  const [priceSubmissions] = usePromise(() => getPriceSubmissions(productId, country), {
+  const [priceSubmissions] = usePromise(() => getPriceSubmissions({ productId, country }), {
     dependencies: [productId],
     conditions: [productId],
     defaultValue: [],
@@ -43,8 +54,9 @@ function ProductPage() {
             data={[...pricesForCurrentCountry].reverse()}
             xAxisKey="createdAt"
             yAxisKeys={['value']}
+            yAxisLabels={['Price']}
             xAxisFormatter={formatContractDate}
-            yAxisFormatter={(d) => (d / 100).toFixed(2)}
+            yAxisFormatter={formatPrice}
           />
         </div>
 
@@ -52,11 +64,13 @@ function ProductPage() {
           data={pricesForCurrentCountry}
           fields={{
             createdAt: (value) => formatContractDateWithYear(value),
-            value: (value, row) => `${row.currency} ${value}`,
+            value: (value, row) => `${row.currency} ${formatPrice(value)}`,
+            change: (_, row, i) => `${calculatePriceChange(pricesForCurrentCountry[i + 1], row)}%`,
           }}
           labels={{
             createdAt: 'Date',
             value: 'Price',
+            change: 'Change',
           }}
         />
 
@@ -67,8 +81,8 @@ function ProductPage() {
   function priceComparisonView() {
     const pricesPerCountries = product.prices.map((p) => ({
       ...p,
-      [p.country]: +(p.value / 100).toFixed(2),
-      usdEquivalent: +getUSDRate(p.currency, p.value / 100).toFixed(2),
+      [p.country]: formatPrice(p.value),
+      usdEquivalent: formatPrice(getUSDRate(p.currency, p.value)),
     })).reverse();
 
     const latestPricesForCountry = Object.keys(Countries).map((c) => pricesPerCountries.find((p) => p.country === c));
@@ -81,7 +95,7 @@ function ProductPage() {
             xAxisKey="createdAt"
             yAxisKeys={Object.keys(Countries)}
             xAxisFormatter={formatContractDate}
-            yAxisFormatter={(d) => d.toFixed(2)}
+            yAxisFormatter={formatPrice}
           />
         </div>
 
@@ -103,14 +117,24 @@ function ProductPage() {
     );
   }
 
+  function renderSubmissionUser(props) {
+    const { address, transactionId } = props;
+    return (
+      <>
+        <span>{`${address.slice(0, 5)}...${address.slice(-5)}`}</span>
+        <a rel="noreferrer" target="_blank" className="ml-3" href={`${process.env.BLOCKCHAIN_EXPLORER_URL}/${transactionId}`}>tx</a>
+      </>
+    );
+  }
+
   function priceSubmissionsView() {
     return (
       <Table
         data={priceSubmissions}
         fields={{
           createdAt: (value) => formatContractDateWithYear(value),
-          price: (value, row) => `${row.currency} ${(value / 100).toFixed(2)}`,
-          createdBy: (value) => `${value.slice(0, 5)}...${value.slice(-5)}`,
+          price: (value, row) => `${row.currency} ${formatPrice(value)}`,
+          createdBy: (value, row) => renderSubmissionUser({ address: value, transactionId: row.transactionId }),
         }}
         labels={{
           createdAt: 'Date',
@@ -124,7 +148,7 @@ function ProductPage() {
   return (
     <div className="container product-page">
 
-      <div className="is-flex" justifyContent>
+      <div className="is-flex">
         <ProductImage product={product} width={60} />
         <div className="pl-3">
           <h1 className="title">{product.name}</h1>
@@ -175,10 +199,22 @@ function ProductPage() {
         )}
       </div>
 
-      {pricesForCurrentCountry && priceHistoryView()}
-      {pricesForCurrentCountry && priceComparisonView()}
+      <div>
+        <ul className="product-tabs">
+          {Object.entries(Tabs).map(([tabKey, tabValue]) => (
+            <li key={tabKey} className={tabValue === activeTab ? 'active' : ''}>
+              <a role="button" tabIndex={0} onClick={() => setActiveTab(tabValue)}>
+                {tabValue}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      {priceSubmissionsView()}
+      {activeTab === Tabs.PriceHistory && priceHistoryView()}
+      {activeTab === Tabs.PriceComparison && priceComparisonView()}
+      {activeTab === Tabs.PriceSubmissions && priceSubmissionsView()}
+
     </div>
   );
 }

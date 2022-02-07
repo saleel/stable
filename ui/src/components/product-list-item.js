@@ -1,6 +1,6 @@
 import React from 'react';
 import { Line, LineChart } from 'recharts';
-import { calculatePriceChange } from '../utils';
+import { calculatePriceChange, formatPrice } from '../utils';
 import ProductImage from './product-image';
 
 function ProductListItem(props) {
@@ -12,7 +12,7 @@ function ProductListItem(props) {
   const yesterdaysPrice = prices[1] || {};
   const oldestPrice = prices[prices.length - 1] || {};
 
-  const currentPrice = todaysPrice.value !== undefined ? (todaysPrice.value / 100).toFixed(2) : '-';
+  const currentPrice = todaysPrice.value !== undefined ? formatPrice(todaysPrice.value) : '-';
   const currency = prices[0]?.currency ?? '';
 
   const priceChange24 = calculatePriceChange(yesterdaysPrice, todaysPrice);
@@ -26,7 +26,7 @@ function ProductListItem(props) {
   }
 
   return (
-    <div className="product-list-item columns" onClick={onClick}>
+    <div role="button" tabIndex={0} className="product-list-item columns" onClick={onClick}>
       <div className="column is-1 pli-image">
         <ProductImage product={product} />
       </div>

@@ -2,9 +2,11 @@ import {
   Line, ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 
+const COLORS = ['var(--blue-500)', 'var(--green-300)', 'var(--yellow-500)'];
+
 function Chart(props) {
   const {
-    data, xAxisKey, yAxisKeys, xAxisFormatter, yAxisFormatter,
+    data, xAxisKey, yAxisKeys, xAxisFormatter, yAxisFormatter, yAxisLabels = [],
   } = props;
 
   return (
@@ -15,32 +17,24 @@ function Chart(props) {
           top: 5, right: 5, left: -15, bottom: 0,
         }}
       >
-        <defs>
-          <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--blue-500)" stopOpacity={0.1} />
-            <stop offset="95%" stopColor="#FFFFFF" stopOpacity={0.1} />
-          </linearGradient>
-        </defs>
         <XAxis dataKey={xAxisKey} tickFormatter={xAxisFormatter} />
         <YAxis tickFormatter={yAxisFormatter} />
         <Tooltip labelFormatter={xAxisFormatter} formatter={yAxisFormatter} />
 
-        {yAxisKeys.map((yAxisKey) => (
+        {yAxisKeys.map((yAxisKey, i) => (
           <Line
             key={yAxisKey}
+            name={yAxisLabels[i] || yAxisKey}
             type="monotone"
             strokeLinecap="round"
             strokeWidth={2}
             dataKey={yAxisKey}
-            stroke="var(--blue-500)"
+            stroke={COLORS[i]}
             dot={false}
             legendType="none"
           />
         ))}
 
-        {/* {yAxisKeys.map((yAxisKey) => (
-          <Area key={yAxisKey} type="monotone" dataKey={yAxisKey} tooltipType="none" fillOpacity={1} fill="url(#colorUv)" />
-        ))} */}
       </ComposedChart>
     </ResponsiveContainer>
   );
