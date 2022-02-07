@@ -146,7 +146,7 @@ function ProductPage() {
   }
 
   return (
-    <div className="container product-page">
+    <div className="product-page">
 
       <div className="is-flex">
         <ProductImage product={product} width={60} />

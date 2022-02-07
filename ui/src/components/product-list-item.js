@@ -4,7 +4,7 @@ import { calculatePriceChange, formatPrice } from '../utils';
 import ProductImage from './product-image';
 
 function ProductListItem(props) {
-  const { product, onClick } = props;
+  const { product, onClick, loading } = props;
 
   const { prices = [] } = product;
 
@@ -23,6 +23,12 @@ function ProductListItem(props) {
   }
   if (oldestPrice.value > todaysPrice.value) {
     priceTrendColor = 'var(--green-300)';
+  }
+
+  if (loading) {
+    return (
+      <div className="product-list-item columns loading" />
+    );
   }
 
   return (

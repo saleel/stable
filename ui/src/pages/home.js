@@ -13,15 +13,15 @@ function HomePage() {
   const [country, setCountry] = useLocalStorage('country', 'US');
   const [searchInput, setSearchInput] = React.useState('');
 
-  const [products] = usePromise(() => getProducts(country), {
-    defaultValue: [], dependencies: [country],
+  const [products, { isFetching: isFetchingProducts }] = usePromise(() => getProducts(country), {
+    defaultValue: Array(10).fill({}), dependencies: [country],
   });
 
-  const [priceIndex] = usePromise(() => getPriceIndex(country), {
+  const [priceIndex, { isFetching: isFetchingPI }] = usePromise(() => getPriceIndex(country), {
     dependencies: country,
   });
 
-  const [globalPriceIndex] = usePromise(() => getGlobalPriceIndex(), {});
+  const [globalPriceIndex, { isFetching: isFetchingGPI }] = usePromise(() => getGlobalPriceIndex(), {});
 
   let filteredProducts = products;
   if (searchInput) {
@@ -34,8 +34,8 @@ function HomePage() {
       <Intro />
 
       <div className="metrics">
-        <MetricBox style={{ backgroundColor: '#C6F6D5' }} label="Global Price Index" value={globalPriceIndex} />
-        <MetricBox label="USA Price Index" value={priceIndex} />
+        <MetricBox loading={isFetchingGPI} style={{ backgroundColor: '#C6F6D5' }} label="Global Price Index" value={globalPriceIndex} />
+        <MetricBox loading={isFetchingPI} label="USA Price Index" value={priceIndex} />
         <MetricBox label="SZR" value="75" unit="USD" />
         <MetricBox label="USA Price Index" value="75" />
       </div>
@@ -62,6 +62,7 @@ function HomePage() {
         {filteredProducts.map((product) => (
           <ProductListItem
             key={product.id}
+            loading={isFetchingProducts}
             product={product}
             onClick={() => { navigate(`/products/${product.id}`); }}
           />
