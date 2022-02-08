@@ -29,3 +29,8 @@
 
 - Aggregator: Aggregate price submitted by data providers, calculate price index and submit them to chain. Gets rewarded for submission, and is responsible to distribute rewards to data providers. Aggregators query all price submissions at 11:59PM and calculate the aggregated price for each product. The aggregated price is then submitted back to the contract.
 
+
+TODO
+- Icons for all
+- IPFS for price submission
+

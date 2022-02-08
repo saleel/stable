@@ -32,4 +32,4 @@ artifacts
 typechain-types
 
 subgraph/data
-subgraph/build
+subgraph/build/

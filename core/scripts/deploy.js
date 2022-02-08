@@ -96,6 +96,16 @@ async function main() {
     JSON.stringify(stableArtifact.abi, null, 2)
   );
 
+  fs.writeFileSync(
+    path.join(__dirname, "../../ui/src/abis/StableFactory.json"),
+    JSON.stringify(stableFactoryArtifact.abi, null, 2)
+  );
+
+  fs.writeFileSync(
+    path.join(__dirname, "../../ui/src/abis/Stable.json"),
+    JSON.stringify(stableArtifact.abi, null, 2)
+  );
+
   console.log("Updated subgraph ABI successfully");
 }
 
