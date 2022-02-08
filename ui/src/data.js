@@ -123,19 +123,18 @@ export async function getPriceSubmissions({ country, productId }) {
   return priceSubmissions;
 }
 
-
-export async function getContractCurrentDate(country) {
+export async function getAggregationRoundId(country) {
   const stableContract = await getClientForChildContract(country);
-  return stableContract.currentDate();
+  return stableContract.aggregationRoundId();
 }
 
-export async function addPrices(date, priceMapping, country) {
+export async function addPrices({ priceMapping, country, source }) {
   const stableContract = await getClientForChildContract(country);
 
   const productsIds = Object.keys(priceMapping);
   const prices = Object.keys(priceMapping).map((k) => priceMapping[k].price);
 
-  await stableContract.submitPrices(date, productsIds, prices);
+  await stableContract.submitPrices(productsIds, prices, source);
 }
 
 // TODO: Fetch from some API

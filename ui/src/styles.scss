@@ -6,7 +6,7 @@
   --gray-300: #cbd5e0;
   --gray-400: #a0aec0;
   --gray-500: #718096;
-  --gray-700: #2D3748;
+  --gray-700: #2d3748;
   --red-200: #feb2b2;
   --red-300: #f56565;
   --green-200: #9ae6b4;
@@ -15,12 +15,13 @@
   --blue-400: #4299e1;
   --blue-500: #3182ce;
   --blue-600: #2b6cb0;
-  --blue-700: #2C5282;
-  --yellow-500: #D69E2E;
+  --blue-700: #2c5282;
+  --yellow-500: #d69e2e;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
   color: var(--text-color);
 }
 
@@ -49,7 +50,9 @@ body {
   padding: 0.5rem 1rem !important;
   color: var(--gray-700) !important;
 
-  &:hover, &:active, &.active {
+  &:hover,
+  &:active,
+  &.active {
     opacity: 1;
     background-color: var(--gray-100) !important;
   }
@@ -129,7 +132,7 @@ body {
         rgba(#edf2f7, 0)
       );
       animation: shimmer 1s infinite;
-      content: '';
+      content: "";
     }
   }
 }
@@ -208,11 +211,6 @@ body {
   border-top: 5px solid var(--green-400);
 }
 
-.add-price-form {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
 .metric-box {
   background-color: #efefef;
   height: 6.5rem;
@@ -252,7 +250,7 @@ body {
         rgba(#fff, 0)
       );
       animation: shimmer 1s infinite;
-      content: '';
+      content: "";
     }
   }
 }
@@ -383,6 +381,49 @@ body {
         border-bottom: 2px solid var(--blue-400);
         color: var(--blue-700);
       }
+    }
+  }
+}
+
+.add-price-form {
+  max-width: 700px;
+
+  .select,
+  select {
+    width: 100%;
+  }
+}
+
+.btn-add-product {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300);
+  font-weight: 600;
+
+  &:hover {
+    background-color: var(--gray-200);
+  }
+}
+
+.added-product {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300);
+  border-radius: 3px;
+  margin: 2px;
+}
+
+.btn-submit-prices {
+  background: var(--gray-200);
+  border: 1px solid var(--gray-300);
+  border-radius: 3px;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+
+  &.is-loading {
+    &::after {
+      border: 2px solid var(--text-color);
+      border-right-color: transparent;
+      border-top-color: transparent;
     }
   }
 }

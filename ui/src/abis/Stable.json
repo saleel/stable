@@ -2,9 +2,9 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "_currency",
-        "type": "string"
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
       },
       {
         "internalType": "string",
@@ -12,8 +12,13 @@
         "type": "string"
       },
       {
+        "internalType": "string",
+        "name": "_currency",
+        "type": "string"
+      },
+      {
         "internalType": "uint32",
-        "name": "_startDate",
+        "name": "_initialAggregationRoundId",
         "type": "uint32"
       },
       {
@@ -22,14 +27,9 @@
         "type": "string[]"
       },
       {
-        "internalType": "uint32[]",
-        "name": "_weightage",
-        "type": "uint32[]"
-      },
-      {
-        "internalType": "string",
-        "name": "_productDetailsCid",
-        "type": "string"
+        "internalType": "uint8[]",
+        "name": "_productWeightages",
+        "type": "uint8[]"
       }
     ],
     "stateMutability": "nonpayable",
@@ -41,14 +41,59 @@
       {
         "indexed": false,
         "internalType": "uint32",
-        "name": "date",
+        "name": "aggregationRoundId",
+        "type": "uint32"
+      }
+    ],
+    "name": "AggregationRoundCompleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "aggregationRoundId",
+        "type": "uint32"
+      }
+    ],
+    "name": "AggregationRoundStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "aggregationRoundId",
         "type": "uint32"
       },
       {
         "indexed": false,
-        "internalType": "uint32",
+        "internalType": "uint16",
         "name": "priceIndex",
-        "type": "uint32"
+        "type": "uint16"
       }
     ],
     "name": "PriceIndexUpdated",
@@ -60,29 +105,29 @@
       {
         "indexed": false,
         "internalType": "uint32",
-        "name": "date",
+        "name": "aggregationRoundId",
         "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string[]",
+        "name": "productIds",
+        "type": "string[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16[]",
+        "name": "prices",
+        "type": "uint16[]"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "productId",
+        "name": "source",
         "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint32",
-        "name": "price",
-        "type": "uint32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint32",
-        "name": "confirmations",
-        "type": "uint32"
       }
     ],
-    "name": "PriceUpdated",
+    "name": "PricesSubmitted",
     "type": "event"
   },
   {
@@ -90,18 +135,24 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "productId",
-        "type": "string"
+        "internalType": "uint32",
+        "name": "aggregationRoundId",
+        "type": "uint32"
       },
       {
         "indexed": false,
-        "internalType": "uint32",
-        "name": "weightage",
-        "type": "uint32"
+        "internalType": "string[]",
+        "name": "productIds",
+        "type": "string[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16[]",
+        "name": "prices",
+        "type": "uint16[]"
       }
     ],
-    "name": "ProductAdded",
+    "name": "PricesUpdated",
     "type": "event"
   },
   {
@@ -109,42 +160,44 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "productDetailsCid",
-        "type": "string"
+        "internalType": "string[]",
+        "name": "productIds",
+        "type": "string[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8[]",
+        "name": "weightages",
+        "type": "uint8[]"
       }
     ],
-    "name": "ProductDetailsUpdated",
+    "name": "ProductBasketUpdated",
     "type": "event"
   },
   {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_productId",
-        "type": "string"
-      },
+    "inputs": [],
+    "name": "aggregationDuration",
+    "outputs": [
       {
         "internalType": "uint32",
-        "name": "_weightage",
+        "name": "",
         "type": "uint32"
-      },
-      {
-        "internalType": "string",
-        "name": "_updatedProductDetailsCid",
-        "type": "string"
       }
     ],
-    "name": "addProduct",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "calculate",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "aggregationRoundId",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -175,19 +228,6 @@
   },
   {
     "inputs": [],
-    "name": "currentDate",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -201,12 +241,25 @@
   },
   {
     "inputs": [],
-    "name": "priceIndex",
+    "name": "previousAggregationRoundId",
     "outputs": [
       {
         "internalType": "uint32",
         "name": "",
         "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "priceIndex",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",
@@ -223,9 +276,28 @@
     "name": "prices",
     "outputs": [
       {
-        "internalType": "uint32",
+        "internalType": "uint16",
         "name": "",
-        "type": "uint32"
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "productBasket",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -233,71 +305,27 @@
   },
   {
     "inputs": [],
-    "name": "productDetailsCid",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "productIds",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "name": "productWeightage",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "date",
-        "type": "uint32"
-      },
       {
         "internalType": "string[]",
         "name": "_productIds",
         "type": "string[]"
       },
       {
-        "internalType": "uint32[]",
+        "internalType": "uint16[]",
         "name": "_prices",
-        "type": "uint32[]"
+        "type": "uint16[]"
+      },
+      {
+        "internalType": "string",
+        "name": "_source",
+        "type": "string"
       }
     ],
     "name": "submitPrices",
@@ -308,54 +336,21 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "submittedPrices",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      },
-      {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "submittedUsers",
-    "outputs": [
-      {
         "internalType": "address",
-        "name": "",
+        "name": "newOwner",
         "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "updateAggregationRound",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -366,12 +361,12 @@
         "type": "string[]"
       },
       {
-        "internalType": "uint32[]",
-        "name": "_weightage",
-        "type": "uint32[]"
+        "internalType": "uint8[]",
+        "name": "_weightages",
+        "type": "uint8[]"
       }
     ],
-    "name": "updateWeightage",
+    "name": "updateBasket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -379,20 +374,29 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "validSubmitters",
-    "outputs": [
+        "internalType": "uint32",
+        "name": "_aggregationRoundId",
+        "type": "uint32"
+      },
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        "internalType": "string[]",
+        "name": "_productIds",
+        "type": "string[]"
+      },
+      {
+        "internalType": "uint16[]",
+        "name": "_prices",
+        "type": "uint16[]"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_priceIndex",
+        "type": "uint16"
       }
     ],
-    "stateMutability": "view",
+    "name": "updatePrices",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
