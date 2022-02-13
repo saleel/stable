@@ -1,48 +1,39 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `npx hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
+/* eslint-disable import/no-extraneous-dependencies */
 const hre = require("hardhat");
+const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
 // require("hardhat-ethernal");
 const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
-const stableFactoryArtifact = require("../artifacts/contracts/Stable.sol/StableFactory.json");
+const countryTrackerArtifact = require("../artifacts/contracts/CountryTracker.sol/CountryTracker.json");
 
-const productDetailsCid =
+const productDetailsCID =
   "bafkreibtqzflynmgaboqfbkfxhrhygherd4bht6egvlxlonl32dac5oxoy";
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+  await hre.run("compile");
   // await hre.network.provider.send("hardhat_reset");
 
   const productDetailsJson = await axios.get(
-    `https://ipfs.io/ipfs/${productDetailsCid}`
+    `https://ipfs.io/ipfs/${productDetailsCID}`
   );
 
   const productDetails = productDetailsJson.data;
 
   console.log("Products", productDetails);
 
-  const StableFactory = await hre.ethers.getContractFactory("StableFactory");
+  const Stable = await hre.ethers.getContractFactory("Stable");
 
-  const stableFactory = await StableFactory.deploy(
+  const stable = await Stable.deploy(
     productDetails.map((p) => p.id),
-    productDetailsCid,
+    productDetailsCID,
     "TOP3_AVG",
     1
   );
 
-  console.log("Stable factory deployed to:", stableFactory.address);
+  console.log("Stable factory deployed to:", stable.address);
 
-  await stableFactory.createStable(
+  await stable.createCountryTracker(
     "US",
     "USD",
     Math.round(new Date("2022-01-01T00:00-06:00").getTime() / 1000),
@@ -51,7 +42,7 @@ async function main() {
     productDetails.map(() => 1)
   );
 
-  await stableFactory.createStable(
+  await stable.createCountryTracker(
     "UK",
     "GBP",
     Math.round(new Date("2022-01-01T00:00+00:00").getTime() / 1000),
@@ -60,7 +51,7 @@ async function main() {
     productDetails.map(() => 1)
   );
 
-  await stableFactory.createStable(
+  await stable.createCountryTracker(
     "IN",
     "INR",
     Math.round(new Date("2022-01-01T00:00+05:30").getTime() / 1000),
@@ -74,21 +65,14 @@ async function main() {
   //   address: address,
   // });
 
-  console.log("Updating subgraph ABI");
-
-  fs.writeFileSync(
-    path.join(__dirname, "../../subgraph/abis/StableFactory.json"),
-    JSON.stringify(stableFactoryArtifact.abi, null, 2)
-  );
-
   fs.writeFileSync(
     path.join(__dirname, "../../subgraph/abis/Stable.json"),
     JSON.stringify(stableArtifact.abi, null, 2)
   );
 
   fs.writeFileSync(
-    path.join(__dirname, "../../aggregator/abis/StableFactory.json"),
-    JSON.stringify(stableFactoryArtifact.abi, null, 2)
+    path.join(__dirname, "../../subgraph/abis/CountryTracker.json"),
+    JSON.stringify(countryTrackerArtifact.abi, null, 2)
   );
 
   fs.writeFileSync(
@@ -97,13 +81,18 @@ async function main() {
   );
 
   fs.writeFileSync(
-    path.join(__dirname, "../../ui/src/abis/StableFactory.json"),
-    JSON.stringify(stableFactoryArtifact.abi, null, 2)
+    path.join(__dirname, "../../aggregator/abis/CountryTracker.json"),
+    JSON.stringify(countryTrackerArtifact.abi, null, 2)
   );
 
   fs.writeFileSync(
     path.join(__dirname, "../../ui/src/abis/Stable.json"),
     JSON.stringify(stableArtifact.abi, null, 2)
+  );
+
+  fs.writeFileSync(
+    path.join(__dirname, "../../ui/src/abis/CountryTracker.json"),
+    JSON.stringify(countryTrackerArtifact.abi, null, 2)
   );
 
   console.log("Updated subgraph ABI successfully");

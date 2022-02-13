@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract StableToken is ERC20, Ownable {
-  constructor() ERC20("Stable", "STABLE") {
+contract StabilizerToken is ERC20, Ownable {
+  constructor() ERC20("Stabilizer", "SZR") {
     // Do not mint anything
   }
 
