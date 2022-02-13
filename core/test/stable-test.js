@@ -14,9 +14,10 @@ describe("StableFactory", () => {
   let SZRToken;
   let owner;
   let user1;
+  let user2;
 
   beforeEach(async () => {
-    [owner, user1] = await ethers.getSigners();
+    [owner, user1, user2] = await ethers.getSigners();
 
     const StableFactory = await ethers.getContractFactory(
       "StableFactory",
@@ -38,8 +39,7 @@ describe("StableFactory", () => {
 
     ukStable = await ethers.getContractAt(
       "Stable",
-      await stableFactory.childContracts("UK"),
-      owner
+      await stableFactory.childContracts("UK")
     );
 
     SZRToken = await ethers.getContractAt(
@@ -49,7 +49,23 @@ describe("StableFactory", () => {
     );
 
     SZRToken.transfer(user1.address, 100);
+    SZRToken.transfer(user2.address, 600);
   });
+
+  async function updatePrices() {
+    await SZRToken.connect(user1).approve(stableFactory.address, 200);
+    await stableFactory.connect(user1).enrollAggregator(100);
+    await stableFactory.connect(user1).claimNextAggregationRound();
+    await ukStable
+      .connect(user1)
+      .updatePrices(
+        await stableFactory.aggregationRoundId(),
+        ["ZC", "ZW", "ZR", "ZS", "KE"],
+        [1000, 1000, 1000, 1000, 1000],
+        1000
+      );
+    await stableFactory.connect(user1).completeAggregation();
+  }
 
   it("should be able to create child contracts", async () => {
     await stableFactory.createStable(
@@ -91,8 +107,8 @@ describe("StableFactory", () => {
     expect(await stableFactory.productIds(5)).to.equal("BTC");
   });
 
-  it.only("should allow user to lock funds and become aggregator", async () => {
-    await SZRToken.connect(user1).approve(stableFactory.address, 100);
+  it("should allow user to function as aggregator", async () => {
+    await SZRToken.connect(user1).approve(stableFactory.address, 200);
     await stableFactory.connect(user1).enrollAggregator(100);
 
     expect(await stableFactory.aggregatorLockedAmounts(user1.address)).to.equal(
@@ -102,6 +118,53 @@ describe("StableFactory", () => {
     await stableFactory.connect(user1).claimNextAggregationRound();
 
     expect(await ukStable.aggregator()).to.equal(user1.address);
+
+    await ukStable
+      .connect(user1)
+      .updatePrices(
+        await stableFactory.aggregationRoundId(),
+        ["ZC", "ZW", "ZR", "ZS", "KE"],
+        [10, 10, 10, 10, 10],
+        10
+      );
+
+    expect(await ukStable.priceUpdatedForAggRound()).to.equal(true);
+    await stableFactory.connect(user1).completeAggregation();
+
+    expect(await stableFactory.rewards(user1.address)).to.equal(2);
+
+    await stableFactory.connect(user1).claimRewards(2);
+
+    expect(await SZRToken.balanceOf(user1.address)).to.equal(2);
+  });
+
+  it.only("should allow supplier to claim SZR", async () => {
+    // Update price to set price index
+    await updatePrices();
+
+    await stableFactory.addSupplier(user1.address, "ABC Market", 1000, 50);
+
+    const priceOfStable = await stableFactory.stablePrice();
+    const priceOfSZR = await stableFactory.SZRPriceInUSD();
+
+    await SZRToken.connect(user2).approve(stableFactory.address, 60);
+
+    const stablesToMint = await stableFactory.mintableStable(); // max possible
+
+    await stableFactory.connect(user2).mintStable(stablesToMint);
+
+    const totalSZRClaimable =
+      ((stablesToMint * priceOfStable) / priceOfSZR) * (1 - 20 / 100); // minus burned
+
+    const claimable = (50 / 100) * totalSZRClaimable;
+
+    expect(await stableFactory.SZRClaimableBySupplier(user1.address)).to.equal(
+      claimable
+    );
+
+    await stableFactory.connect(user1).claimSZR(claimable);
+
+    expect(await SZRToken.balanceOf(user1.address)).to.equal(claimable);
   });
 });
 

@@ -90,7 +90,6 @@ contract Stable is Ownable {
         );
 
         for (uint16 i = 0; i < _productIds.length; i++) {
-            // TODO: Optionally verify min confirmations
             prices[_productIds[i]] = _prices[i];
         }
 
