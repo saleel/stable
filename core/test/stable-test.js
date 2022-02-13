@@ -7,10 +7,16 @@ describe("StableFactory", () => {
   /** @type{import("../typechain-types/StableFactory").StableFactory} */
   let stableFactory;
 
+  /** @type{import("../typechain-types/Stable").Stable} */
+  let ukStable;
+
+  /** @type{import("../typechain-types/SZRToken").SZRToken} */
+  let SZRToken;
   let owner;
+  let user1;
 
   beforeEach(async () => {
-    [owner] = await ethers.getSigners();
+    [owner, user1] = await ethers.getSigners();
 
     const StableFactory = await ethers.getContractFactory(
       "StableFactory",
@@ -18,6 +24,8 @@ describe("StableFactory", () => {
     );
 
     stableFactory = await StableFactory.deploy(
+      1000, // SCR supply
+      20, // coll ratio
       ["ZC", "ZW", "ZR", "ZS", "KE"],
       "bafybeig7zusrlit7xdhjkw7tkrtkmgqilt4dfoscp256yoawc3uxdwpgxe",
       "TOP3_AVG",
@@ -25,13 +33,28 @@ describe("StableFactory", () => {
     );
 
     await stableFactory.deployed();
+
+    await stableFactory.createStable("UK", "GBP", 10, ["BTC", "ETH"], [1, 1]);
+
+    ukStable = await ethers.getContractAt(
+      "Stable",
+      await stableFactory.childContracts("UK"),
+      owner
+    );
+
+    SZRToken = await ethers.getContractAt(
+      "SZRToken",
+      stableFactory.szrToken(),
+      owner
+    );
+
+    SZRToken.transfer(user1.address, 100);
   });
 
   it("should be able to create child contracts", async () => {
     await stableFactory.createStable(
       "US",
       "USD",
-      now,
       10,
       ["ZC", "ZW", "ZR", "ZS", "KE"],
       [1, 1, 1, 1, 1]
@@ -66,6 +89,19 @@ describe("StableFactory", () => {
 
     // This will be 6th item, as 5 products are already added in beforeEach
     expect(await stableFactory.productIds(5)).to.equal("BTC");
+  });
+
+  it.only("should allow user to lock funds and become aggregator", async () => {
+    await SZRToken.connect(user1).approve(stableFactory.address, 100);
+    await stableFactory.connect(user1).enrollAggregator(100);
+
+    expect(await stableFactory.aggregatorLockedAmounts(user1.address)).to.equal(
+      100
+    );
+
+    await stableFactory.connect(user1).claimNextAggregationRound();
+
+    expect(await ukStable.aggregator()).to.equal(user1.address);
   });
 });
 

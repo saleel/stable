@@ -3,7 +3,8 @@
   "scripts": {
     "deploy-local": "hardhat run --network localhost scripts/deploy.js",
     "start-node": "hardhat node --hostname 0.0.0.0",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "lint": "solhint contracts/*.sol --fix"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
@@ -15,6 +16,7 @@
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.1.0",
     "@types/node": "^17.0.12",
+    "axios": "^0.24.0",
     "chai": "^4.3.4",
     "dotenv": "^10.0.0",
     "eslint": "^7.32.0",
@@ -25,13 +27,12 @@
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.5.2",
     "hardhat": "^2.8.1",
+    "hardhat-ethernal": "^0.3.12",
     "hardhat-gas-reporter": "^1.0.6",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.6",
     "solidity-coverage": "^0.7.17",
-    "axios": "^0.24.0",
-    "hardhat-ethernal": "^0.3.12",
     "typechain": "^6.1.0"
   },
   "dependencies": {
