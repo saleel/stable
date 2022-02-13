@@ -17,8 +17,8 @@ contract Stable is Ownable {
   uint32 public overCollateralizationRatio; // Ratio of how much STABLE can be minted in addition to callateral (supplier redeemable).
 
   string[] public productIds; // ID of proucts tracked.
-  string public priceAggregationMethod; // Method of price aggregation to be used (for aggregator offchain calculation).
-  uint8 public mininumPriceConfirmations; // Minimum confimrations required on a price to be considered for aggregation.
+  string public priceAggregationMethod = "TOP3_AVG"; // Method of price aggregation to be used (for aggregator offchain calculation).
+  uint8 public mininumPriceConfirmations = 1; // Minimum confimrations required on a price to be considered for aggregation.
   string public productDetailsCID; // IPFS CID of JSON with product details.
 
   uint256 public aggregationRoundId; // Start date (timestamp) of the current aggregation round.
@@ -60,19 +60,18 @@ contract Stable is Ownable {
   constructor(
     uint256 _initialSZRSupply,
     uint32 _overCollateralizationRatio,
+    uint256 _initialAggregationRoundId,
     string[] memory _productIds,
-    string memory _productDetailsCid,
-    string memory _priceAggregationMethod,
-    uint8 _mininumPriceConfirmations
+    string memory _productDetailsCid
   ) {
     szrToken = new StabilizerToken();
     stableToken = new StableToken();
+    aggregationRoundId = _initialAggregationRoundId;
     overCollateralizationRatio = _overCollateralizationRatio;
     productIds = _productIds;
     productDetailsCID = _productDetailsCid;
-    priceAggregationMethod = _priceAggregationMethod;
-    mininumPriceConfirmations = _mininumPriceConfirmations;
 
+    // Mint initial supply
     szrToken.mint(msg.sender, _initialSZRSupply);
 
     emit ProductDetailsUpdated(productDetailsCID);
@@ -87,6 +86,8 @@ contract Stable is Ownable {
     uint8[] memory _productWeightages
   ) public onlyOwner {
     CountryTracker _tracker = new CountryTracker(_country, _currency, _productIds, _productWeightages);
+
+    _tracker.updateAggregationRound(aggregationRoundId, aggregationRoundId + aggregationDuration);
 
     countries.push(_country);
     countryTrackers[_country] = address(_tracker);
@@ -334,7 +335,7 @@ contract Stable is Ownable {
   }
 
   function isAggregationRoundOverdue() public view returns (bool) {
-    if (block.timestamp - (aggregationRoundId + aggregationDuration) > aggregationRoundOverdueDuration) {
+    if ((block.timestamp + aggregationRoundOverdueDuration) > (aggregationRoundId + aggregationDuration)) {
       return true;
     }
     return false;

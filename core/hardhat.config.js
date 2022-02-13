@@ -1,5 +1,5 @@
+/* eslint-disable import/no-extraneous-dependencies */
 require("dotenv").config();
-
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
@@ -7,7 +7,6 @@ require("solidity-coverage");
 require("@typechain/hardhat");
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-waffle");
-require("hardhat-ethernal");
 require("@nomiclabs/hardhat-web3");
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -15,6 +14,7 @@ require("@nomiclabs/hardhat-web3");
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
 
+  // eslint-disable-next-line no-restricted-syntax
   for (const account of accounts) {
     console.log(account.address);
   }

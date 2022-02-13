@@ -23,10 +23,9 @@ describe("CountryTracker", () => {
     stable = await Stable.deploy(
       1000, // SCR supply
       20, // coll ratio
+      Math.round(new Date().getTime() / 1000) - 2 * 86400, // 2 days before
       ["ZC", "ZW", "ZR", "ZS", "KE"],
-      "bafybeig7zusrlit7xdhjkw7tkrtkmgqilt4dfoscp256yoawc3uxdwpgxe",
-      "TOP3_AVG",
-      1
+      "bafybeig7zusrlit7xdhjkw7tkrtkmgqilt4dfoscp256yoawc3uxdwpgxe"
     );
 
     await stable.deployed();

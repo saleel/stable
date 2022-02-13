@@ -3,7 +3,6 @@ const hre = require("hardhat");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-// require("hardhat-ethernal");
 const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
 const countryTrackerArtifact = require("../artifacts/contracts/CountryTracker.sol/CountryTracker.json");
 
@@ -12,7 +11,7 @@ const productDetailsCID =
 
 async function main() {
   await hre.run("compile");
-  // await hre.network.provider.send("hardhat_reset");
+  await hre.network.provider.send("hardhat_reset");
 
   const productDetailsJson = await axios.get(
     `https://ipfs.io/ipfs/${productDetailsCID}`
@@ -25,10 +24,11 @@ async function main() {
   const Stable = await hre.ethers.getContractFactory("Stable");
 
   const stable = await Stable.deploy(
+    1000000,
+    20,
+    Math.round(new Date("2022-01-01").getTime() / 1000),
     productDetails.map((p) => p.id),
-    productDetailsCID,
-    "TOP3_AVG",
-    1
+    productDetailsCID
   );
 
   console.log("Stable factory deployed to:", stable.address);
@@ -36,7 +36,6 @@ async function main() {
   await stable.createCountryTracker(
     "US",
     "USD",
-    Math.round(new Date("2022-01-01T00:00-06:00").getTime() / 1000),
     10,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1)
@@ -45,7 +44,6 @@ async function main() {
   await stable.createCountryTracker(
     "UK",
     "GBP",
-    Math.round(new Date("2022-01-01T00:00+00:00").getTime() / 1000),
     10,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1)
@@ -54,16 +52,10 @@ async function main() {
   await stable.createCountryTracker(
     "IN",
     "INR",
-    Math.round(new Date("2022-01-01T00:00+05:30").getTime() / 1000),
     10,
     productDetails.map((p) => p.id),
     productDetails.map(() => 1)
   );
-
-  // await hre.ethernal.push({
-  //   name: "Stable",
-  //   address: address,
-  // });
 
   fs.writeFileSync(
     path.join(__dirname, "../../subgraph/abis/Stable.json"),
@@ -98,8 +90,6 @@ async function main() {
   console.log("Updated subgraph ABI successfully");
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main()
   .then(() => process.exit(0))
   .catch((error) => {
