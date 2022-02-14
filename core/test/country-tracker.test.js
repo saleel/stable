@@ -62,7 +62,7 @@ describe("CountryTracker", () => {
     // Set user1 as aggregator for test
     SZRToken.transfer(user1.address, 100);
     SZRToken.connect(user1).approve(stable.address, 100);
-    await stable.connect(user1).becomeAggregator(10);
+    await stable.connect(user1).enrollAsAggregator(10);
     await stable.connect(user1).claimNextAggregationRound();
   });
 

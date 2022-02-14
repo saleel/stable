@@ -139,11 +139,11 @@ contract Stable is Ownable {
   ***************/
 
   // Lockup SZR and become aggregator
-  function becomeAggregator(uint32 _amount) public {
-    szrToken.transferFrom(msg.sender, address(this), _amount);
-    aggregatorLockedAmounts[msg.sender] += _amount;
+  function enrollAsAggregator(uint32 _amountToLock) public {
+    szrToken.transferFrom(msg.sender, address(this), _amountToLock);
+    aggregatorLockedAmounts[msg.sender] += _amountToLock;
     aggregatorLastUpdateTime[msg.sender] = block.timestamp;
-    totalLockedAmount += _amount;
+    totalLockedAmount += _amountToLock;
   }
 
   // Claim future aggregation rounds
@@ -342,8 +342,12 @@ contract Stable is Ownable {
   }
 
   function canClaimNextAggregationRound(address aggregator) public view returns (bool) {
+    if (totalLockedAmount == 0 || aggregatorLockedAmounts[aggregator] == 0) {
+      return false;
+    }
+
     // If current agg has not updated in due time, then any agg can claim
-    if (isAggregationRoundOverdue() && aggregatorLockedAmounts[aggregator] != 0) {
+    if (isAggregationRoundOverdue()) {
       return true;
     }
 

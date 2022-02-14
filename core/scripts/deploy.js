@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
 const countryTrackerArtifact = require("../artifacts/contracts/CountryTracker.sol/CountryTracker.json");
+const szrTokenArtifact = require("../artifacts/contracts/StabilizerToken.sol/StabilizerToken.json");
 
 const productDetailsCID =
   "bafkreibtqzflynmgaboqfbkfxhrhygherd4bht6egvlxlonl32dac5oxoy";
@@ -78,6 +79,11 @@ async function main() {
   );
 
   fs.writeFileSync(
+    path.join(__dirname, "../../aggregator/abis/StabilizerToken.json"),
+    JSON.stringify(szrTokenArtifact.abi, null, 2)
+  );
+
+  fs.writeFileSync(
     path.join(__dirname, "../../ui/src/abis/Stable.json"),
     JSON.stringify(stableArtifact.abi, null, 2)
   );
@@ -85,6 +91,11 @@ async function main() {
   fs.writeFileSync(
     path.join(__dirname, "../../ui/src/abis/CountryTracker.json"),
     JSON.stringify(countryTrackerArtifact.abi, null, 2)
+  );
+
+  fs.writeFileSync(
+    path.join(__dirname, "../../ui/src/abis/StabilizerToken.json"),
+    JSON.stringify(szrTokenArtifact.abi, null, 2)
   );
 
   console.log("Updated subgraph ABI successfully");

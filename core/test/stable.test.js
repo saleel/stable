@@ -58,7 +58,7 @@ describe("Stable", () => {
   async function updatePrices(expectedPI = 1000) {
     if ((await stable.aggregatorLockedAmounts(user1.address)) === 0) {
       await SZRToken.connect(user1).approve(stable.address, 200);
-      await stable.connect(user1).becomeAggregator(100);
+      await stable.connect(user1).enrollAsAggregator(100);
     }
 
     await stable.connect(user1).claimNextAggregationRound();
@@ -108,7 +108,7 @@ describe("Stable", () => {
 
   it("should allow user to function as aggregator", async () => {
     await SZRToken.connect(user1).approve(stable.address, 200);
-    await stable.connect(user1).becomeAggregator(100);
+    await stable.connect(user1).enrollAsAggregator(100);
 
     expect(await stable.aggregatorLockedAmounts(user1.address)).to.equal(100);
 
