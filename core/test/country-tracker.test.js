@@ -14,6 +14,8 @@ describe("CountryTracker", () => {
   let owner;
   let user1;
 
+  const now = Math.round(new Date().getTime() / 1000);
+
   beforeEach(async () => {
     [owner, user1] = await ethers.getSigners();
 
@@ -81,15 +83,17 @@ describe("CountryTracker", () => {
   });
 
   it("should be able to add price for one product", async () => {
-    await expect(ukTracker.submitPrices(["ZW"], [2350], "manual"))
+    await expect(ukTracker.submitPrices(["ZW"], [2350], now, "manual"))
       .to.emit(ukTracker, "PricesSubmitted")
-      .withArgs(["ZW"], [2350], "manual");
+      .withArgs(["ZW"], [2350], now, "manual");
   });
 
   it("should be able to add price for multiple products", async () => {
-    await expect(ukTracker.submitPrices(["ZW", "BTC"], [2350, 36000], "manual"))
+    await expect(
+      ukTracker.submitPrices(["ZW", "BTC"], [2350, 36000], now, "manual")
+    )
       .to.emit(ukTracker, "PricesSubmitted")
-      .withArgs(["ZW", "BTC"], [2350, 36000], "manual");
+      .withArgs(["ZW", "BTC"], [2350, 36000], now, "manual");
   });
 
   it("should be able to update price and price index", async () => {

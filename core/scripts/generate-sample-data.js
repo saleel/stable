@@ -18,8 +18,40 @@ const signer3 = provider.getSigner(3);
 const signer4 = provider.getSigner(4);
 const signer5 = provider.getSigner(5);
 
-function generateRandomPrice() {
-  return Math.round(Math.random() * 10 * 100); // Price with no decimals
+const CountryMultiplier = {
+  UK: 1,
+  US: 1.3, // with respect to uk
+  IN: 40, // should be * 100, but prices are cheaper in general in India
+};
+
+const CategoryMultiplier = {
+  Food: 1,
+  Energy: 3,
+  Alcohol: 1.5,
+};
+
+const CryptoVariance = {
+  UK: 1,
+  US: 1,
+  IN: 1.9, // to compensate for CountryMultiplier[in] + extra
+};
+
+function generateRandomPrice({ product, country }) {
+  let price = (Math.random() * 2 + 1) * 100; // Price with no decimals (between 1 and 3)
+
+  if (product.id === "BTC") {
+    price = 29400 * 100 * CryptoVariance[country];
+  }
+
+  if (product.id === "ETH") {
+    price = 2280 * 100 * CryptoVariance[country];
+  }
+
+  return Math.round(
+    price *
+      CountryMultiplier[country] *
+      (CategoryMultiplier[product.category] || 1)
+  );
 }
 
 /**
@@ -38,42 +70,56 @@ async function submitPrices({
 
   for (const product of products) {
     const lastPrice = await contract.prices(product.id);
+    const isCrypto = product.category === "Crypto-currency";
 
     let newPrice;
 
-    if (lastPrice) {
+    if (lastPrice && !isCrypto) {
       // A random number between 0.95 and 1.05 to be apply a +-5% diff
       const variant = Math.random() * (1.05 - 0.95) + 0.9;
       newPrice = lastPrice * dailyIncrement * variant;
     } else {
-      newPrice = generateRandomPrice(product);
+      newPrice = generateRandomPrice({
+        product,
+        country,
+      });
     }
 
     // console.log(country, aggregationRoundId, product.name, lastPrice, newPrice);
     prices.push(Math.round(newPrice));
   }
 
-  console.log("\nSubmitting: ", aggregationRoundId.toString(), country, prices);
+  const timestamp = Number(aggregationRoundId) + 43200; // Some timestamp during the day
 
-  await contract.connect(signer1).submitPrices(productIds, prices, "manual");
+  console.log(
+    "\nSubmitting : ",
+    country,
+    contract.address,
+    aggregationRoundId.toString(),
+    timestamp,
+    prices
+  );
+
+  await contract
+    .connect(signer1)
+    .submitPrices(productIds, prices, timestamp, "manual");
+
   await contract.connect(signer2).submitPrices(
     productIds,
-    prices.map((p) => p + 500),
+    prices.map((p) => Math.round(p * 1.03)),
+    timestamp,
     "manual"
   );
   await contract.connect(signer3).submitPrices(
     productIds,
-    prices.map((p) => p + 500),
+    prices.map((p) => Math.round(p * 1.03)),
+    timestamp,
     "manual"
   );
   await contract.connect(signer4).submitPrices(
     productIds,
-    prices.map((p) => p + generateRandomPrice()),
-    "manual"
-  );
-  await contract.connect(signer5).submitPrices(
-    productIds,
-    prices.map((p) => p + generateRandomPrice()),
+    prices.map((p) => Math.round(p * (0.5 + Math.random()))),
+    timestamp,
     "manual"
   );
 
@@ -81,31 +127,39 @@ async function submitPrices({
     return;
   }
 
-  const interval = setInterval(async () => {
-    console.log("Waiting for aggregation round to complete", country);
-    const nextAggregationRoundId = await contract
-      .connect(signer1)
-      .aggregationRoundId();
-    if (nextAggregationRoundId > aggregationRoundId) {
-      clearInterval(interval);
-      submitPrices({
-        dailyIncrement,
-        contract,
-        aggregationRoundId: nextAggregationRoundId,
-        country,
-        endAggregationId,
-      });
-    }
-  }, 5000);
+  await new Promise((resolve) => {
+    const interval = setInterval(async () => {
+      console.log("Waiting for aggregation round to complete", country);
+      const nextAggregationRoundId = await contract
+        .connect(signer1)
+        .aggregationRoundId();
+      if (nextAggregationRoundId > aggregationRoundId) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 5000);
+  });
+
+  const nextAggregationRoundId = await contract
+    .connect(signer1)
+    .aggregationRoundId();
+
+  submitPrices({
+    dailyIncrement,
+    contract,
+    aggregationRoundId: nextAggregationRoundId,
+    country,
+    endAggregationId,
+  });
 }
 
 async function generate() {
   const endDateStr = new Date().toISOString().slice(0, 10);
   const avgInflation = 10;
-  const endAggregationId = new Date(endDateStr).getTime() / 1000;
+  const endAggregationId = new Date(endDateStr).getTime() / 1000 - 24 * 60 * 60;
 
   console.log("Generating sample data", {
-    endDate: endDateStr,
+    endAggregationId,
     avgInflation,
   });
 
@@ -136,7 +190,7 @@ async function generate() {
     const dailyIncrement =
       (100 ** (dateDiff - 1) * (100 + avgInflation)) ** (1 / dateDiff) / 100;
 
-    await submitPrices({
+    submitPrices({
       contract: countryTracker,
       aggregationRoundId,
       country,

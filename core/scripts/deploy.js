@@ -1,16 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const hre = require("hardhat");
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
-const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
-const countryTrackerArtifact = require("../artifacts/contracts/CountryTracker.sol/CountryTracker.json");
-const szrTokenArtifact = require("../artifacts/contracts/StabilizerToken.sol/StabilizerToken.json");
 
 const productDetailsCID =
   "bafkreibtqzflynmgaboqfbkfxhrhygherd4bht6egvlxlonl32dac5oxoy";
 
-async function main() {
+async function deploy() {
   await hre.run("compile");
   await hre.network.provider.send("hardhat_reset");
 
@@ -18,90 +13,82 @@ async function main() {
     `https://ipfs.io/ipfs/${productDetailsCID}`
   );
 
-  const productDetails = productDetailsJson.data;
+  const productDetails = productDetailsJson.data.filter(
+    (p) => p.category !== "Crypto-currency"
+  );
 
-  console.log("Products", productDetails);
+  const cryptoDetails = productDetailsJson.data.filter(
+    (p) => p.category === "Crypto-currency"
+  );
+
+  console.log(`Found ${productDetails.length} from IPFS`);
 
   const Stable = await hre.ethers.getContractFactory("Stable");
 
+  const batchLimit = 10;
   const stable = await Stable.deploy(
     1000000,
     20,
     Math.round(new Date("2022-01-01").getTime() / 1000),
-    productDetails.map((p) => p.id),
+    productDetails.slice(0, batchLimit), // deploy with first products and add later
     productDetailsCID
   );
 
-  console.log("Stable factory deployed to:", stable.address);
+  console.log("Stable contract deployed to:", stable.address);
+
+  // Add products in batches
+  for (let i = batchLimit; i < productDetails.length; i += batchLimit) {
+    const slice = productDetails.slice(
+      i,
+      Math.min(i + batchLimit, productDetails.length)
+    );
+
+    // eslint-disable-next-line no-await-in-loop
+    await stable.addProducts(
+      slice.map((s) => s.id),
+      productDetailsCID
+    );
+
+    console.log(`Added ${slice.length} products to the contract`);
+  }
 
   await stable.createCountryTracker(
     "US",
     "USD",
-    10,
-    productDetails.map((p) => p.id),
-    productDetails.map(() => 1)
+    75,
+    [], // will copy products from Stable
+    [] // defaults to 1
   );
+
+  console.log("Created country tracker for US");
 
   await stable.createCountryTracker(
     "UK",
     "GBP",
-    10,
-    productDetails.map((p) => p.id),
-    productDetails.map(() => 1)
+    100,
+    [], // will copy products from Stable
+    [] // defaults to 1
   );
+
+  console.log("Created country tracker for UK");
 
   await stable.createCountryTracker(
     "IN",
     "INR",
-    10,
-    productDetails.map((p) => p.id),
-    productDetails.map(() => 1)
+    1,
+    [], // will copy products from Stable
+    [] // defaults to 1
   );
 
-  fs.writeFileSync(
-    path.join(__dirname, "../../subgraph/abis/Stable.json"),
-    JSON.stringify(stableArtifact.abi, null, 2)
-  );
+  console.log("Created country tracker for India");
 
-  fs.writeFileSync(
-    path.join(__dirname, "../../subgraph/abis/CountryTracker.json"),
-    JSON.stringify(countryTrackerArtifact.abi, null, 2)
+  await stable.addProducts(
+    cryptoDetails.map((s) => s.id),
+    productDetailsCID
   );
-
-  fs.writeFileSync(
-    path.join(__dirname, "../../aggregator/abis/Stable.json"),
-    JSON.stringify(stableArtifact.abi, null, 2)
-  );
-
-  fs.writeFileSync(
-    path.join(__dirname, "../../aggregator/abis/CountryTracker.json"),
-    JSON.stringify(countryTrackerArtifact.abi, null, 2)
-  );
-
-  fs.writeFileSync(
-    path.join(__dirname, "../../aggregator/abis/StabilizerToken.json"),
-    JSON.stringify(szrTokenArtifact.abi, null, 2)
-  );
-
-  fs.writeFileSync(
-    path.join(__dirname, "../../ui/src/abis/Stable.json"),
-    JSON.stringify(stableArtifact.abi, null, 2)
-  );
-
-  fs.writeFileSync(
-    path.join(__dirname, "../../ui/src/abis/CountryTracker.json"),
-    JSON.stringify(countryTrackerArtifact.abi, null, 2)
-  );
-
-  fs.writeFileSync(
-    path.join(__dirname, "../../ui/src/abis/StabilizerToken.json"),
-    JSON.stringify(szrTokenArtifact.abi, null, 2)
-  );
-
-  console.log("Updated subgraph ABI successfully");
 }
 
-main()
+deploy()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error);

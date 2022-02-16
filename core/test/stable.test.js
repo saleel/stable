@@ -94,8 +94,8 @@ describe("Stable", () => {
 
   it("should be able to add new product", async () => {
     await expect(
-      stable.addProduct(
-        "BTC",
+      stable.addProducts(
+        ["BTC", "ETH"],
         "bafybeig7zusrlit7xdhjkw7tkrtkmgqilt4dfoscp256yoawc3uxdwpgxe"
       )
     )

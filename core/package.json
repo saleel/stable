@@ -1,7 +1,8 @@
 {
   "name": "stable",
   "scripts": {
-    "deploy-local": "hardhat run --network localhost scripts/deploy.js",
+    "deploy-local": "hardhat run --network localhost scripts/deploy.js && node scripts/copy-abis.js",
+    "deploy-testnet": "hardhat run --network testnet_aurora scripts/deploy.js",
     "start-node": "hardhat node --hostname 0.0.0.0",
     "test": "hardhat test",
     "lint": "solhint contracts/*.sol --fix"

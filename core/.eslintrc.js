@@ -5,10 +5,7 @@ module.exports = {
     mocha: true,
     node: true,
   },
-  extends: [
-    "airbnb-base",
-    "plugin:prettier/recommended"
-  ],
+  extends: ["airbnb-base", "plugin:prettier/recommended"],
   parserOptions: {
     ecmaVersion: 12,
   },

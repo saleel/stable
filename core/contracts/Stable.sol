@@ -12,7 +12,7 @@ contract Stable is Ownable {
 
   string[] public countries; // Country code
   mapping(string => address) public countryTrackers; // Tracker contracts for countries.
-  mapping(string => uint8) public countryWeightage; // Weightage of a country in the golbal price index.
+  mapping(string => uint16) public countryWeightage; // Weightage of a country in the golbal price index.
 
   uint32 public overCollateralizationRatio; // Ratio of how much STABLE can be minted in addition to callateral (supplier redeemable).
 
@@ -50,9 +50,9 @@ contract Stable is Ownable {
   event CountryTrackerCreated(
     string country,
     string currency,
-    address stableAddress,
+    address contractAddress,
     string[] productIds,
-    uint8[] weightages
+    uint16[] weightages
   );
   event ProductDetailsUpdated(string productDetailsCID);
   event AggregationSettingsUpdated(string priceAggregationMethod, uint8 mininumPriceConfirmations);
@@ -81,11 +81,16 @@ contract Stable is Ownable {
   function createCountryTracker(
     string memory _country,
     string memory _currency,
-    uint8 _countryWeightage,
+    uint16 _countryWeightage,
     string[] memory _productIds,
-    uint8[] memory _productWeightages
+    uint16[] memory _productWeightages
   ) public onlyOwner {
-    CountryTracker _tracker = new CountryTracker(_country, _currency, _productIds, _productWeightages);
+    CountryTracker _tracker = new CountryTracker(
+      _country,
+      _currency,
+      _productIds.length > 0 ? _productIds : productIds,
+      _productWeightages
+    );
 
     _tracker.updateAggregationRound(aggregationRoundId, aggregationRoundId + aggregationDuration);
 
@@ -93,14 +98,22 @@ contract Stable is Ownable {
     countryTrackers[_country] = address(_tracker);
     countryWeightage[_country] = _countryWeightage;
 
-    emit CountryTrackerCreated(_country, _currency, address(_tracker), _productIds, _productWeightages);
+    emit CountryTrackerCreated(
+      _country,
+      _currency,
+      address(_tracker),
+      _productIds.length > 0 ? _productIds : productIds,
+      _productWeightages
+    );
   }
 
-  // Add new product
-  function addProduct(string memory _productId, string memory _updatedProductDetailsCid) public onlyOwner {
-    productIds.push(_productId);
-    productDetailsCID = _updatedProductDetailsCid;
+  // Add new products
+  function addProducts(string[] memory _productIds, string memory _updatedProductDetailsCid) public onlyOwner {
+    for (uint16 i = 0; i < _productIds.length; i++) {
+      productIds.push(_productIds[i]);
+    }
 
+    productDetailsCID = _updatedProductDetailsCid;
     emit ProductDetailsUpdated(productDetailsCID);
   }
 
@@ -108,13 +121,13 @@ contract Stable is Ownable {
   function updateBasket(
     string memory _country,
     string[] memory _productIds,
-    uint8[] memory _weightages
+    uint16[] memory _weightages
   ) public onlyOwner {
     CountryTracker(countryTrackers[_country]).updateBasket(_productIds, _weightages);
   }
 
   // Set Stable over collateralization raio
-  function updateOverCollateralizationRatio(uint8 _overCollateralizationRatio) public onlyOwner {
+  function updateOverCollateralizationRatio(uint16 _overCollateralizationRatio) public onlyOwner {
     overCollateralizationRatio = _overCollateralizationRatio;
   }
 
@@ -150,7 +163,7 @@ contract Stable is Ownable {
   function claimNextAggregationRound() public {
     require(canClaimNextAggregationRound(msg.sender), "Agg. round not claimable");
 
-    for (uint8 i = 0; i < countries.length; i++) {
+    for (uint16 i = 0; i < countries.length; i++) {
       CountryTracker(countryTrackers[countries[i]]).setAggregator(msg.sender);
     }
     currentAggregator = msg.sender;
@@ -160,7 +173,7 @@ contract Stable is Ownable {
   function completeAggregation() public {
     require(currentAggregator == msg.sender, "Not the aggregator");
 
-    for (uint8 i = 0; i < countries.length; i++) {
+    for (uint16 i = 0; i < countries.length; i++) {
       require(
         CountryTracker(countryTrackers[countries[i]]).priceUpdatedForAggRound() == true,
         "All countries not updated"
@@ -171,7 +184,7 @@ contract Stable is Ownable {
     emit AggregationRoundCompleted(aggregationRoundId);
 
     aggregationRoundId += aggregationDuration;
-    for (uint8 i = 0; i < countries.length; i++) {
+    for (uint16 i = 0; i < countries.length; i++) {
       CountryTracker(countryTrackers[countries[i]]).updateAggregationRound(
         aggregationRoundId,
         aggregationRoundId + aggregationDuration
@@ -325,13 +338,15 @@ contract Stable is Ownable {
     return totalStablesRedeemable + ((totalStablesRedeemable * overCollateralizationRatio) / 100);
   }
 
-  function getGlobalPriceIndex() public view returns (uint32) {
-    uint32 weightedSum = 0;
-    for (uint8 i = 0; i < countries.length; i++) {
+  function getGlobalPriceIndex() public view returns (uint256) {
+    uint256 weightedSum = 0;
+    uint32 totalWeightage = 0;
+    for (uint16 i = 0; i < countries.length; i++) {
       weightedSum += CountryTracker(countryTrackers[countries[i]]).priceIndex();
+      totalWeightage += countryWeightage[countries[i]];
     }
 
-    return uint32(weightedSum / countries.length);
+    return uint256(weightedSum / totalWeightage);
   }
 
   function isAggregationRoundOverdue() public view returns (bool) {
