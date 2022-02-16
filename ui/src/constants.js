@@ -1,5 +1,5 @@
 export const Countries = {
-  US: 'United States of America',
+  US: 'US',
   IN: 'India',
-  UK: 'United Kingdoms',
+  UK: 'UK',
 };

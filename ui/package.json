@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.5.8",
+    "@rehooks/local-storage": "^2.4.4",
     "axios": "^0.24.0",
     "bulma": "^0.9.3",
     "date-fns": "^2.28.0",
@@ -37,8 +38,18 @@
           "code": 200
         }
       ],
-      "react/react-in-jsx-scope": [0],
-      "jsx-a11y/click-events-have-key-events": [0]
+      "react/react-in-jsx-scope": [
+        0
+      ],
+      "jsx-a11y/click-events-have-key-events": [
+        0
+      ],
+      "jsx-a11y/anchor-is-valid": [
+        0
+      ],
+      "jsx-a11y/no-static-element-interactions": [
+        0
+      ]
     }
   },
   "browserslist": {

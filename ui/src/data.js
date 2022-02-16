@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ethers } from 'ethers';
-import stableFactoryContractAbi from './abis/StableFactory.json';
+import stableFactoryContractAbi from './abis/Stable.json';
 import stableContractAbi from './abis/Stable.json';
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_ETH_PROVIDER || window.ethereum);
@@ -16,7 +16,7 @@ const axiosGraphql = axios.create({
 axiosGraphql.interceptors.response.use((response) => response.data.data, (error) => Promise.reject(error));
 
 async function getClientForChildContract(country) {
-  const address = await stableFactorContractWithSigner.childContracts(country);
+  const address = await stableFactorContractWithSigner.countryTrackers(country);
   const stableContract = new ethers.Contract(address, stableContractAbi, provider);
   return stableContract.connect(signer);
 }

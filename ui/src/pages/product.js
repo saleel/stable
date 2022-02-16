@@ -4,7 +4,7 @@ import { useParams } from 'react-router';
 import MetricBox from '../components/metric-box';
 import Chart from '../components/chart';
 import { getProduct, getUSDRate, getPriceSubmissions } from '../data';
-import useLocalStorage from '../hooks/use-local-storage';
+import { useLocalStorage } from '@rehooks/local-storage';
 import usePromise from '../hooks/use-promise';
 import {
   calculatePriceChange, formatContractDate, formatContractDateWithYear, formatPrice,

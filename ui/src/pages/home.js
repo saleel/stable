@@ -1,16 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLocalStorage } from '@rehooks/local-storage';
 import ProductListItem from '../components/product-list-item';
 import MetricBox from '../components/metric-box';
 import { getGlobalPriceIndex, getPriceIndex, getProducts } from '../data';
-import useLocalStorage from '../hooks/use-local-storage';
 import usePromise from '../hooks/use-promise';
 import Intro from '../components/intro';
+import { Countries } from '../constants';
 
 function HomePage() {
   const navigate = useNavigate();
 
-  const [country, setCountry] = useLocalStorage('country', 'US');
+  const [country] = useLocalStorage('country', 'US');
   const [searchInput, setSearchInput] = React.useState('');
 
   const [products, { isFetching: isFetchingProducts }] = usePromise(() => getProducts(country), {
@@ -35,7 +36,7 @@ function HomePage() {
 
       <div className="metrics">
         <MetricBox loading={isFetchingGPI} style={{ backgroundColor: '#C6F6D5' }} label="Global Price Index" value={globalPriceIndex} />
-        <MetricBox loading={isFetchingPI} label="USA Price Index" value={priceIndex} />
+        <MetricBox loading={isFetchingPI} label={`${Countries[country]} Price Index`} value={priceIndex} />
         <MetricBox label="SZR" value="75" unit="USD" />
         <MetricBox label="USA Price Index" value="75" />
       </div>
