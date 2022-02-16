@@ -93,7 +93,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "stableAddress",
+        "name": "contractAddress",
         "type": "address"
       },
       {
@@ -104,9 +104,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint8[]",
+        "internalType": "uint16[]",
         "name": "weightages",
-        "type": "uint8[]"
+        "type": "uint16[]"
       }
     ],
     "name": "CountryTrackerCreated",
@@ -147,9 +147,9 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "_productId",
-        "type": "string"
+        "internalType": "string[]",
+        "name": "_productIds",
+        "type": "string[]"
       },
       {
         "internalType": "string",
@@ -157,7 +157,7 @@
         "type": "string"
       }
     ],
-    "name": "addProduct",
+    "name": "addProducts",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -406,9 +406,9 @@
     "name": "countryWeightage",
     "outputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint16",
         "name": "",
-        "type": "uint8"
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",
@@ -427,9 +427,9 @@
         "type": "string"
       },
       {
-        "internalType": "uint8",
+        "internalType": "uint16",
         "name": "_countryWeightage",
-        "type": "uint8"
+        "type": "uint16"
       },
       {
         "internalType": "string[]",
@@ -437,9 +437,9 @@
         "type": "string[]"
       },
       {
-        "internalType": "uint8[]",
+        "internalType": "uint16[]",
         "name": "_productWeightages",
-        "type": "uint8[]"
+        "type": "uint16[]"
       }
     ],
     "name": "createCountryTracker",
@@ -478,9 +478,9 @@
     "name": "getGlobalPriceIndex",
     "outputs": [
       {
-        "internalType": "uint32",
+        "internalType": "uint256",
         "name": "",
-        "type": "uint32"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -905,9 +905,9 @@
         "type": "string[]"
       },
       {
-        "internalType": "uint8[]",
+        "internalType": "uint16[]",
         "name": "_weightages",
-        "type": "uint8[]"
+        "type": "uint16[]"
       }
     ],
     "name": "updateBasket",
@@ -918,9 +918,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint16",
         "name": "_overCollateralizationRatio",
-        "type": "uint8"
+        "type": "uint16"
       }
     ],
     "name": "updateOverCollateralizationRatio",
