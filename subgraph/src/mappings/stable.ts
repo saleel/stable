@@ -1,155 +1,101 @@
-import { StableFactory as StableFactoryContract } from '../../generated/StableFactory/StableFactory';
-import { PricesSubmitted, PriceIndexUpdated, PricesUpdated, ProductBasketUpdated, Stable as StableContract } from '../../generated/templates/Stable/Stable';
-import { PriceIndex, Stable, Price, PriceSubmission, ProductBasketItem, AggregationRound, GlobalPriceIndex } from '../../generated/schema';
-import { Address, BigInt, dataSource, DataSourceContext } from '@graphprotocol/graph-ts';
+import { DataSourceContext, ipfs, JSONValue, Value } from '@graphprotocol/graph-ts';
+import { ProductDetailsUpdated, CountryTrackerCreated, AggregationRoundStarted, AggregationRoundCompleted } from '../../generated/Stable/Stable';
+import { Product, ProductBasketItem, CountryTracker as CountryTrackerEntity, AggregationRound } from '../../generated/schema';
+import { CountryTracker } from '../../generated/templates';
 
-export function handleProductBasketUpdated(event: ProductBasketUpdated): void {
-  let context = dataSource.context();
-  const stableId = context.getString('stableId');
-  const stable = Stable.load(stableId);
 
-  if (stable == null) {
-    return;
-  }
+export function handleCountryTrackerCreated(event: CountryTrackerCreated): void {
+  const id = event.params.country + "-" + event.params.currency;
+
+  const countryTracker = new CountryTrackerEntity(id);
+  countryTracker.country = event.params.country;
+  countryTracker.currency = event.params.currency;
+  countryTracker.address = event.params.contractAddress.toHex();
+  countryTracker.createdAt = event.block.timestamp.toI32();
+  countryTracker.updatedAt = event.block.timestamp.toI32();
 
   for (let i = 0; i < event.params.productIds.length; i++) {
     const productId = event.params.productIds[i]
-    const basketItemId = stable.id + "-" + productId;
+    const basketItemId = countryTracker.id + "-" + productId;
 
     let basketItem = ProductBasketItem.load(basketItemId);
 
     if (basketItem == null) {
       basketItem = new ProductBasketItem(basketItemId);
       basketItem.productId = productId;
-      basketItem.stable = stable.id;
+      basketItem.countryTracker = countryTracker.id;
     }
 
-    basketItem.weightage = event.params.weightages[i];
+    if (event.params.weightages.length > 0) {
+      basketItem.weightage = event.params.weightages[i];
+    } else {
+      basketItem.weightage = 1; // Default is 1 while create if empty
+    }
+
     basketItem.save();
   }
+
+  countryTracker.save();
+
+  let context = new DataSourceContext()
+  context.setString('countryTrackerId', id);
+  context.setString('stableAddress', event.address.toHex());
+  CountryTracker.createWithContext(event.params.contractAddress, context);
 }
 
-export function handlePricesSubmitted(event: PricesSubmitted): void {
-  let context = dataSource.context();
-  const stableId = context.getString('stableId');
-  const stable = Stable.load(stableId);
+// Parse product details JSON from IPFS
+export function processIPFSData(value: JSONValue, userData: Value): void {
+  const productDetails = value.toArray();
 
-  if (stable == null) {
-    return;
-  }
+  productDetails.forEach(detail => {
+    const productData = detail.toObject();
+    const productId = productData.get('id');
 
-  for (let i = 0; i < event.params.productIds.length; i++) {
-    const productId = event.params.productIds[i]
-    const aggregationRoundId = stableId + "-" + event.params.aggregationRoundId.toString();
-
-    const submissionId = aggregationRoundId + "-" + productId + "-" + event.transaction.from.toHex();
-
-    let priceSubmission = PriceSubmission.load(submissionId);
-    if (priceSubmission == null) {
-      priceSubmission = new PriceSubmission(submissionId);
-      priceSubmission.createdAt = event.block.timestamp.toI32();
+    if (!productId) {
+      return;
     }
 
-    priceSubmission.stable = stable.id;
-    priceSubmission.aggregationRound = aggregationRoundId;
-    priceSubmission.transactionId = event.transaction.hash.toHex();
-    priceSubmission.currency = stable.currency;
-    priceSubmission.country = stable.country;
-    priceSubmission.product = productId;
-    priceSubmission.price = event.params.prices[i];
-    priceSubmission.source = event.params.source;
-    priceSubmission.updatedAt = event.block.timestamp.toI32();
-    priceSubmission.createdBy = event.transaction.from.toHex();
-    priceSubmission.save();
-  }
+    const name = productData.get('name');
+    const description = productData.get('description');
+    const category = productData.get('category');
+
+    let product = Product.load(productId.toString());
+    if (product == null) {
+      product = new Product(productId.toString());
+      // product.createdAt = userData.toBigInt(); // TODO: This is throwing error
+    }
+
+    if (name) {
+      product.name = name.toString();
+    }
+    if (description) {
+      product.description = description.toString();
+    }
+    if (category) {
+      product.category = category.toString();
+    }
+
+    product.save();
+  });
+
 }
 
-export function handlePricesUpdated(event: PricesUpdated): void {
-  let context = dataSource.context();
-  const stableId = context.getString('stableId');
-  const stable = Stable.load(stableId);
-
-  if (stable == null) {
-    return;
-  }
-
-  for (let i = 0; i < event.params.productIds.length; i++) {
-    const productId = event.params.productIds[i]
-
-    // Create Price
-    const aggregationRoundId = event.params.aggregationRoundId.toString();
-    const priceId = stable.id + "-" + aggregationRoundId + "-" + productId;
-    const price = new Price(priceId);
-    price.stable = stable.id;
-    price.currency = stable.currency;
-    price.country = stable.country;
-    price.product = productId;
-    price.value = event.params.prices[i];
-    price.createdAt = event.params.aggregationRoundId.toI32();
-    price.createdBy = event.transaction.from.toHex();
-    price.save();
-  }
+export function handleProductDetailsUpdated(event: ProductDetailsUpdated): void {
+  ipfs.mapJSON(event.params.productDetailsCID, 'processIPFSData', Value.fromBigInt(event.block.timestamp));
 }
 
-export function handlePriceIndexUpdated(event: PriceIndexUpdated): void {
-  let context = dataSource.context();
-  const stableId = context.getString('stableId');
-  const stable = Stable.load(stableId);
+export function handleAggregationRoundStarted(event: AggregationRoundStarted): void {
+  const aggregationRoundId = event.params.aggregationRoundId.toString();
+  const aggregationRound = new AggregationRound(aggregationRoundId);
 
-  if (stable == null) {
-    return;
-  }
-
-  const aggregationRoundId = event.params.aggregationRoundId;
-  const priceIndexId = stable.id + '-' + aggregationRoundId.toString();
-  const priceIndex = new PriceIndex(priceIndexId);
-
-  priceIndex.stable = stable.id;
-  priceIndex.value = event.params.priceIndex;
-  priceIndex.updatedAt = aggregationRoundId.toI32();
-  priceIndex.currency = stable.currency;
-  priceIndex.country = stable.country;
-
-  priceIndex.save();
-
-  stable.latestPriceIndex = priceIndex.value;
-  stable.save();
-
-  // Update the global price index
-  const stableFactoryAddress = context.getString('stableFactoryAddress');
-  const stableFactoryContract = StableFactoryContract.bind(Address.fromString(stableFactoryAddress));
-  const blockTime = event.block.timestamp.toI32();
-  // Round to nearest 00:00 GMT time
-  const globalPriceIndexId = blockTime - (blockTime % (24 * 60 * 60));
-  let globalPriceIndex = GlobalPriceIndex.load(globalPriceIndexId.toString());
-  if (!globalPriceIndex) {
-    globalPriceIndex = new GlobalPriceIndex(globalPriceIndexId.toString());
-    globalPriceIndex.createdAt = event.block.timestamp.toI32();
-  }
-  globalPriceIndex.value = stableFactoryContract.globalPriceIndex().toI32();
-  globalPriceIndex.updatedAt = event.block.timestamp.toI32();
-  globalPriceIndex.save();
-}
-
-export function handleAggregationRoundStarted(event: PriceIndexUpdated): void {
-  let context = dataSource.context();
-  const stableId = context.getString('stableId');
-
-  const aggregationRoundId = stableId + "-" + event.params.aggregationRoundId.toString();
-  const aggregationRound = new AggregationRound(aggregationRoundId.toString());
-
-  aggregationRound.stable = stableId;
   aggregationRound.startTime = event.params.aggregationRoundId.toI32();
   aggregationRound.status = 'ACTIVE';
   aggregationRound.save();
 }
 
-export function handleAggregationRoundCompleted(event: PriceIndexUpdated): void {
-  let context = dataSource.context();
-  const stableId = context.getString('stableId');
-
-  const aggregationRoundId = stableId + "-" + event.params.aggregationRoundId.toString();
-  const aggregationRound = AggregationRound.load(aggregationRoundId);
+export function handleAggregationRoundCompleted(event: AggregationRoundCompleted): void {
+  const aggregationRoundId = event.params.aggregationRoundId.toString();
+  const aggregationRound = new AggregationRound(aggregationRoundId);
 
   if (!aggregationRound) {
     return;

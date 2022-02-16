@@ -9,13 +9,12 @@ type Product @entity {
 
 type PriceSubmission @entity {
   id: ID!
-  stable: Stable!
+  countryTracker: CountryTracker!
   country: String!
   currency: String!
   price: Int!
   product: Product!
   source: String!
-  aggregationRound: AggregationRound!
   transactionId: String!
   createdBy: String!
   createdAt: Int!
@@ -24,7 +23,7 @@ type PriceSubmission @entity {
 
 type Price @entity {
   id: ID!
-  stable: Stable!
+  countryTracker: CountryTracker!
   country: String!
   currency: String!
   product: Product!
@@ -35,7 +34,7 @@ type Price @entity {
 
 type PriceIndex @entity {
   id: ID!
-  stable: Stable!
+  countryTracker: CountryTracker!
   country: String!
   currency: String!
   value: Int!
@@ -44,27 +43,25 @@ type PriceIndex @entity {
 
 type ProductBasketItem @entity {
   id: ID!
-  stable: Stable!
+  countryTracker: CountryTracker!
   productId: String!
   weightage: Int!
 }
 
 type AggregationRound @entity {
   id: ID!
-  stable: Stable!
   startTime: Int!
   endTime: Int!
   status: String
-  priceSubmissions: [PriceSubmission!] @derivedFrom(field: "aggregationRound")
 }
 
-type Stable @entity {
+type CountryTracker @entity {
   id: ID!
   country: String!
   currency: String!
   address: String!
   latestPriceIndex: Int!
-  productBasket: [ProductBasketItem!]! @derivedFrom(field: "stable")
+  productBasket: [ProductBasketItem!]! @derivedFrom(field: "countryTracker")
   createdAt: Int!
   updatedAt: Int!
 }

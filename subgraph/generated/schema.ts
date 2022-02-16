@@ -128,13 +128,12 @@ export class PriceSubmission extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("stable", Value.fromString(""));
+    this.set("countryTracker", Value.fromString(""));
     this.set("country", Value.fromString(""));
     this.set("currency", Value.fromString(""));
     this.set("price", Value.fromI32(0));
     this.set("product", Value.fromString(""));
     this.set("source", Value.fromString(""));
-    this.set("aggregationRound", Value.fromString(""));
     this.set("transactionId", Value.fromString(""));
     this.set("createdBy", Value.fromString(""));
     this.set("createdAt", Value.fromI32(0));
@@ -167,13 +166,13 @@ export class PriceSubmission extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get stable(): string {
-    let value = this.get("stable");
+  get countryTracker(): string {
+    let value = this.get("countryTracker");
     return value!.toString();
   }
 
-  set stable(value: string) {
-    this.set("stable", Value.fromString(value));
+  set countryTracker(value: string) {
+    this.set("countryTracker", Value.fromString(value));
   }
 
   get country(): string {
@@ -221,15 +220,6 @@ export class PriceSubmission extends Entity {
     this.set("source", Value.fromString(value));
   }
 
-  get aggregationRound(): string {
-    let value = this.get("aggregationRound");
-    return value!.toString();
-  }
-
-  set aggregationRound(value: string) {
-    this.set("aggregationRound", Value.fromString(value));
-  }
-
   get transactionId(): string {
     let value = this.get("transactionId");
     return value!.toString();
@@ -272,7 +262,7 @@ export class Price extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("stable", Value.fromString(""));
+    this.set("countryTracker", Value.fromString(""));
     this.set("country", Value.fromString(""));
     this.set("currency", Value.fromString(""));
     this.set("product", Value.fromString(""));
@@ -307,13 +297,13 @@ export class Price extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get stable(): string {
-    let value = this.get("stable");
+  get countryTracker(): string {
+    let value = this.get("countryTracker");
     return value!.toString();
   }
 
-  set stable(value: string) {
-    this.set("stable", Value.fromString(value));
+  set countryTracker(value: string) {
+    this.set("countryTracker", Value.fromString(value));
   }
 
   get country(): string {
@@ -376,7 +366,7 @@ export class PriceIndex extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("stable", Value.fromString(""));
+    this.set("countryTracker", Value.fromString(""));
     this.set("country", Value.fromString(""));
     this.set("currency", Value.fromString(""));
     this.set("value", Value.fromI32(0));
@@ -409,13 +399,13 @@ export class PriceIndex extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get stable(): string {
-    let value = this.get("stable");
+  get countryTracker(): string {
+    let value = this.get("countryTracker");
     return value!.toString();
   }
 
-  set stable(value: string) {
-    this.set("stable", Value.fromString(value));
+  set countryTracker(value: string) {
+    this.set("countryTracker", Value.fromString(value));
   }
 
   get country(): string {
@@ -460,7 +450,7 @@ export class ProductBasketItem extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("stable", Value.fromString(""));
+    this.set("countryTracker", Value.fromString(""));
     this.set("productId", Value.fromString(""));
     this.set("weightage", Value.fromI32(0));
   }
@@ -493,13 +483,13 @@ export class ProductBasketItem extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get stable(): string {
-    let value = this.get("stable");
+  get countryTracker(): string {
+    let value = this.get("countryTracker");
     return value!.toString();
   }
 
-  set stable(value: string) {
-    this.set("stable", Value.fromString(value));
+  set countryTracker(value: string) {
+    this.set("countryTracker", Value.fromString(value));
   }
 
   get productId(): string {
@@ -526,7 +516,6 @@ export class AggregationRound extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("stable", Value.fromString(""));
     this.set("startTime", Value.fromI32(0));
     this.set("endTime", Value.fromI32(0));
   }
@@ -557,15 +546,6 @@ export class AggregationRound extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
-  }
-
-  get stable(): string {
-    let value = this.get("stable");
-    return value!.toString();
-  }
-
-  set stable(value: string) {
-    this.set("stable", Value.fromString(value));
   }
 
   get startTime(): i32 {
@@ -602,26 +582,9 @@ export class AggregationRound extends Entity {
       this.set("status", Value.fromString(<string>value));
     }
   }
-
-  get priceSubmissions(): Array<string> | null {
-    let value = this.get("priceSubmissions");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toStringArray();
-    }
-  }
-
-  set priceSubmissions(value: Array<string> | null) {
-    if (!value) {
-      this.unset("priceSubmissions");
-    } else {
-      this.set("priceSubmissions", Value.fromStringArray(<Array<string>>value));
-    }
-  }
 }
 
-export class Stable extends Entity {
+export class CountryTracker extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -636,19 +599,19 @@ export class Stable extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Stable entity without an ID");
+    assert(id != null, "Cannot save CountryTracker entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save Stable entity with non-string ID. " +
+        "Cannot save CountryTracker entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("Stable", id.toString(), this);
+      store.set("CountryTracker", id.toString(), this);
     }
   }
 
-  static load(id: string): Stable | null {
-    return changetype<Stable | null>(store.get("Stable", id));
+  static load(id: string): CountryTracker | null {
+    return changetype<CountryTracker | null>(store.get("CountryTracker", id));
   }
 
   get id(): string {

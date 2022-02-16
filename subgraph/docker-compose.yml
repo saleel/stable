@@ -18,6 +18,7 @@ services:
       postgres_db: graph-node
       ipfs: 'ipfs:5001'
       ethereum: 'mainnet:http://host.docker.internal:8545'
+      # ethereum: 'aurora-testnet:https://testnet.aurora.dev'
       GRAPH_LOG: info
       GRAPH_ALLOW_NON_DETERMINISTIC_IPFS: 1
   ipfs:

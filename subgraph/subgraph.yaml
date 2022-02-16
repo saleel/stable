@@ -1,5 +1,5 @@
 specVersion: 0.0.4
-description: Stable
+description: Project Stable
 repository: https://github.com/saleel/stable/subgraph
 schema:
   file: ./schema.graphql
@@ -7,32 +7,10 @@ features:
   - ipfsOnEthereumContracts
 dataSources:
   - kind: ethereum/contract
-    name: StableFactory
+    name: Stable
     network: mainnet
     source:
       address: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
-      abi: StableFactory
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      file: ./src/mappings/factory.ts
-      entities:
-        - StableFactory
-      abis:
-        - name: StableFactory
-          file: ./abis/StableFactory.json
-      eventHandlers:
-        - event: StableCreated(string,string,address,string[],uint8[])
-          handler: handleStableCreated
-        - event: ProductDetailsUpdated(string)
-          handler: handleProductDetailsUpdated
-
-templates:
-  - name: Stable
-    kind: ethereum/contract
-    network: mainnet
-    source:
       abi: Stable
     mapping:
       kind: ethereum/events
@@ -44,18 +22,40 @@ templates:
       abis:
         - name: Stable
           file: ./abis/Stable.json
-        - name: StableFactory
-          file: ./abis/StableFactory.json
       eventHandlers:
-        - event: PricesSubmitted(uint32,string[],uint16[],string)
-          handler: handlePricesSubmitted
-        - event: PricesUpdated(uint32,string[],uint16[])
-          handler: handlePricesUpdated
-        - event: PriceIndexUpdated(uint32,uint16)
-          handler: handlePriceIndexUpdated
-        - event: ProductBasketUpdated(string[],uint8[])
-          handler: handleProductBasketUpdated
-        - event: AggregationRoundStarted(uint32)
+        - event: CountryTrackerCreated(string,string,address,string[],uint16[])
+          handler: handleCountryTrackerCreated
+        - event: ProductDetailsUpdated(string)
+          handler: handleProductDetailsUpdated
+        - event: AggregationRoundStarted(uint256)
           handler: handleAggregationRoundStarted
-        - event: AggregationRoundCompleted(uint32)
+        - event: AggregationRoundCompleted(uint256)
           handler: handleAggregationRoundCompleted
+
+templates:
+  - name: CountryTracker
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: CountryTracker
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/mappings/country.ts
+      entities:
+        - CountryTracker
+      abis:
+        - name: Stable
+          file: ./abis/Stable.json
+        - name: CountryTracker
+          file: ./abis/CountryTracker.json
+      eventHandlers:
+        - event: PricesSubmitted(string[],uint32[],uint256,string)
+          handler: handlePricesSubmitted
+        - event: PricesUpdated(uint256,string[],uint32[])
+          handler: handlePricesUpdated
+        - event: PriceIndexUpdated(uint256,uint32)
+          handler: handlePriceIndexUpdated
+        - event: ProductBasketUpdated(string[],uint16[])
+          handler: handleProductBasketUpdated

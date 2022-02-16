@@ -1,5 +1,5 @@
 {
-  "name": "stable-subgraph",
+  "name": "stable-price-history",
   "version": "0.1.0",
   "repository": "https://github.com/saleel/stable",
   "scripts": {
@@ -7,8 +7,8 @@
     "create-local": "graph create stable --node http://127.0.0.1:8020",
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy stable --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
-    "deploy-local": "graph deploy stable --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
+    "deploy": "graph deploy --product hosted-service saleel/stable-price-history",
+    "deploy-local": "npm run create-local && graph deploy stable --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
     "deploy:aurora": "npx truffle compile && npx truffle migrate --network aurora"
   },
   "devDependencies": {
