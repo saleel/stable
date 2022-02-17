@@ -27,7 +27,7 @@ describe("CountryTracker", () => {
       20, // coll ratio
       Math.round(new Date().getTime() / 1000) - 2 * 86400, // 2 days before
       ["ZC", "ZW", "ZR", "ZS", "KE"],
-      "bafybeig7zusrlit7xdhjkw7tkrtkmgqilt4dfoscp256yoawc3uxdwpgxe"
+      "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
     );
 
     await stable.deployed();

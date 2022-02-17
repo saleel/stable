@@ -16,7 +16,6 @@ const signer1 = provider.getSigner(1);
 const signer2 = provider.getSigner(2);
 const signer3 = provider.getSigner(3);
 const signer4 = provider.getSigner(4);
-const signer5 = provider.getSigner(5);
 
 const CountryMultiplier = {
   UK: 1,
@@ -26,6 +25,7 @@ const CountryMultiplier = {
 
 const CategoryMultiplier = {
   Food: 1,
+  Futures: 2,
   Energy: 3,
   Alcohol: 1.5,
 };
@@ -33,18 +33,18 @@ const CategoryMultiplier = {
 const CryptoVariance = {
   UK: 1,
   US: 1,
-  IN: 1.9, // to compensate for CountryMultiplier[in] + extra
+  IN: 1.9, // to compensate for CountryMultiplier[in] + little extra
 };
 
 function generateRandomPrice({ product, country }) {
   let price = (Math.random() * 2 + 1) * 100; // Price with no decimals (between 1 and 3)
 
   if (product.id === "BTC") {
-    price = 29400 * 100 * CryptoVariance[country];
+    price = 29400 * CryptoVariance[country]; // Track crypto without penny/cents/paisa
   }
 
   if (product.id === "ETH") {
-    price = 2280 * 100 * CryptoVariance[country];
+    price = 2280 * CryptoVariance[country]; // Track crypto without penny/cents/paisa
   }
 
   return Math.round(
@@ -70,7 +70,7 @@ async function submitPrices({
 
   for (const product of products) {
     const lastPrice = await contract.prices(product.id);
-    const isCrypto = product.category === "Crypto-currency";
+    const isCrypto = product.category === "Cryptocurrency";
 
     let newPrice;
 

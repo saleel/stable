@@ -28,7 +28,7 @@ describe("Stable", () => {
       20, // coll ratio
       Math.round(new Date().getTime() / 1000) - 2 * 86400, // 2 days before
       ["ZC", "ZW", "ZR", "ZS", "KE"],
-      "bafybeig7zusrlit7xdhjkw7tkrtkmgqilt4dfoscp256yoawc3uxdwpgxe"
+      "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
     );
 
     await stable.deployed();
@@ -96,11 +96,11 @@ describe("Stable", () => {
     await expect(
       stable.addProducts(
         ["BTC", "ETH"],
-        "bafybeig7zusrlit7xdhjkw7tkrtkmgqilt4dfoscp256yoawc3uxdwpgxe"
+        "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
       )
     )
       .to.emit(stable, "ProductDetailsUpdated")
-      .withArgs("bafybeig7zusrlit7xdhjkw7tkrtkmgqilt4dfoscp256yoawc3uxdwpgxe");
+      .withArgs("bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa");
 
     // This will be 6th item, as 5 products are already added in beforeEach
     expect(await stable.productIds(5)).to.equal("BTC");

@@ -3,22 +3,22 @@ const hre = require("hardhat");
 const axios = require("axios");
 
 const productDetailsCID =
-  "bafkreibtqzflynmgaboqfbkfxhrhygherd4bht6egvlxlonl32dac5oxoy";
+  "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa";
 
 async function deploy() {
   await hre.run("compile");
-  await hre.network.provider.send("hardhat_reset");
+  // await hre.network.provider.send("hardhat_reset");
 
   const productDetailsJson = await axios.get(
     `https://ipfs.io/ipfs/${productDetailsCID}`
   );
 
   const productDetails = productDetailsJson.data.filter(
-    (p) => p.category !== "Crypto-currency"
+    (p) => p.category !== "Cryptocurrency"
   );
 
   const cryptoDetails = productDetailsJson.data.filter(
-    (p) => p.category === "Crypto-currency"
+    (p) => p.category === "Cryptocurrency"
   );
 
   console.log(`Found ${productDetails.length} from IPFS`);
