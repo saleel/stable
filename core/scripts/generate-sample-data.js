@@ -118,7 +118,7 @@ async function submitPrices({
   );
   await contract.connect(signer4).submitPrices(
     productIds,
-    prices.map((p) => Math.round(p * (0.5 + Math.random()))),
+    prices.map((p) => Math.round(p * 0.97)),
     timestamp,
     "manual"
   );

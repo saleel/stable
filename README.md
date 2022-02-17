@@ -18,7 +18,7 @@
 
 ## Contracts
 
-- StableFactory: Manages the protocol settings, product details (IPFS hash), country weightage, global price index. Also allow creation of Child contract for each country (factory model)
+- Stable: Manages the protocol settings, product details (IPFS hash), country weightage, global price index. Also allow creation of Child contract for each country (factory model)
 
 - Stable: Manage Basket, PriceIndex for a given country. Allow users to submit price and validators to update index and aggregated price.
 
@@ -34,3 +34,12 @@ TODO
 - Icons for all
 - IPFS for price submission
 
+
+- Check math, 
+- Test for multiple agg, suppliers..etc
+- Div by zero
+- IPFS indexing for prices
+- Rename countrytracker
+- i32 time
+- Reduce gas fee
+- Use clone factory method for country trackers
