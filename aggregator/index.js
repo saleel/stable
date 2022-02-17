@@ -122,7 +122,7 @@ async function startAggregationForCountry({ contract, minPriceConfirmations }) {
   `;
 
   const { data } = await axios({
-    url: 'http://127.0.0.1:8000/subgraphs/name/stable',
+    url: process.env.GRAPH_API,
     method: 'POST',
     data: {
       query,

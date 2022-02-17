@@ -23,7 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 
 node_modules
-.env
+subgraph/.env
+core/.env
 
 #Hardhat files
 cache
