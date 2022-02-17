@@ -48,6 +48,11 @@ module.exports = {
       accounts: [`0x${PRIVATE_KEY}`],
       chainId: 1313161555,
     },
+    aurora: {
+      url: "https://mainnet.aurora.dev",
+      accounts: [`0x${PRIVATE_KEY}`],
+      chainId: 1313161554,
+    },
     // ropsten: {
     //   url: process.env.ROPSTEN_URL || "",
     //   accounts:
