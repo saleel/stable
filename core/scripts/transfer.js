@@ -1,29 +1,26 @@
 /* eslint-disable import/no-extraneous-dependencies */
-const ethers = require("ethers");
+const hre = require("hardhat");
 const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
 const szrAbi = require("../artifacts/contracts/StabilizerToken.sol/StabilizerToken.json");
 
 const amount = 100;
 const recipient = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
+
 const stableContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 async function transfer() {
-  const provider = new ethers.providers.JsonRpcProvider();
-
-  const owner = provider.getSigner();
+  const [owner] = await hre.ethers.getSigners();
 
   /** @type {import("../typechain-types/Stable").Stable} */
-  const stableContract = new ethers.Contract(
+  const stableContract = new hre.ethers.Contract(
     stableContractAddress,
-    stableAbi.abi,
-    provider
+    stableAbi.abi
   ).connect(owner);
 
   /** @type {import("../typechain-types/SZRToken").SZRToken} */
-  const SZRToken = new ethers.Contract(
+  const SZRToken = new hre.ethers.Contract(
     await stableContract.szrToken(),
-    szrAbi.abi,
-    provider
+    szrAbi.abi
   ).connect(owner);
 
   await SZRToken.transfer(recipient, 100);
