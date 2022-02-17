@@ -43,3 +43,4 @@ TODO
 - i32 time
 - Reduce gas fee
 - Use clone factory method for country trackers
+- V3 agg interface

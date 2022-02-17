@@ -14,27 +14,6 @@ export function handleCountryTrackerCreated(event: CountryTrackerCreated): void 
   countryTracker.createdAt = event.block.timestamp.toI32();
   countryTracker.updatedAt = event.block.timestamp.toI32();
 
-  for (let i = 0; i < event.params.productIds.length; i++) {
-    const productId = event.params.productIds[i]
-    const basketItemId = countryTracker.id + "-" + productId;
-
-    let basketItem = ProductBasketItem.load(basketItemId);
-
-    if (basketItem == null) {
-      basketItem = new ProductBasketItem(basketItemId);
-      basketItem.productId = productId;
-      basketItem.countryTracker = countryTracker.id;
-    }
-
-    if (event.params.weightages.length > 0) {
-      basketItem.weightage = event.params.weightages[i];
-    } else {
-      basketItem.weightage = 1; // Default is 1 while create if empty
-    }
-
-    basketItem.save();
-  }
-
   countryTracker.save();
 
   let context = new DataSourceContext()
@@ -81,7 +60,7 @@ export function processIPFSData(value: JSONValue, userData: Value): void {
 }
 
 export function handleProductDetailsUpdated(event: ProductDetailsUpdated): void {
-  ipfs.mapJSON(event.params.productDetailsCID, 'processIPFSData', Value.fromBigInt(event.block.timestamp));
+  ipfs.mapJSON(event.params.productsCID, 'processIPFSData', Value.fromBigInt(event.block.timestamp));
 }
 
 export function handleAggregationRoundStarted(event: AggregationRoundStarted): void {

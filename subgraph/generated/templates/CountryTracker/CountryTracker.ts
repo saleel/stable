@@ -364,14 +364,6 @@ export class ConstructorCall__Inputs {
   get _currency(): string {
     return this._call.inputValues[1].value.toString();
   }
-
-  get _productIds(): Array<string> {
-    return this._call.inputValues[2].value.toStringArray();
-  }
-
-  get _productWeightages(): Array<i32> {
-    return this._call.inputValues[3].value.toI32Array();
-  }
 }
 
 export class ConstructorCall__Outputs {

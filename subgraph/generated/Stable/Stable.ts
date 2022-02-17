@@ -92,14 +92,6 @@ export class CountryTrackerCreated__Params {
   get contractAddress(): Address {
     return this._event.parameters[2].value.toAddress();
   }
-
-  get productIds(): Array<string> {
-    return this._event.parameters[3].value.toStringArray();
-  }
-
-  get weightages(): Array<i32> {
-    return this._event.parameters[4].value.toI32Array();
-  }
 }
 
 export class OwnershipTransferred extends ethereum.Event {
@@ -137,7 +129,7 @@ export class ProductDetailsUpdated__Params {
     this._event = event;
   }
 
-  get productDetailsCID(): string {
+  get productsCID(): string {
     return this._event.parameters[0].value.toString();
   }
 }
@@ -680,41 +672,14 @@ export class Stable extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toString());
   }
 
-  productDetailsCID(): string {
-    let result = super.call(
-      "productDetailsCID",
-      "productDetailsCID():(string)",
-      []
-    );
+  productsCID(): string {
+    let result = super.call("productsCID", "productsCID():(string)", []);
 
     return result[0].toString();
   }
 
-  try_productDetailsCID(): ethereum.CallResult<string> {
-    let result = super.tryCall(
-      "productDetailsCID",
-      "productDetailsCID():(string)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
-  }
-
-  productIds(param0: BigInt): string {
-    let result = super.call("productIds", "productIds(uint256):(string)", [
-      ethereum.Value.fromUnsignedBigInt(param0)
-    ]);
-
-    return result[0].toString();
-  }
-
-  try_productIds(param0: BigInt): ethereum.CallResult<string> {
-    let result = super.tryCall("productIds", "productIds(uint256):(string)", [
-      ethereum.Value.fromUnsignedBigInt(param0)
-    ]);
+  try_productsCID(): ethereum.CallResult<string> {
+    let result = super.tryCall("productsCID", "productsCID():(string)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -930,12 +895,8 @@ export class ConstructorCall__Inputs {
     return this._call.inputValues[2].value.toBigInt();
   }
 
-  get _productIds(): Array<string> {
-    return this._call.inputValues[3].value.toStringArray();
-  }
-
-  get _productDetailsCid(): string {
-    return this._call.inputValues[4].value.toString();
+  get _productsCID(): string {
+    return this._call.inputValues[3].value.toString();
   }
 }
 
@@ -943,40 +904,6 @@ export class ConstructorCall__Outputs {
   _call: ConstructorCall;
 
   constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-}
-
-export class AddProductsCall extends ethereum.Call {
-  get inputs(): AddProductsCall__Inputs {
-    return new AddProductsCall__Inputs(this);
-  }
-
-  get outputs(): AddProductsCall__Outputs {
-    return new AddProductsCall__Outputs(this);
-  }
-}
-
-export class AddProductsCall__Inputs {
-  _call: AddProductsCall;
-
-  constructor(call: AddProductsCall) {
-    this._call = call;
-  }
-
-  get _productIds(): Array<string> {
-    return this._call.inputValues[0].value.toStringArray();
-  }
-
-  get _updatedProductDetailsCid(): string {
-    return this._call.inputValues[1].value.toString();
-  }
-}
-
-export class AddProductsCall__Outputs {
-  _call: AddProductsCall;
-
-  constructor(call: AddProductsCall) {
     this._call = call;
   }
 }
@@ -1162,14 +1089,6 @@ export class CreateCountryTrackerCall__Inputs {
 
   get _countryWeightage(): i32 {
     return this._call.inputValues[2].value.toI32();
-  }
-
-  get _productIds(): Array<string> {
-    return this._call.inputValues[3].value.toStringArray();
-  }
-
-  get _productWeightages(): Array<i32> {
-    return this._call.inputValues[4].value.toI32Array();
   }
 }
 
@@ -1505,6 +1424,36 @@ export class UpdateOverCollateralizationRatioCall__Outputs {
   _call: UpdateOverCollateralizationRatioCall;
 
   constructor(call: UpdateOverCollateralizationRatioCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateProductsCall extends ethereum.Call {
+  get inputs(): UpdateProductsCall__Inputs {
+    return new UpdateProductsCall__Inputs(this);
+  }
+
+  get outputs(): UpdateProductsCall__Outputs {
+    return new UpdateProductsCall__Outputs(this);
+  }
+}
+
+export class UpdateProductsCall__Inputs {
+  _call: UpdateProductsCall;
+
+  constructor(call: UpdateProductsCall) {
+    this._call = call;
+  }
+
+  get _updatedProductsCID(): string {
+    return this._call.inputValues[0].value.toString();
+  }
+}
+
+export class UpdateProductsCall__Outputs {
+  _call: UpdateProductsCall;
+
+  constructor(call: UpdateProductsCall) {
     this._call = call;
   }
 }
