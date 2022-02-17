@@ -6,14 +6,14 @@ const axios = require("axios");
 const productsCID =
   "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa";
 
-const sleep = (sec = 0) =>
+const sleep = (sec = 5) =>
   new Promise((resolve) => {
     setTimeout(resolve, sec * 1000);
   });
 
 async function deploy() {
   await hre.run("compile");
-  await hre.network.provider.send("hardhat_reset");
+  // await hre.network.provider.send("hardhat_reset");
 
   const productDetailsJson = await axios.get(
     `https://ipfs.io/ipfs/${productsCID}`

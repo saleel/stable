@@ -8,7 +8,7 @@ const products = require("./products.json");
 const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
 const countryTrackerAbi = require("../artifacts/contracts/CountryTracker.sol/CountryTracker.json");
 
-const stableContractAddress = "0x91aCa8560669FaEC15a8bc277137b54f702b79A8";
+const stableContractAddress = "0xe630868e440D2A595632959297a4Cb9d170036f2";
 
 const provider = new ethers.providers.JsonRpcProvider();
 const signer1 = provider.getSigner(1);
