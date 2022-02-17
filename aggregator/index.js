@@ -162,17 +162,16 @@ async function startAggregationForCountry({ contract, minPriceConfirmations }) {
 }
 
 async function beginAggregation() {
-  const account = process.env.ACCOUNT;
   const provider = new ethers.providers.JsonRpcProvider({
     url: process.env.RPC_URL,
   });
-  const signer = provider.getSigner(account);
+  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
   /** @type {import("./typechain-types/Stable").Stable} */
-  const stableContract = new ethers.Contract(process.env.STABLE_CONTRACT, stableAbi, provider).connect(signer);
+  const stableContract = new ethers.Contract(process.env.STABLE_CONTRACT, stableAbi, provider).connect(wallet);
 
   /** @type {import("./typechain-types/SZRToken").SZRToken} */
-  const srzContract = new ethers.Contract(await stableContract.szrToken(), szrAbi, provider).connect(signer);
+  const srzContract = new ethers.Contract(await stableContract.szrToken(), szrAbi, provider).connect(wallet);
 
   const countries = ['UK', 'US', 'IN'];
 
@@ -183,21 +182,21 @@ async function beginAggregation() {
     // eslint-disable-next-line no-await-in-loop
     const address = await stableContract.countryTrackers(country);
     const countryContract = new ethers.Contract(address, countryTrackerAbi, provider);
-    countryContracts[country] = countryContract.connect(signer);
+    countryContracts[country] = countryContract.connect(wallet);
   }
 
   // Check aggregation status/role
-  if ((await stableContract.currentAggregator()).toLowerCase() !== account.toLowerCase()) {
+  if ((await stableContract.currentAggregator()).toLowerCase() !== wallet.address.toLowerCase()) {
     console.log('Not an aggregator now');
 
-    const lockedAmount = await stableContract.aggregatorLockedAmounts(account);
+    const lockedAmount = await stableContract.aggregatorLockedAmounts(wallet.address);
     if (lockedAmount === 0) {
       console.log('Enrolling as aggregator');
       await srzContract.approve(process.env.STABLE_CONTRACT, 1000);
       await stableContract.enrollAsAggregator(20);
     }
 
-    const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(account);
+    const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(wallet.address);
 
     if (canClaimAggregationRound) {
       console.log('Trying to become aggregator');
@@ -208,7 +207,7 @@ async function beginAggregation() {
     }
   }
 
-  assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), account);
+  assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), wallet.address);
 
   const aggregationEndTime = await countryContracts.US.aggregationRoundEndTime();
   const currentTime = Math.round(new Date().getTime() / 1000);
