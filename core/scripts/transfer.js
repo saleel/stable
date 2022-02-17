@@ -4,7 +4,7 @@ const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
 const szrAbi = require("../artifacts/contracts/StabilizerToken.sol/StabilizerToken.json");
 
 const amount = 100;
-const recipient = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
+const recipient = "0x9c54052c214e7a2Aa2F6Cc8092ef2dd774da4FbD";
 const stableContractAddress = "0x91aCa8560669FaEC15a8bc277137b54f702b79A8";
 
 async function transfer() {
