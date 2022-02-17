@@ -26,13 +26,13 @@ describe("CountryTracker", () => {
       1000, // SCR supply
       20, // coll ratio
       Math.round(new Date().getTime() / 1000) - 2 * 86400, // 2 days before
-      ["ZC", "ZW", "ZR", "ZS", "KE"],
       "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
     );
 
     await stable.deployed();
 
-    await stable.createCountryTracker("UK", "GBP", 10, ["BTC", "ETH"], [1, 1]);
+    await stable.createCountryTracker("UK", "GBP", 10);
+    await stable.updateBasket("UK", ["BTC", "ETH"], [1, 1]);
 
     ukTracker = await ethers.getContractAt(
       "CountryTracker",
@@ -40,10 +40,10 @@ describe("CountryTracker", () => {
       owner
     );
 
-    await stable.createCountryTracker(
-      "US",
-      "USA",
-      10,
+    await stable.createCountryTracker("US", "USA", 10);
+
+    await stable.updateBasket(
+      "UK",
       ["ZC", "ZW", "ZR", "ZS", "KE"],
       [1, 1, 1, 1, 1]
     );
@@ -69,17 +69,19 @@ describe("CountryTracker", () => {
   });
 
   it("should update product basket correctly", async () => {
-    expect(await usTracker.productBasket("ZC")).to.equal(1);
-    expect(await usTracker.productBasket("KE")).to.equal(1);
-
     await expect(stable.updateBasket("US", ["ZC", "KE"], [4, 3]))
       .to.emit(usTracker, "ProductBasketUpdated")
       .withArgs(["ZC", "KE"], [4, 3]);
 
+    // Empty array for default weightage of 100
+    await expect(stable.updateBasket("US", ["APPLE", "PTRL"], []))
+      .to.emit(usTracker, "ProductBasketUpdated")
+      .withArgs(["APPLE", "PTRL"], []);
+
     expect(await usTracker.productBasket("ZC")).to.equal(4);
     expect(await usTracker.productBasket("KE")).to.equal(3);
-    expect(await usTracker.productBasket("ZW")).to.equal(1);
-    expect(await usTracker.productBasket("ZS")).to.equal(1);
+    expect(await usTracker.productBasket("APPLE")).to.equal(100);
+    expect(await usTracker.productBasket("PTRL")).to.equal(100);
   });
 
   it("should be able to add price for one product", async () => {

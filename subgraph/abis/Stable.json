@@ -17,13 +17,8 @@
         "type": "uint256"
       },
       {
-        "internalType": "string[]",
-        "name": "_productIds",
-        "type": "string[]"
-      },
-      {
         "internalType": "string",
-        "name": "_productDetailsCid",
+        "name": "_productsCID",
         "type": "string"
       }
     ],
@@ -95,18 +90,6 @@
         "internalType": "address",
         "name": "contractAddress",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string[]",
-        "name": "productIds",
-        "type": "string[]"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint16[]",
-        "name": "weightages",
-        "type": "uint16[]"
       }
     ],
     "name": "CountryTrackerCreated",
@@ -137,30 +120,12 @@
       {
         "indexed": false,
         "internalType": "string",
-        "name": "productDetailsCID",
+        "name": "productsCID",
         "type": "string"
       }
     ],
     "name": "ProductDetailsUpdated",
     "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string[]",
-        "name": "_productIds",
-        "type": "string[]"
-      },
-      {
-        "internalType": "string",
-        "name": "_updatedProductDetailsCid",
-        "type": "string"
-      }
-    ],
-    "name": "addProducts",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
   },
   {
     "inputs": [
@@ -430,16 +395,6 @@
         "internalType": "uint16",
         "name": "_countryWeightage",
         "type": "uint16"
-      },
-      {
-        "internalType": "string[]",
-        "name": "_productIds",
-        "type": "string[]"
-      },
-      {
-        "internalType": "uint16[]",
-        "name": "_productWeightages",
-        "type": "uint16[]"
       }
     ],
     "name": "createCountryTracker",
@@ -624,26 +579,7 @@
   },
   {
     "inputs": [],
-    "name": "productDetailsCID",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "productIds",
+    "name": "productsCID",
     "outputs": [
       {
         "internalType": "string",
@@ -924,6 +860,19 @@
       }
     ],
     "name": "updateOverCollateralizationRatio",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_updatedProductsCID",
+        "type": "string"
+      }
+    ],
+    "name": "updateProducts",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

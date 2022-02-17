@@ -24,7 +24,7 @@ dataSources:
         - name: Stable
           file: ./abis/Stable.json
       eventHandlers:
-        - event: CountryTrackerCreated(string,string,address,string[],uint16[])
+        - event: CountryTrackerCreated(string,string,address)
           handler: handleCountryTrackerCreated
         - event: ProductDetailsUpdated(string)
           handler: handleProductDetailsUpdated

@@ -22,24 +22,15 @@ contract CountryTracker is Ownable {
   event PriceIndexUpdated(uint256 aggregationRoundId, uint32 priceIndex);
   event PricesUpdated(uint256 aggregationRoundId, string[] productIds, uint32[] prices);
 
-  constructor(
-    string memory _country,
-    string memory _currency,
-    string[] memory _productIds,
-    uint16[] memory _productWeightages
-  ) {
+  constructor(string memory _country, string memory _currency) {
     country = _country;
     currency = _currency;
-
-    for (uint16 i = 0; i < _productIds.length; i++) {
-      productBasket[_productIds[i]] = _productWeightages.length > 0 ? _productWeightages[i] : 1;
-    }
   }
 
   // Update product baseket (called by parent owner (DAO))
   function updateBasket(string[] memory _productIds, uint16[] memory _weightages) public onlyOwner {
     for (uint16 i = 0; i < _productIds.length; i++) {
-      productBasket[_productIds[i]] = _weightages[i];
+      productBasket[_productIds[i]] = _weightages.length == 0 ? 100 : _weightages[i]; // Default weightage as 100
     }
 
     emit ProductBasketUpdated(_productIds, _weightages);

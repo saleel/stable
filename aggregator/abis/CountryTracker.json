@@ -10,16 +10,6 @@
         "internalType": "string",
         "name": "_currency",
         "type": "string"
-      },
-      {
-        "internalType": "string[]",
-        "name": "_productIds",
-        "type": "string[]"
-      },
-      {
-        "internalType": "uint16[]",
-        "name": "_productWeightages",
-        "type": "uint16[]"
       }
     ],
     "stateMutability": "nonpayable",

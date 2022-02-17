@@ -25,15 +25,20 @@ describe("Stable", () => {
 
     stable = await Stable.deploy(
       1000, // SCR supply
-      20, // coll ratio
+      20, // over-coll ratio
       Math.round(new Date().getTime() / 1000) - 2 * 86400, // 2 days before
-      ["ZC", "ZW", "ZR", "ZS", "KE"],
       "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
     );
 
     await stable.deployed();
 
-    await stable.createCountryTracker("UK", "GBP", 10, ["BTC", "ETH"], [1, 1]);
+    await stable.createCountryTracker("UK", "GBP", 10);
+
+    await stable.updateBasket(
+      "UK",
+      ["ZC", "ZW", "ZR", "ZS", "KE"],
+      [1, 1, 1, 1, 1]
+    );
 
     ukTracker = await ethers.getContractAt(
       "CountryTracker",
@@ -55,6 +60,7 @@ describe("Stable", () => {
     );
   });
 
+  // Helper function for some tests
   async function updatePrices(expectedPI = 1000) {
     if ((await stable.aggregatorLockedAmounts(user1.address)) === 0) {
       await SZRToken.connect(user1).approve(stable.address, 200);
@@ -74,15 +80,10 @@ describe("Stable", () => {
   }
 
   it("should be able to create country tracker contracts", async () => {
-    await stable.createCountryTracker(
-      "US",
-      "USD",
-      10,
-      ["ZC", "ZW", "ZR", "ZS", "KE"],
-      [1, 1, 1, 1, 1]
-    );
+    await stable.createCountryTracker("US", "USD", 10);
 
-    await stable.createCountryTracker("UK", "GBP", 10, ["ZC", "ZW"], [2, 2]);
+    await stable.createCountryTracker("UK", "GBP", 10);
+    await stable.updateBasket("UK", ["ZC", "ZW"], [2, 2]);
 
     expect(await stable.countryTrackers("US")).to.not.equal(
       "0x0000000000000000000000000000000000000000"
@@ -94,16 +95,12 @@ describe("Stable", () => {
 
   it("should be able to add new product", async () => {
     await expect(
-      stable.addProducts(
-        ["BTC", "ETH"],
+      stable.updateProducts(
         "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
       )
     )
       .to.emit(stable, "ProductDetailsUpdated")
       .withArgs("bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa");
-
-    // This will be 6th item, as 5 products are already added in beforeEach
-    expect(await stable.productIds(5)).to.equal("BTC");
   });
 
   it("should allow user to function as aggregator", async () => {
@@ -153,7 +150,7 @@ describe("Stable", () => {
     const totalSZRClaimable =
       ((stablesToMint * priceOfStable) / priceOfSZR) * (1 - 20 / 100); // minus burned
 
-    const claimable = (50 / 100) * totalSZRClaimable;
+    const claimable = Math.round((50 / 100) * totalSZRClaimable);
 
     expect(await stable.getSZRWithdrawableBySupplier(user1.address)).to.equal(
       claimable
@@ -191,7 +188,7 @@ describe("Stable", () => {
     await stable.connect(user2).burnStable(stablesToMint);
 
     const usdToReceiveAfterBurn = (usdSpentForMinting * 1100) / 1000; // 10% extra
-    const expectedSZRReceived = Math.round(usdToReceiveAfterBurn / priceOfSZR);
+    const expectedSZRReceived = Math.floor(usdToReceiveAfterBurn / priceOfSZR);
 
     expect(await SZRToken.balanceOf(user2.address)).to.equal(
       szrBalanceAfterMint + expectedSZRReceived

@@ -8,7 +8,6 @@ const products = require("./products.json");
 const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
 const countryTrackerAbi = require("../artifacts/contracts/CountryTracker.sol/CountryTracker.json");
 
-const productIds = products.map((p) => p.id);
 const stableContractAddress = "0x91aCa8560669FaEC15a8bc277137b54f702b79A8";
 
 const provider = new ethers.providers.JsonRpcProvider();
@@ -36,15 +35,18 @@ const CryptoVariance = {
   IN: 1.9, // to compensate for CountryMultiplier[in] + little extra
 };
 
+// A random number between 0.97 and 1.05 to be apply a small invariance
+const variant = Math.random() * (1.05 - 0.97) + 0.97;
+
 function generateRandomPrice({ product, country }) {
   let price = (Math.random() * 2 + 1) * 100; // Price with no decimals (between 1 and 3)
 
   if (product.id === "BTC") {
-    price = 29400 * CryptoVariance[country]; // Track crypto without penny/cents/paisa
+    price = 29400 * CryptoVariance[country] * variant * variant * variant; // Track crypto without penny/cents/paisa
   }
 
   if (product.id === "ETH") {
-    price = 2280 * CryptoVariance[country]; // Track crypto without penny/cents/paisa
+    price = 2280 * CryptoVariance[country] * variant * variant * variant; // Track crypto without penny/cents/paisa
   }
 
   return Math.round(
@@ -68,15 +70,22 @@ async function submitPrices({
 }) {
   const prices = [];
 
-  for (const product of products) {
+  let productsToGeneratePriceFor = products;
+  if (country !== "US") {
+    productsToGeneratePriceFor = products.filter(
+      (p) => p.category !== "Futures"
+    );
+  }
+
+  const productIdsWithPrice = productsToGeneratePriceFor.map((p) => p.id);
+
+  for (const product of productsToGeneratePriceFor) {
     const lastPrice = await contract.prices(product.id);
     const isCrypto = product.category === "Cryptocurrency";
 
     let newPrice;
 
     if (lastPrice && !isCrypto) {
-      // A random number between 0.95 and 1.05 to be apply a +-5% diff
-      const variant = Math.random() * (1.05 - 0.95) + 0.9;
       newPrice = lastPrice * dailyIncrement * variant;
     } else {
       newPrice = generateRandomPrice({
@@ -94,6 +103,7 @@ async function submitPrices({
   console.log(
     "\nSubmitting : ",
     country,
+    dailyIncrement,
     contract.address,
     aggregationRoundId.toString(),
     timestamp,
@@ -102,22 +112,22 @@ async function submitPrices({
 
   await contract
     .connect(signer1)
-    .submitPrices(productIds, prices, timestamp, "manual");
+    .submitPrices(productIdsWithPrice, prices, timestamp, "manual");
 
   await contract.connect(signer2).submitPrices(
-    productIds,
+    productIdsWithPrice,
     prices.map((p) => Math.round(p * 1.03)),
     timestamp,
     "manual"
   );
   await contract.connect(signer3).submitPrices(
-    productIds,
+    productIdsWithPrice,
     prices.map((p) => Math.round(p * 1.03)),
     timestamp,
     "manual"
   );
   await contract.connect(signer4).submitPrices(
-    productIds,
+    productIdsWithPrice,
     prices.map((p) => Math.round(p * 0.97)),
     timestamp,
     "manual"
@@ -183,6 +193,7 @@ async function generate() {
     );
 
     const aggregationRoundId = await countryTracker.aggregationRoundId();
+
     const dateDiff = Math.round(
       (endAggregationId - aggregationRoundId) / 60 / 60 / 24
     );

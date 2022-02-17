@@ -24,7 +24,12 @@ export function handleProductBasketUpdated(event: ProductBasketUpdated): void {
       basketItem.countryTracker = countryTracker.id;
     }
 
-    basketItem.weightage = event.params.weightages[i];
+    let weightage = 100;
+    if (event.params.weightages.length > 0) {
+      weightage = event.params.weightages[i];
+    }
+
+    basketItem.weightage = weightage;
     basketItem.save();
   }
 }

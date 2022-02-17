@@ -16,10 +16,9 @@ contract Stable is Ownable {
 
   uint32 public overCollateralizationRatio; // Ratio of how much STABLE can be minted in addition to callateral (supplier redeemable).
 
-  string[] public productIds; // ID of proucts tracked.
   string public priceAggregationMethod = "TOP3_AVG"; // Method of price aggregation to be used (for aggregator offchain calculation).
   uint8 public mininumPriceConfirmations = 1; // Minimum confimrations required on a price to be considered for aggregation.
-  string public productDetailsCID; // IPFS CID of JSON with product details.
+  string public productsCID; // IPFS CID of JSON with product details.
 
   uint256 public aggregationRoundId; // Start date (timestamp) of the current aggregation round.
   uint32 public aggregationDuration = 1 days;
@@ -47,50 +46,35 @@ contract Stable is Ownable {
   // Events
   event AggregationRoundStarted(uint256 aggregationRoundId);
   event AggregationRoundCompleted(uint256 aggregationRoundId);
-  event CountryTrackerCreated(
-    string country,
-    string currency,
-    address contractAddress,
-    string[] productIds,
-    uint16[] weightages
-  );
-  event ProductDetailsUpdated(string productDetailsCID);
+  event CountryTrackerCreated(string country, string currency, address contractAddress);
+  event ProductDetailsUpdated(string productsCID);
   event AggregationSettingsUpdated(string priceAggregationMethod, uint8 mininumPriceConfirmations);
 
   constructor(
     uint256 _initialSZRSupply,
     uint32 _overCollateralizationRatio,
     uint256 _initialAggregationRoundId,
-    string[] memory _productIds,
-    string memory _productDetailsCid
+    string memory _productsCID
   ) {
     szrToken = new StabilizerToken();
     stableToken = new StableToken();
     aggregationRoundId = _initialAggregationRoundId;
     overCollateralizationRatio = _overCollateralizationRatio;
-    productIds = _productIds;
-    productDetailsCID = _productDetailsCid;
+    productsCID = _productsCID;
 
     // Mint initial supply
     szrToken.mint(msg.sender, _initialSZRSupply);
 
-    emit ProductDetailsUpdated(productDetailsCID);
+    emit ProductDetailsUpdated(productsCID);
     emit AggregationSettingsUpdated(priceAggregationMethod, mininumPriceConfirmations);
   }
 
   function createCountryTracker(
     string memory _country,
     string memory _currency,
-    uint16 _countryWeightage,
-    string[] memory _productIds,
-    uint16[] memory _productWeightages
+    uint16 _countryWeightage
   ) public onlyOwner {
-    CountryTracker _tracker = new CountryTracker(
-      _country,
-      _currency,
-      _productIds.length > 0 ? _productIds : productIds,
-      _productWeightages
-    );
+    CountryTracker _tracker = new CountryTracker(_country, _currency);
 
     _tracker.updateAggregationRound(aggregationRoundId, aggregationRoundId + aggregationDuration);
 
@@ -98,23 +82,13 @@ contract Stable is Ownable {
     countryTrackers[_country] = address(_tracker);
     countryWeightage[_country] = _countryWeightage;
 
-    emit CountryTrackerCreated(
-      _country,
-      _currency,
-      address(_tracker),
-      _productIds.length > 0 ? _productIds : productIds,
-      _productWeightages
-    );
+    emit CountryTrackerCreated(_country, _currency, address(_tracker));
   }
 
   // Add new products
-  function addProducts(string[] memory _productIds, string memory _updatedProductDetailsCid) public onlyOwner {
-    for (uint16 i = 0; i < _productIds.length; i++) {
-      productIds.push(_productIds[i]);
-    }
-
-    productDetailsCID = _updatedProductDetailsCid;
-    emit ProductDetailsUpdated(productDetailsCID);
+  function updateProducts(string memory _updatedProductsCID) public onlyOwner {
+    productsCID = _updatedProductsCID;
+    emit ProductDetailsUpdated(productsCID);
   }
 
   // Update product basket of a country
