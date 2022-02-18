@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import stableFactoryContractAbi from './abis/Stable.json';
 import stableContractAbi from './abis/Stable.json';
 
-const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_ETH_PROVIDER || window.ethereum);
+const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_CHAIN_RPC || window.ethereum);
 const stableFactorContract = new ethers.Contract(process.env.REACT_APP_STABLE_CONTRACT_ADDRESS, stableFactoryContractAbi, provider);
 const signer = provider.getSigner();
 const stableFactorContractWithSigner = stableFactorContract.connect(signer);

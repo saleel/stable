@@ -122,7 +122,7 @@ function ProductPage() {
     return (
       <>
         <span>{`${address.slice(0, 5)}...${address.slice(-5)}`}</span>
-        <a rel="noreferrer" target="_blank" className="ml-3" href={`${process.env.BLOCKCHAIN_EXPLORER_URL}/${transactionId}`}>tx</a>
+        <a rel="noreferrer" target="_blank" className="ml-3" href={`${process.env.REACT_APP_BLOCKCHAIN_EXPLORER_URL}/tx/${transactionId}`}>tx</a>
       </>
     );
   }
