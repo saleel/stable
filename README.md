@@ -4,6 +4,12 @@ Project Stable is a decentralized, on-chain, price-history and inflation dashboa
 It tracks price change of various daily-use products and commodities and allow users to 
 see true inflation rates.
 
+Demo: [https://inflation.netlify.app/](https://inflation.netlify.app/)
+
+Status: Alpha/POC phase
+Deployed to aurora mainnet (because TheGraph had trouble indexing the aurora testnet).
+Contract address: 
+
 ## How it works
 
 - `Stable` is a smart contract on Aurora (NEAR) chain.
@@ -48,14 +54,11 @@ This is very `gas` efficient as the function only emits an event.
 
 
 ## TODO
-- Icons for all
-- IPFS for price submission
-- Check math, 
-- Test for multiple agg, suppliers..etc
-- Div by zero
-- IPFS indexing for prices
-- Rename countrytracker
-- i32 time
-- Reduce gas fee
-- Use clone factory method for country trackers
-- V3 agg interface
+- Improve overall quality - fix bugs, refactoring, test for security/errors.
+- Implement the DAO functionality - proposal and voting options.
+- Implement Chainlink like AggregatorInterface in the contract so the price index can be used by oracles.
+- The contract to derive the price of SZR from an oracle (once the token live).
+- Allow contract to accept price submissions as an IPFS CID.
+- Allow users to track Price Index based on their choice of product basket.
+- Rewards for price submitters to be made in the same contract.
+- A lot of these would depend on the direction of this project.
