@@ -41,17 +41,17 @@ const CryptoVariance = {
 };
 
 // A random number between 0.97 and 1.05 to be apply a small invariance
-const variant = Math.random() * (1.05 - 0.97) + 0.97;
+const variant = () => Math.random() * (1.03 - 0.97) + 0.97;
 
 function generateRandomPrice({ product, country }) {
   let price = (Math.random() * 2 + 1) * 100; // Price with no decimals (between 1 and 3)
 
   if (product.id === "BTC") {
-    price = 29400 * CryptoVariance[country] * variant * variant * variant; // Track crypto without penny/cents/paisa
+    price = 29400 * CryptoVariance[country] * variant() * variant(); // Track crypto without penny/cents/paisa
   }
 
   if (product.id === "ETH") {
-    price = 2280 * CryptoVariance[country] * variant * variant * variant; // Track crypto without penny/cents/paisa
+    price = 2280 * CryptoVariance[country] * variant() * variant(); // Track crypto without penny/cents/paisa
   }
 
   return Math.round(
@@ -62,9 +62,28 @@ function generateRandomPrice({ product, country }) {
 }
 
 const lastPrices = {
-  UK: {},
-  US: {},
-  IN: {},
+  UK: [
+    463, 424, 450, 339, 420, 352, 335, 480, 389, 209, 280, 417, 201, 244, 308,
+    276, 445, 184, 386, 372, 217, 222, 381, 354, 244, 207, 428, 196, 377, 379,
+    363, 423, 365, 391, 438, 254, 288, 447, 400, 444, 327, 239, 350, 258, 403,
+    295, 341, 361, 286, 279, 167, 706, 326, 1056, 771, 1529, 818, 29672, 2274,
+  ],
+  US: [
+    517, 1151, 851, 962, 933, 858, 520, 1232, 658, 793, 565, 678, 426, 421,
+    1295, 1062, 432, 561, 266, 446, 372, 520, 263, 425, 229, 444, 231, 409, 399,
+    334, 372, 204, 448, 397, 284, 460, 493, 565, 609, 473, 353, 453, 269, 648,
+    321, 235, 513, 605, 524, 483, 601, 215, 304, 477, 221, 260, 623, 30148,
+    2368, 281, 360, 327, 253, 218, 198, 197, 340, 277, 445, 490, 769, 448, 410,
+    38520, 2946,
+  ],
+  IN: [
+    14367, 12921, 17689, 8877, 6406, 9083, 9352, 16554, 7498, 11283, 12593,
+    18625, 7495, 7047, 13176, 17872, 17652, 16540, 8171, 14211, 10481, 9885,
+    9789, 16233, 16408, 11667, 17247, 15778, 18759, 8873, 6312, 17506, 15365,
+    13539, 17201, 6943, 15972, 12391, 13690, 14921, 7639, 7456, 11029, 7409,
+    19073, 13820, 13590, 11853, 16867, 15238, 9613, 15664, 11358, 36920, 19280,
+    57077, 50425, 2232183, 172191,
+  ],
 };
 
 /**
@@ -77,7 +96,6 @@ async function submitPricesForCountry({
   contract,
   aggregationRoundId,
   country,
-  endAggregationId,
 }) {
   const prices = [];
 
@@ -90,14 +108,15 @@ async function submitPricesForCountry({
 
   const productIdsWithPrice = productsToGeneratePriceFor.map((p) => p.id);
 
-  for (const product of productsToGeneratePriceFor) {
-    const lastPrice = lastPrices[country][product.id];
+  for (let i = 0; i < productsToGeneratePriceFor.length; i += 1) {
+    const product = productsToGeneratePriceFor[i];
+    const lastPrice = lastPrices[country][i];
     const isCrypto = product.category === "Cryptocurrency";
 
     let newPrice;
 
     if (lastPrice && !isCrypto) {
-      newPrice = lastPrice * dailyIncrement * variant;
+      newPrice = lastPrice * dailyIncrement * variant();
     } else {
       newPrice = generateRandomPrice({
         product,
@@ -181,7 +200,6 @@ async function beginSubmission({
       aggregationRoundId,
       country,
       dailyIncrement,
-      endAggregationId,
     });
   }
 
@@ -214,8 +232,8 @@ async function generate() {
   [, signer1, signer2, signer3] = await ethers.getSigners();
 
   const endDateStr = new Date().toISOString().slice(0, 10);
-  const avgInflation = 10;
-  const endAggregationId = new Date(endDateStr).getTime() / 1000 - 24 * 60 * 60;
+  const avgInflation = 3;
+  const endAggregationId = new Date(endDateStr).getTime() / 1000;
 
   console.log("Generating sample data", {
     endAggregationId,

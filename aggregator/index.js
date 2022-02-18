@@ -8,7 +8,7 @@ const stableAbi = require('./abis/Stable.json');
 const szrAbi = require('./abis/StabilizerToken.json');
 const countryTrackerAbi = require('./abis/CountryTracker.json');
 
-const SLEEP_INTERVAL = 120;
+const SLEEP_INTERVAL = 180;
 
 const sleep = (sec = SLEEP_INTERVAL) => new Promise((resolve) => {
   setTimeout(resolve, sec * 1000);
@@ -248,6 +248,8 @@ async function beginAggregation() {
     await stableContract.completeAggregation();
     console.log('Aggregation round completed');
   }
+
+  console.log('Sleeping... \n\n\n');
 
   // Sleep and check aggregation again
   await sleep();
