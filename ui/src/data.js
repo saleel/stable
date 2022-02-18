@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { ethers } from 'ethers';
-import stableFactoryContractAbi from './abis/Stable.json';
-import stableContractAbi from './abis/Stable.json';
+import countryTrackerABI from './abis/CountryTracker.json';
+import stableABI from './abis/Stable.json';
 
 const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_CHAIN_RPC || window.ethereum);
-const stableFactorContract = new ethers.Contract(process.env.REACT_APP_STABLE_CONTRACT_ADDRESS, stableFactoryContractAbi, provider);
+const stableContract = new ethers.Contract(process.env.REACT_APP_STABLE_CONTRACT_ADDRESS, countryTrackerABI, provider);
 const signer = provider.getSigner();
-const stableFactorContractWithSigner = stableFactorContract.connect(signer);
+const stableContractWithSigner = stableContract.connect(signer);
 
 const axiosGraphql = axios.create({
   baseURL: process.env.REACT_APP_GRAPHQL_ENDPOINT,
@@ -16,9 +16,9 @@ const axiosGraphql = axios.create({
 axiosGraphql.interceptors.response.use((response) => response.data.data, (error) => Promise.reject(error));
 
 async function getClientForChildContract(country) {
-  const address = await stableFactorContractWithSigner.countryTrackers(country);
-  const stableContract = new ethers.Contract(address, stableContractAbi, provider);
-  return stableContract.connect(signer);
+  const address = await stableContractWithSigner.countryTrackers(country);
+  const countryTrackerContract = new ethers.Contract(address, stableABI, provider);
+  return countryTrackerContract.connect(signer);
 }
 
 export async function getProducts(country) {
@@ -124,17 +124,17 @@ export async function getPriceSubmissions({ country, productId }) {
 }
 
 export async function getAggregationRoundId(country) {
-  const stableContract = await getClientForChildContract(country);
-  return stableContract.aggregationRoundId();
+  const countryTrackerContract = await getClientForChildContract(country);
+  return countryTrackerContract.aggregationRoundId();
 }
 
 export async function addPrices({ priceMapping, country, source }) {
-  const stableContract = await getClientForChildContract(country);
+  const countryTrackerContract = await getClientForChildContract(country);
 
   const productsIds = Object.keys(priceMapping);
   const prices = Object.keys(priceMapping).map((k) => priceMapping[k].price);
 
-  await stableContract.submitPrices(productsIds, prices, source);
+  await countryTrackerContract.submitPrices(productsIds, prices, source);
 }
 
 // TODO: Fetch from some API

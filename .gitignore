@@ -34,3 +34,5 @@ typechain-types
 
 subgraph/data
 subgraph/build/
+
+ui/build

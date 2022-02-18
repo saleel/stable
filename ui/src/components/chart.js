@@ -1,5 +1,5 @@
 import {
-  Line, ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  Line, ComposedChart, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from 'recharts';
 
 const COLORS = ['var(--blue-500)', 'var(--green-300)', 'var(--yellow-500)'];

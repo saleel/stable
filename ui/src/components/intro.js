@@ -3,9 +3,9 @@ import React from 'react';
 function Intro() {
   return (
     <div className="intro">
-      <h1 className="title">Inflate</h1>
+      <h1 className="title">Project Stable</h1>
       <h4 className="subtitle">
-        Inflate is a decentralized, crowd-sourced, price tracker dashboard.
+        Project Stable is a global, decentralized, crowd-sourced, on-chain price history and inflation dashboard.
         <br />
         Tracks price changes of daily-use products, assets, in various categories across multiple countries.
       </h4>

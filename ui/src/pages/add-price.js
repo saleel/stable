@@ -1,7 +1,8 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProducts, getAggregationRoundId, addPrices } from '../data';
 import { useLocalStorage } from '@rehooks/local-storage';
+import { getProducts, getAggregationRoundId, addPrices } from '../data';
 import usePromise from '../hooks/use-promise';
 import { formatContractDate } from '../utils';
 
