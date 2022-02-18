@@ -23,8 +23,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
-const { PRIVATE_KEY } = process.env;
-
+const { PRIVATE_KEY, ACCOUNT2_PK, ACCOUNT3_PK, ACCOUNT4_PK } = process.env;
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -45,12 +44,12 @@ module.exports = {
     },
     testnet_aurora: {
       url: "https://testnet.aurora.dev",
-      accounts: [`0x${PRIVATE_KEY}`],
+      accounts: [PRIVATE_KEY, ACCOUNT2_PK, ACCOUNT3_PK, ACCOUNT4_PK],
       chainId: 1313161555,
     },
     aurora: {
       url: "https://mainnet.aurora.dev",
-      accounts: [`0x${PRIVATE_KEY}`],
+      accounts: [PRIVATE_KEY, ACCOUNT2_PK, ACCOUNT3_PK, ACCOUNT4_PK],
       chainId: 1313161554,
     },
     // ropsten: {

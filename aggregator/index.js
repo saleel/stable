@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
 require('dotenv').config();
 const assert = require('assert');
@@ -7,7 +8,11 @@ const stableAbi = require('./abis/Stable.json');
 const szrAbi = require('./abis/StabilizerToken.json');
 const countryTrackerAbi = require('./abis/CountryTracker.json');
 
-const SLEEP_INTERVAL = 10 * 1000;
+const SLEEP_INTERVAL = 120;
+
+const sleep = (sec = SLEEP_INTERVAL) => new Promise((resolve) => {
+  setTimeout(resolve, sec * 1000);
+});
 
 // Assume that contract priceAggregationMethod is "TOP3_AVG"
 // TODO: Need to explicitly check priceAggregationMethod
@@ -173,6 +178,10 @@ async function beginAggregation() {
   /** @type {import("./typechain-types/SZRToken").SZRToken} */
   const srzContract = new ethers.Contract(await stableContract.szrToken(), szrAbi, provider).connect(wallet);
 
+  console.log(`Address: ${wallet.address.toLowerCase()}`);
+  console.log(`Balance ETH: ${await wallet.getBalance()}`);
+  console.log(`Balance SZR: ${await srzContract.balanceOf(wallet.address.toLowerCase())}`);
+
   const countries = ['UK', 'US', 'IN'];
 
   // Prepare country contracts
@@ -186,17 +195,17 @@ async function beginAggregation() {
   }
 
   // Check aggregation status/role
-  if ((await stableContract.currentAggregator()).toLowerCase() !== wallet.address.toLowerCase()) {
+  if ((await stableContract.currentAggregator()).toLowerCase() !== wallet.address.toLowerCase().toLowerCase()) {
     console.log('Not an aggregator now');
 
-    const lockedAmount = await stableContract.aggregatorLockedAmounts(wallet.address);
+    const lockedAmount = await stableContract.aggregatorLockedAmounts(wallet.address.toLowerCase());
     if (lockedAmount === 0) {
       console.log('Enrolling as aggregator');
       await srzContract.approve(process.env.STABLE_CONTRACT, 1000);
       await stableContract.enrollAsAggregator(20);
     }
 
-    const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(wallet.address);
+    const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(wallet.address.toLowerCase());
 
     if (canClaimAggregationRound) {
       console.log('Trying to become aggregator');
@@ -207,7 +216,9 @@ async function beginAggregation() {
     }
   }
 
-  assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), wallet.address);
+  await sleep(10);
+
+  assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), wallet.address.toLowerCase());
 
   const aggregationEndTime = await countryContracts.US.aggregationRoundEndTime();
   const currentTime = Math.round(new Date().getTime() / 1000);
@@ -224,22 +235,24 @@ async function beginAggregation() {
   let updatedCount = 0;
   for (const [country, contract] of Object.entries(countryContracts)) {
     console.log(`Starting aggregation for country ${country}`);
-    // eslint-disable-next-line no-await-in-loop
     const result = await startAggregationForCountry({ contract, minPriceConfirmations });
+    await sleep(10);
+
     if (result) {
       updatedCount += 1;
     }
   }
 
   if (updatedCount) {
+    await sleep(10);
     await stableContract.completeAggregation();
     console.log('Aggregation round completed');
   }
 
   // Sleep and check aggregation again
-  setTimeout(async () => {
-    await beginAggregation();
-  }, SLEEP_INTERVAL);
+  await sleep();
+
+  await beginAggregation();
 }
 
 beginAggregation()

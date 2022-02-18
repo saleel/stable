@@ -3,18 +3,23 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable max-len */
 /* eslint-disable no-restricted-syntax */
-const ethers = require("ethers");
+const { ethers } = require("hardhat");
 const products = require("./products.json");
 const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
 const countryTrackerAbi = require("../artifacts/contracts/CountryTracker.sol/CountryTracker.json");
 
-const stableContractAddress = "0xe630868e440D2A595632959297a4Cb9d170036f2";
+const stableContractAddress = "0xe630868e440d2a595632959297a4cb9d170036f2";
 
-const provider = new ethers.providers.JsonRpcProvider();
-const signer1 = provider.getSigner(1);
-const signer2 = provider.getSigner(2);
-const signer3 = provider.getSigner(3);
-const signer4 = provider.getSigner(4);
+const sleep = (sec = 5) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, sec * 1000);
+  });
+
+let signer1;
+let signer2;
+let signer3;
+
+const { provider } = ethers;
 
 const CountryMultiplier = {
   UK: 1,
@@ -56,12 +61,18 @@ function generateRandomPrice({ product, country }) {
   );
 }
 
+const lastPrices = {
+  UK: {},
+  US: {},
+  IN: {},
+};
+
 /**
  *
  * @param {{ contract: ethers.Contract }} param0
  * @returns
  */
-async function submitPrices({
+async function submitPricesForCountry({
   dailyIncrement,
   contract,
   aggregationRoundId,
@@ -80,7 +91,7 @@ async function submitPrices({
   const productIdsWithPrice = productsToGeneratePriceFor.map((p) => p.id);
 
   for (const product of productsToGeneratePriceFor) {
-    const lastPrice = await contract.prices(product.id);
+    const lastPrice = lastPrices[country][product.id];
     const isCrypto = product.category === "Cryptocurrency";
 
     let newPrice;
@@ -96,6 +107,8 @@ async function submitPrices({
 
     // console.log(country, aggregationRoundId, product.name, lastPrice, newPrice);
     prices.push(Math.round(newPrice));
+
+    lastPrices[country][product.id] = Math.round(newPrice);
   }
 
   const timestamp = Number(aggregationRoundId) + 43200; // Some timestamp during the day
@@ -103,7 +116,6 @@ async function submitPrices({
   console.log(
     "\nSubmitting : ",
     country,
-    dailyIncrement,
     contract.address,
     aggregationRoundId.toString(),
     timestamp,
@@ -114,24 +126,64 @@ async function submitPrices({
     .connect(signer1)
     .submitPrices(productIdsWithPrice, prices, timestamp, "manual");
 
+  await sleep();
+
   await contract.connect(signer2).submitPrices(
     productIdsWithPrice,
     prices.map((p) => Math.round(p * 1.03)),
     timestamp,
     "manual"
   );
+
   await contract.connect(signer3).submitPrices(
     productIdsWithPrice,
     prices.map((p) => Math.round(p * 1.03)),
     timestamp,
     "manual"
   );
-  await contract.connect(signer4).submitPrices(
-    productIdsWithPrice,
-    prices.map((p) => Math.round(p * 0.97)),
-    timestamp,
-    "manual"
-  );
+}
+
+async function beginSubmission({
+  stableContract,
+  endAggregationId,
+  avgInflation,
+}) {
+  const countries = ["US", "UK", "IN"];
+
+  let aggregationRoundId;
+  let anyCountryTracker;
+  for (const country of countries) {
+    const countryContractAddress = await stableContract.countryTrackers(
+      country
+    );
+
+    const countryTracker = new ethers.Contract(
+      countryContractAddress,
+      countryTrackerAbi.abi,
+      provider
+    );
+
+    anyCountryTracker = countryTracker;
+
+    aggregationRoundId = await countryTracker.aggregationRoundId();
+
+    const dateDiff = Math.round(
+      (endAggregationId - aggregationRoundId) / 60 / 60 / 24
+    );
+    // Required daily increment needed for expected inflation over period
+    const dailyIncrement =
+      (100 ** (dateDiff - 1) * (100 + avgInflation)) ** (1 / dateDiff) / 100;
+
+    // console.log(signer1.address, signer2.address, signer3.address);
+
+    await submitPricesForCountry({
+      contract: countryTracker,
+      aggregationRoundId,
+      country,
+      dailyIncrement,
+      endAggregationId,
+    });
+  }
 
   if (aggregationRoundId >= endAggregationId) {
     return;
@@ -139,10 +191,11 @@ async function submitPrices({
 
   await new Promise((resolve) => {
     const interval = setInterval(async () => {
-      console.log("Waiting for aggregation round to complete", country);
-      const nextAggregationRoundId = await contract
+      console.log("Waiting for aggregation round to complete");
+      const nextAggregationRoundId = await anyCountryTracker
         .connect(signer1)
         .aggregationRoundId();
+
       if (nextAggregationRoundId > aggregationRoundId) {
         clearInterval(interval);
         resolve();
@@ -150,20 +203,16 @@ async function submitPrices({
     }, 5000);
   });
 
-  const nextAggregationRoundId = await contract
-    .connect(signer1)
-    .aggregationRoundId();
-
-  submitPrices({
-    dailyIncrement,
-    contract,
-    aggregationRoundId: nextAggregationRoundId,
-    country,
+  await beginSubmission({
+    stableContract,
     endAggregationId,
+    avgInflation,
   });
 }
 
 async function generate() {
+  [, signer1, signer2, signer3] = await ethers.getSigners();
+
   const endDateStr = new Date().toISOString().slice(0, 10);
   const avgInflation = 10;
   const endAggregationId = new Date(endDateStr).getTime() / 1000 - 24 * 60 * 60;
@@ -179,36 +228,11 @@ async function generate() {
     provider
   );
 
-  const countries = ["US", "UK", "IN"];
-
-  for (const country of countries) {
-    const countryContractAddress = await stableContract.countryTrackers(
-      country
-    );
-
-    const countryTracker = new ethers.Contract(
-      countryContractAddress,
-      countryTrackerAbi.abi,
-      provider
-    );
-
-    const aggregationRoundId = await countryTracker.aggregationRoundId();
-
-    const dateDiff = Math.round(
-      (endAggregationId - aggregationRoundId) / 60 / 60 / 24
-    );
-    // Required daily increment needed for expected inflation over period
-    const dailyIncrement =
-      (100 ** (dateDiff - 1) * (100 + avgInflation)) ** (1 / dateDiff) / 100;
-
-    submitPrices({
-      contract: countryTracker,
-      aggregationRoundId,
-      country,
-      dailyIncrement,
-      endAggregationId,
-    });
-  }
+  await beginSubmission({
+    stableContract,
+    endAggregationId,
+    avgInflation,
+  });
 }
 
 generate().catch((error) => {
