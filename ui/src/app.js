@@ -6,6 +6,7 @@ import Layout from './components/layout';
 import ProductPage from './pages/product';
 import ExchangePage from './pages/exchange';
 import SupplierPage from './pages/supplier';
+import RewardsPage from './pages/rewards';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/submit" index element={<AddPricePage />} />
         <Route path="/exchange" index element={<ExchangePage />} />
         <Route path="/supplier" index element={<SupplierPage />} />
+        <Route path="/rewards" index element={<RewardsPage />} />
       </Route>
     </Routes>
   );

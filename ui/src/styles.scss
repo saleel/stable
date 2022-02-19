@@ -416,6 +416,10 @@ body {
   border: 1px solid var(--gray-300);
   border-radius: 3px;
   margin: 2px;
+
+  &:last-child {
+    margin-bottom: 1rem !important;
+  }
 }
 
 .btn-submit-prices {

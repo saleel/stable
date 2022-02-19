@@ -23,6 +23,9 @@ function Layout() {
             <Link to="/supplier" className="navbar-item">
               Supplier
             </Link>
+            <Link to="/rewards" className="navbar-item">
+              Rewards
+            </Link>
           </div>
 
           <div className="navbar-end" />

@@ -1,39 +1,40 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React from 'react';
-import { getSupplier, supplierWithdrawSZR } from '../data';
+import { getRewardAmount, getTokenBalance, withdrawRewards } from '../data';
 import usePromise from '../hooks/use-promise';
 import useWallet from '../hooks/use-wallet';
 import { trimAddress } from '../utils';
 
-function SupplierPage() {
+function RewardsPage() {
   const [szrToWithdraw, setSZRToWithdraw] = React.useState('');
   const [withdrawMessage, setWithdrawMessage] = React.useState('');
   const [withdrawHash, setWithdrawHash] = React.useState('');
   const [isWithdrawalValid, setIsWithdrawalValid] = React.useState(true);
 
   const { address, Component: WalletConnect } = useWallet();
-  const [supplier, { isFetching }] = usePromise(() => getSupplier(address), {
+  const [tokenBalance] = usePromise(() => getTokenBalance(address), {
+    dependencies: [address], defaultValue: {},
+  });
+  const [rewardAmount, { isFetching }] = usePromise(() => getRewardAmount(address), {
     conditions: [address], dependencies: [address],
   });
-
-  const isSupplier = !isFetching && !!supplier?.name;
 
   React.useEffect(() => {
     if (!szrToWithdraw) {
       setWithdrawMessage('Enter the number of SZR tokens to withdraw.');
-    } else if (szrToWithdraw > supplier?.szrWithdrawable) {
+    } else if (szrToWithdraw > rewardAmount?.szrWithdrawable) {
       setIsWithdrawalValid(false);
       setWithdrawMessage('You do not have sufficient withdrawable SZR.');
     } else {
       setIsWithdrawalValid(true);
       setWithdrawMessage(`You are withdrawing ${szrToWithdraw} SZR.`);
     }
-  }, [szrToWithdraw, supplier]);
+  }, [szrToWithdraw, rewardAmount]);
 
   async function onWithdrawSubmit(e) {
     e.preventDefault();
     try {
-      const hash = await supplierWithdrawSZR(address, szrToWithdraw);
+      const hash = await withdrawRewards(address, szrToWithdraw);
       setWithdrawMessage(`You have successfully withdrawn ${szrToWithdraw} SZR token(s).
       It should appear in your wallet soon.`);
       setWithdrawHash(hash);
@@ -45,9 +46,9 @@ function SupplierPage() {
   return (
     <div className="supplier-page">
 
-      <h1 className="title">Supplier</h1>
+      <h1 className="title">Rewards</h1>
       <div className="subtitle">
-        Borrow SZR by staking reputation to promise supply of products in exchange for <code>STABLE</code> token.
+        Claim your <code>$SZR</code> rewards.
       </div>
       <hr />
 
@@ -55,56 +56,26 @@ function SupplierPage() {
         <WalletConnect />
       )}
 
-      {!isFetching && !isSupplier && (
-        <div className="message warning">
-          Address: <code>{address}</code>
-          <br />
-          <br />
-          You are not a Supplier now.
-          <br />
-          You can create a proposal at StableDAO to become a Supplier.
-        </div>
-      )}
-
-      {address && isSupplier && (
+      {address && (
         <>
           <nav className="level mb-6">
 
             <div className="level-item has-text-centered">
               <div>
-                <p className="heading">STABLE Redeemable</p>
-                <p className="title">{supplier.stablesRedeemable?.toFixed(2)}</p>
+                <p className="heading">SZR Rewards</p>
+                <p className="title">{rewardAmount?.toFixed(2)}</p>
               </div>
             </div>
             <div className="level-item has-text-centered">
               <div>
-                <p className="heading">STABLE Redeemed</p>
-                <p className="title">{supplier.stablesRedeemed?.toFixed(2)}</p>
-              </div>
-            </div>
-            <div className="level-item has-text-centered">
-              <div>
-                <p className="heading">SZR Withdrawable</p>
-                <p className="title">{supplier.szrWithdrawable?.toFixed(2)}</p>
-              </div>
-            </div>
-            <div className="level-item has-text-centered">
-              <div>
-                <p className="heading">SZR Withdrawn</p>
-                <p className="title">{supplier.szrWithdrawn?.toFixed(2)}</p>
-              </div>
-            </div>
-            <div className="level-item has-text-centered">
-              <div>
-                <p className="heading">Claim Percent / Rewards</p>
-                <p className="title">{supplier.claimPercent}<span className="is-size-5">%</span> / {supplier.szrRewardsPerRedemption?.toFixed(1)}</p>
+                <p className="heading">Current SZR Balance</p>
+                <p className="title">{tokenBalance.SZR?.toFixed(2)}</p>
               </div>
             </div>
           </nav>
 
           <div className="info-box">
             <div>Wallet connected. Address:<code>{address}</code></div>
-            <div className="mt-2">Supplier Name: <strong>{supplier.name}</strong></div>
           </div>
           <br />
 
@@ -120,7 +91,7 @@ function SupplierPage() {
                       type="number"
                       step="1"
                       className="input is-medium"
-                      placeholder="Number of SZR to borrow"
+                      placeholder="Number of SZR to withdraw"
                       value={szrToWithdraw}
                       onChange={(e) => { setSZRToWithdraw(e.target.value); }}
                     />
@@ -156,4 +127,4 @@ function SupplierPage() {
   );
 }
 
-export default SupplierPage;
+export default RewardsPage;

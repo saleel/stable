@@ -133,6 +133,10 @@ export async function getPriceSubmissions({ country, productId }) {
   return priceSubmissions;
 }
 
+/**
+ *
+ * @returns {import("../../core/typechain-types/CountryTracker").CountryTracker}
+ */
 async function getCountryTrackerContract(country) {
   const address = await stableContract.countryTrackers(country);
   const countryTrackerContract = new ethers.Contract(address, countryTrackerInterface, provider);
@@ -214,6 +218,12 @@ export async function getSupplier(address) {
   };
 }
 
+export async function getRewardAmount(address) {
+  const rewardAmount = await stableContract.rewards(address);
+
+  return formatToken(rewardAmount);
+}
+
 export async function getContractState() {
   const [totalStablesRedeemable, overCollateralizationRatio, mintableStableTokenCount] = await Promise.all([
     stableContract.totalStablesRedeemable(),
@@ -233,13 +243,17 @@ export async function getAggregationRoundId(country) {
   return countryTrackerContract.aggregationRoundId();
 }
 
-export async function addPrices({ priceMapping, country, source }) {
+export async function submitPrices({
+  address, priceMapping, country, source,
+}) {
   const countryTrackerContract = await getCountryTrackerContract(country);
+  const signer = provider.getSigner(address);
 
   const productsIds = Object.keys(priceMapping);
   const prices = Object.keys(priceMapping).map((k) => priceMapping[k].price);
+  const timestamp = Math.round(new Date().getTime() / 1000);
 
-  await countryTrackerContract.submitPrices(productsIds, prices, source);
+  await countryTrackerContract.connect(signer).submitPrices(productsIds, prices, timestamp, source);
 }
 
 export async function mintStables(address, amount) {
@@ -272,10 +286,18 @@ export async function burnStables(address, amount) {
   return result.hash;
 }
 
-export async function withdrawSZR(address, amount) {
+export async function supplierWithdrawSZR(address, amount) {
   const amountInWei = ethers.utils.parseEther(amount.toString());
   const signer = provider.getSigner(address);
   const result = await stableContract.connect(signer).supplierWithdrawSZR(amountInWei);
+
+  return result.hash;
+}
+
+export async function withdrawRewards(address, amount) {
+  const amountInWei = ethers.utils.parseEther(amount.toString());
+  const signer = provider.getSigner(address);
+  const result = await stableContract.connect(signer).withdrawRewards(amountInWei);
 
   return result.hash;
 }
