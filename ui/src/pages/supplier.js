@@ -26,7 +26,7 @@ function SupplierPage() {
       )}
 
       {!isFetching && !isSupplier && (
-        <div className="message-warning">
+        <div className="message warning">
           Address: <code>{address}</code>
           <br />
           <br />

@@ -27,5 +27,9 @@ export function formatPrice(priceValue) {
 }
 
 export function formatToken(bigNumber) {
-  return Number(utils.formatUnits(bigNumber.toNumber(), 6));
+  return Number(utils.formatEther(bigNumber.toString()));
+}
+
+export function trimAddress(address) {
+  return `${address.slice(0, 5)}...${address.slice(-5)}`;
 }

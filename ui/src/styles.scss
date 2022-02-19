@@ -1,5 +1,6 @@
 @import "../node_modules/bulma/bulma.sass";
 
+// Colors from Chakra UI https://chakra-ui.com/docs/theming/theme
 :root {
   --gray-100: #f7fafc;
   --gray-200: #edf2f7;
@@ -10,6 +11,8 @@
   --red-50: #FFF5F5;
   --red-200: #feb2b2;
   --red-300: #f56565;
+  --green-50: #F0FFF4;
+  --green-100: #C6F6D5;
   --green-200: #9ae6b4;
   --green-300: #48bb78;
   --text-color: #021e2d;
@@ -429,11 +432,34 @@ body {
   }
 }
 
-.message-warning {
-  background: var(--red-50);
+.message {
   padding: 1rem;
   font-size: 1.1rem;
   border-radius: 3px;
+
+  &.warning {
+    background: var(--red-50);
+  }
+
+  &.success {
+    background: var(--green-100);
+  }
+}
+
+.exchange-form {
+  padding: 1.5rem;
+  border-radius: 3px;
+  background-color: var(--gray-100);
+  border: 2px solid var(--gray-200);
+
+  .subtitle {
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    color: var(--text-color);
+    opacity: 0.8;
+  }
 }
 
 @keyframes shimmer {

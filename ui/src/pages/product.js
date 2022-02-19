@@ -7,7 +7,7 @@ import Chart from '../components/chart';
 import { getProduct, getUSDRate, getPriceSubmissions } from '../data';
 import usePromise from '../hooks/use-promise';
 import {
-  calculatePriceChange, formatContractDate, formatContractDateWithYear, formatPrice,
+  calculatePriceChange, formatContractDate, formatContractDateWithYear, formatPrice, trimAddress,
 } from '../utils';
 import Table from '../components/table';
 import { Countries } from '../constants';
@@ -121,8 +121,14 @@ function ProductPage() {
     const { address, transactionId } = props;
     return (
       <>
-        <span>{`${address.slice(0, 5)}...${address.slice(-5)}`}</span>
-        <a rel="noreferrer" target="_blank" className="ml-3" href={`${process.env.REACT_APP_BLOCKCHAIN_EXPLORER_URL}/tx/${transactionId}`}>tx</a>
+        <span>{trimAddress(address)}</span>
+        <a
+          rel="noreferrer"
+          target="_blank"
+          className="ml-3"
+          href={`${process.env.REACT_APP_BLOCKCHAIN_EXPLORER_URL}/tx/${transactionId}`}
+        >tx
+        </a>
       </>
     );
   }
