@@ -30,13 +30,11 @@ function Layout() {
 
           <div className="navbar-end" />
 
-          <div className="dropdown is-hoverable">
+          <div className="country-dropdown dropdown is-hoverable">
             <div className="dropdown-trigger">
               <button type="button" className="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                <span>{country}</span>
-                <span className="icon is-small">
-                  <i className="fas fa-angle-down" aria-hidden="true" />
-                </span>
+                <span>&#127758;&nbsp; {country}</span>
+                <span>▼</span>
               </button>
             </div>
             <div className="dropdown-menu" id="dropdown-menu" role="menu">

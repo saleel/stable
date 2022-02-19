@@ -15,14 +15,14 @@ function RewardsPage() {
   const [tokenBalance] = usePromise(() => getTokenBalance(address), {
     dependencies: [address], defaultValue: {},
   });
-  const [rewardAmount, { isFetching }] = usePromise(() => getRewardAmount(address), {
+  const [rewardAmount] = usePromise(() => getRewardAmount(address), {
     conditions: [address], dependencies: [address],
   });
 
   React.useEffect(() => {
     if (!szrToWithdraw) {
       setWithdrawMessage('Enter the number of SZR tokens to withdraw.');
-    } else if (szrToWithdraw > rewardAmount?.szrWithdrawable) {
+    } else if (szrToWithdraw > rewardAmount) {
       setIsWithdrawalValid(false);
       setWithdrawMessage('You do not have sufficient withdrawable SZR.');
     } else {
@@ -82,7 +82,7 @@ function RewardsPage() {
           <div className="columns">
             <div className="column is-7-desktop">
               <form className="exchange-form" onSubmit={onWithdrawSubmit}>
-                <h4 className="subtitle">Borrow / Withdraw SZR</h4>
+                <h4 className="subtitle">Withdraw SZR</h4>
                 <div className="field">
                   <div className="control">
                     <input
