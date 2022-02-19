@@ -7,6 +7,7 @@ const stableAbi = require('./abis/Stable.json');
 const szrAbi = require('./abis/StabilizerToken.json');
 const countryTrackerAbi = require('./abis/CountryTracker.json');
 
+const LOCK_AMOUNT = ethers.utils.parseEther('20'); // SZR to lock
 const SLEEP_INTERVAL = 10 * 1000;
 
 // Assume that contract priceAggregationMethod is "TOP3_AVG"
@@ -189,14 +190,14 @@ async function beginAggregation() {
   if ((await stableContract.currentAggregator()).toLowerCase() !== wallet.address.toLowerCase()) {
     console.log('Not an aggregator now');
 
-    const lockedAmount = await stableContract.aggregatorLockedAmounts(wallet.address);
-    if (lockedAmount === 0) {
+    const lockedAmount = await stableContract.aggregatorLockedAmounts(wallet.address.toLowerCase());
+    if (Number(ethers.utils.formatEther(lockedAmount.toString())) === 0) {
       console.log('Enrolling as aggregator');
-      await srzContract.approve(process.env.STABLE_CONTRACT, 1000);
-      await stableContract.enrollAsAggregator(20);
+      await srzContract.approve(process.env.STABLE_CONTRACT, LOCK_AMOUNT);
+      await stableContract.enrollAsAggregator(LOCK_AMOUNT);
     }
 
-    const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(wallet.address);
+    const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(wallet.address.toLowerCase());
 
     if (canClaimAggregationRound) {
       console.log('Trying to become aggregator');
@@ -207,7 +208,7 @@ async function beginAggregation() {
     }
   }
 
-  assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), wallet.address);
+  assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), wallet.address.toLowerCase());
 
   const aggregationEndTime = await countryContracts.US.aggregationRoundEndTime();
   const currentTime = Math.round(new Date().getTime() / 1000);
@@ -232,7 +233,7 @@ async function beginAggregation() {
   }
 
   if (updatedCount) {
-    await stableContract.completeAggregation();
+    await stableContract.completeAggregation([]);
     console.log('Aggregation round completed');
   }
 
