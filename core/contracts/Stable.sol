@@ -17,19 +17,20 @@ contract Stable is Ownable {
   uint32 public overCollateralizationRatio; // Ratio of how much STABLE can be minted in addition to callateral (supplier redeemable).
 
   string public priceAggregationMethod = "TOP3_AVG"; // Method of price aggregation to be used (for aggregator offchain calculation).
-  uint8 public mininumPriceConfirmations = 1; // Minimum confimrations required on a price to be considered for aggregation.
+  uint16 public mininumPriceConfirmations = 1; // Minimum confimrations required on a price to be considered for aggregation.
   string public productsCID; // IPFS CID of JSON with product details.
 
   uint256 public aggregationRoundId; // Start date (timestamp) of the current aggregation round.
   uint32 public aggregationDuration = 1 days;
   uint16 public aggregationRoundOverdueDuration = 3 hours; // Time after aggregation end time in which an aggregator should update prices.
-  uint256 public szrRewardPerAggregationRound = 2; // SZR tokens rewarded to aggregator for each aggregation round.
+  uint256 public szrRewardPerAggregationRound = 2 * 10**18; // SZR tokens rewarded to aggregator for each aggregation round.
+  uint256 public szrRewardForWinningSubmissions = 5 * 10**17; // SZR tokens rewarded to aggregator for each aggregation round.
   uint256 public aggregatorLockDuration = 30 days; // Duration after which aggregator can withdraw their locked SZR.
-  mapping(address => uint32) public aggregatorLockedAmounts; // SZR locked by aggregators to claim aggregation rounds.
-  mapping(address => uint256) public aggregatorLastUpdateTime; // Timestamp at which aggregator joined.
-  mapping(address => uint16) public aggregationRoundsClaimed; // Rounds claimed by aggreagtors.
+  mapping(address => uint256) public aggregatorLockedAmounts; // SZR locked by aggregators to claim aggregation rounds.
+  mapping(address => uint256) public aggregatorLockTime; // Timestamp at which aggregator locked funds.
+  mapping(address => uint32) public aggregationRoundsClaimed; // Rounds claimed by aggreagtors.
   mapping(address => uint256) public rewards; // Rewards in SZR for aggregators and suppliers.
-  uint32 public totalLockedAmount; // Total amount locked by all aggreagtors.
+  uint256 public totalLockedAmount; // Total amount locked by all aggreagtors.
   address public currentAggregator;
 
   struct Supplier {
@@ -38,6 +39,7 @@ contract Stable is Ownable {
     uint256 stablesRedeemed; // Total StableTokens that supplier redeemed to customers.
     uint16 claimPercent; // Percentage of the "SZR equivalent to redeemable StableTokens" claimable.
     uint256 szrRewardsPerRedemption; // SZR tokens rewarded to supplier for redemption of each Stable tokens;
+    uint256 szrWithdrawn;
   }
   mapping(address => Supplier) public suppliers;
   uint256 public totalStablesRedeemable; // Current total StableTokens redeemable at all suppliers
@@ -48,7 +50,7 @@ contract Stable is Ownable {
   event AggregationRoundCompleted(uint256 aggregationRoundId);
   event CountryTrackerCreated(string country, string currency, address contractAddress);
   event ProductDetailsUpdated(string productsCID);
-  event AggregationSettingsUpdated(string priceAggregationMethod, uint8 mininumPriceConfirmations);
+  event AggregationSettingsUpdated(string priceAggregationMethod, uint16 mininumPriceConfirmations);
 
   constructor(
     uint256 _initialSZRSupply,
@@ -107,14 +109,16 @@ contract Stable is Ownable {
 
   function updateAggregationSettings(
     string memory _priceAggregationMethod,
-    uint8 _mininumPriceConfirmations,
+    uint16 _mininumPriceConfirmations,
     uint16 _aggregationRoundOverdueDuration,
     uint256 _szrRewardPerAggregationRound,
-    uint256 _aggregatorLockDuration
+    uint256 _aggregatorLockDuration,
+    uint256 _szrRewardForWinningSubmissions
   ) public onlyOwner {
     priceAggregationMethod = _priceAggregationMethod;
     mininumPriceConfirmations = _mininumPriceConfirmations;
     szrRewardPerAggregationRound = _szrRewardPerAggregationRound;
+    szrRewardForWinningSubmissions = _szrRewardForWinningSubmissions;
     aggregationRoundOverdueDuration = _aggregationRoundOverdueDuration;
     aggregatorLockDuration = _aggregatorLockDuration;
 
@@ -126,10 +130,10 @@ contract Stable is Ownable {
   ***************/
 
   // Lockup SZR and become aggregator
-  function enrollAsAggregator(uint32 _amountToLock) public {
+  function enrollAsAggregator(uint256 _amountToLock) public {
     szrToken.transferFrom(msg.sender, address(this), _amountToLock);
     aggregatorLockedAmounts[msg.sender] += _amountToLock;
-    aggregatorLastUpdateTime[msg.sender] = block.timestamp;
+    aggregatorLockTime[msg.sender] = block.timestamp;
     totalLockedAmount += _amountToLock;
   }
 
@@ -144,7 +148,7 @@ contract Stable is Ownable {
   }
 
   // Close this aggregation round and get rewards after updating price for all country
-  function completeAggregation() public {
+  function completeAggregation(address[] memory winners) public {
     require(currentAggregator == msg.sender, "Not the aggregator");
 
     for (uint16 i = 0; i < countries.length; i++) {
@@ -167,19 +171,29 @@ contract Stable is Ownable {
 
     emit AggregationRoundStarted(aggregationRoundId);
 
+    // Reward aggregators
     rewards[msg.sender] += szrRewardPerAggregationRound;
+
+    // Reward winning submitters
+    for (uint16 j = 0; j < winners.length; j++) {
+      rewards[winners[j]] += szrRewardForWinningSubmissions;
+    }
+
+    // Mint necessary SZR
+    uint256 szrToMint = szrRewardPerAggregationRound + (winners.length * szrRewardForWinningSubmissions);
+    szrToken.mint(address(this), szrToMint);
   }
 
   // Withdraw locked amount and stop being aggregator
   function aggregatorWithdrawLocked() public {
     // TODO: Guard for miner timestamp manipulation
-    require(block.timestamp > aggregatorLastUpdateTime[msg.sender] + aggregatorLockDuration, "Not yet unlocked");
+    require(block.timestamp > aggregatorLockTime[msg.sender] + aggregatorLockDuration, "Not yet unlocked");
 
     szrToken.transfer(msg.sender, aggregatorLockedAmounts[msg.sender]);
   }
 
   // For DAO to slash aggregator locked funds for bad behaviour
-  function slashAggregator(address aggregator, uint32 _amount) public onlyOwner {
+  function slashAggregator(address aggregator, uint256 _amount) public onlyOwner {
     aggregatorLockedAmounts[aggregator] -= _amount;
   }
 
@@ -207,7 +221,8 @@ contract Stable is Ownable {
       stablesRedeemable: _stablesRedeemable,
       stablesRedeemed: 0,
       claimPercent: _claimPercent,
-      szrRewardsPerRedemption: _szrRewardsPerRedemption
+      szrRewardsPerRedemption: _szrRewardsPerRedemption,
+      szrWithdrawn: 0
     });
     totalStablesRedeemable += _stablesRedeemable;
   }
@@ -215,7 +230,7 @@ contract Stable is Ownable {
   function updateSupplierConfig(
     address _address,
     uint256 _stablesRedeemable,
-    uint8 _claimPercent,
+    uint16 _claimPercent,
     uint256 _szrRewardsPerRedemption
   ) public onlyOwner {
     suppliers[_address].stablesRedeemable = _stablesRedeemable;
@@ -224,14 +239,16 @@ contract Stable is Ownable {
   }
 
   // Supplier claim SZR
-  function supplierWithdrawSZR(uint32 _amount) public {
+  function supplierWithdrawSZR(uint256 _amount) public {
     require(getSZRWithdrawableBySupplier(msg.sender) >= _amount, "Not enough balance");
+
+    suppliers[msg.sender].szrWithdrawn += _amount;
 
     szrToken.transfer(msg.sender, _amount);
   }
 
   // Customer redeeming at supplier
-  function redeemStable(uint32 _amount, address _supplier) public {
+  function redeemStable(uint256 _amount, address _supplier) public {
     suppliers[_supplier].stablesRedeemed += _amount;
     totalStablesRedeemable -= _amount;
 
@@ -253,27 +270,26 @@ contract Stable is Ownable {
   ***************/
 
   // Exchange SZR for Stable
-  function mintStable(uint32 _amount) public {
+  function mintStable(uint256 _amount) public {
     // Ensure new minted amount is within mintable limit (backed by suppliers + over collateralizd)
     uint256 currentSupply = stableToken.totalSupply();
-    require((getMintableStableTokenCount() + _amount) > currentSupply, "No collateral to mint");
+    uint256 newSupply = currentSupply + _amount;
+    require(getMintableStableTokenCount() >= newSupply, "No collateral to mint");
 
     // Calculate required amount of SZR
     // To mint $1 worth of Stable, claim $1 worth of SZR
-    uint256 equivalentSZR = (_amount * getStableTokenPrice()) / getSZRPriceInUSD();
+    uint256 equivalentSZR = (_amount / getSZRPriceInUSD()) * getStableTokenPrice();
 
     // Stables minted that is not collaterazlied (redeeamble at supplier) is created out of nothing,
     // SZR received for that is seigniorage - this should be burned
     uint256 szrToBurn = 0;
-    if (currentSupply + _amount > totalStablesRedeemable) {
-      uint256 nonCollateralizedPercent = ((currentSupply + _amount - totalStablesRedeemable) * 100) /
-        totalStablesRedeemable;
-      szrToBurn = (nonCollateralizedPercent * equivalentSZR) / 100;
+    if (newSupply > totalStablesRedeemable) {
+      szrToBurn = ((newSupply - totalStablesRedeemable) / getSZRPriceInUSD()) * getStableTokenPrice();
     }
 
     // Burn and transfer required SZR
-    szrToken.transferFrom(msg.sender, address(this), equivalentSZR - szrToBurn);
-    szrToken.burn(msg.sender, szrToBurn);
+    szrToken.transferFrom(msg.sender, address(this), equivalentSZR);
+    szrToken.burn(address(this), szrToBurn);
     totalSZRClaimable += equivalentSZR - szrToBurn;
 
     // Mint and transfer Stables
@@ -281,7 +297,7 @@ contract Stable is Ownable {
   }
 
   // Exchange Stable for SZR
-  function burnStable(uint32 _amount) public {
+  function burnStable(uint256 _amount) public {
     uint256 equivalentSZR = (_amount * getStableTokenPrice()) / getSZRPriceInUSD();
     stableToken.burn(msg.sender, _amount);
     szrToken.mint(msg.sender, equivalentSZR);
@@ -294,9 +310,11 @@ contract Stable is Ownable {
   function getSZRPriceInUSD() public view returns (uint256) {
     // TODO: This should come from an Oracle (and cached in contract maybe)
     // Mocked for now to simulate price based on supply
-    return 10000000 / (szrToken.totalSupply() / 2);
+    // If initial supply is 100M tokens then start price would be 5USD (500)
+    return (5 * 100 * 100000000 * 10**szrToken.decimals()) / szrToken.totalSupply();
   }
 
+  // Price of $STABLE is the value of global price index
   function getStableTokenPrice() public view returns (uint256) {
     return getGlobalPriceIndex();
   }
@@ -304,8 +322,13 @@ contract Stable is Ownable {
   // Get amount of SZR claimable by the supplier
   function getSZRWithdrawableBySupplier(address _account) public view returns (uint256) {
     uint256 claimShare = suppliers[_account].stablesRedeemable / totalStablesRedeemable;
+    uint256 withdrawable = (claimShare * totalSZRClaimable * suppliers[_account].claimPercent) / 100;
 
-    return (claimShare * totalSZRClaimable * suppliers[_account].claimPercent) / 100;
+    if (suppliers[_account].szrWithdrawn >= withdrawable) {
+      return 0;
+    }
+
+    return withdrawable - suppliers[_account].szrWithdrawn;
   }
 
   function getMintableStableTokenCount() public view returns (uint256) {
@@ -335,14 +358,18 @@ contract Stable is Ownable {
       return false;
     }
 
+    if (aggregatorLockedAmounts[aggregator] == totalLockedAmount) {
+      return true;
+    }
+
     // If current agg has not updated in due time, then any agg can claim
     if (isAggregationRoundOverdue()) {
       return true;
     }
 
-    uint32 aggregatatorShare = aggregatorLockedAmounts[aggregator] / totalLockedAmount;
+    uint256 aggregatatorShare = aggregatorLockedAmounts[aggregator] / totalLockedAmount;
     uint32 totalAggregationRoundsSinceLock = uint32(aggregationRoundId / aggregationDuration);
-    uint32 claimedShare = aggregationRoundsClaimed[aggregator] / totalAggregationRoundsSinceLock;
+    uint256 claimedShare = aggregationRoundsClaimed[aggregator] / totalAggregationRoundsSinceLock;
 
     return aggregatatorShare >= claimedShare;
   }

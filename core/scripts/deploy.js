@@ -47,7 +47,7 @@ async function deploy() {
 
   const Stable = await hre.ethers.getContractFactory("Stable");
   const stable = await Stable.deploy(
-    1000000,
+    hre.ethers.utils.parseEther("100000000"), // 100M initial supply
     20,
     Math.round(new Date("2022-01-01").getTime() / 1000),
     productsCID

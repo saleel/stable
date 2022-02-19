@@ -23,9 +23,6 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
-const { PRIVATE_KEY } = process.env;
-
-
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
@@ -42,11 +39,6 @@ module.exports = {
   networks: {
     hardhat: {
       initialBaseFeePerGas: 0, // workaround from https://github.com/sc-forks/solidity-coverage/issues/652#issuecomment-896330136 . Remove when that issue is closed.
-    },
-    testnet_aurora: {
-      url: "https://testnet.aurora.dev",
-      accounts: [`0x${PRIVATE_KEY}`],
-      chainId: 1313161555,
     },
     // ropsten: {
     //   url: process.env.ROPSTEN_URL || "",

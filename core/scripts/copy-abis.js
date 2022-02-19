@@ -5,6 +5,7 @@ const path = require("path");
 const stableArtifact = require("../artifacts/contracts/Stable.sol/Stable.json");
 const countryTrackerArtifact = require("../artifacts/contracts/CountryTracker.sol/CountryTracker.json");
 const szrTokenArtifact = require("../artifacts/contracts/StabilizerToken.sol/StabilizerToken.json");
+const stableTokenArtifact = require("../artifacts/contracts/StableToken.sol/StableToken.json");
 
 async function copyAbis() {
   await hre.run("compile");
@@ -47,6 +48,11 @@ async function copyAbis() {
   fs.writeFileSync(
     path.join(__dirname, "../../ui/src/abis/StabilizerToken.json"),
     JSON.stringify(szrTokenArtifact.abi, null, 2)
+  );
+
+  fs.writeFileSync(
+    path.join(__dirname, "../../ui/src/abis/StableToken.json"),
+    JSON.stringify(stableTokenArtifact.abi, null, 2)
   );
 
   console.log("Updated all ABI successfully");

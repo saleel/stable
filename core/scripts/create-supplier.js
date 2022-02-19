@@ -1,13 +1,15 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const ethers = require("ethers");
 const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
-const szrAbi = require("../artifacts/contracts/StabilizerToken.sol/StabilizerToken.json");
 
-const amount = ethers.utils.parseEther("100");
-const recipient = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
 const stableContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const address = "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc";
+const name = "ABC Hypermarket";
+const stablesRedeemable = ethers.utils.parseEther("1000");
+const claimPercent = 50;
+const rewards = ethers.utils.parseEther("1"); // SZR
 
-async function transfer() {
+async function addSupplier() {
   const provider = new ethers.providers.JsonRpcProvider();
 
   const owner = provider.getSigner();
@@ -19,17 +21,18 @@ async function transfer() {
     provider
   ).connect(owner);
 
-  /** @type {import("../typechain-types/SZRToken").SZRToken} */
-  const SZRToken = new ethers.Contract(
-    await stableContract.szrToken(),
-    szrAbi.abi,
-    provider
-  ).connect(owner);
+  await stableContract.addSupplier(
+    address,
+    name,
+    stablesRedeemable,
+    claimPercent,
+    rewards
+  );
 
-  await SZRToken.transfer(recipient, amount);
-  console.log(amount.toString(), "SZR transferref to", recipient);
+  console.log(address, " added as supplier");
 }
-transfer()
+
+addSupplier()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error);
