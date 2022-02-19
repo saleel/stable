@@ -14,9 +14,14 @@ function Layout() {
             <Link to="/" className="navbar-item">
               Home
             </Link>
-
             <Link to="/submit" className="navbar-item">
               Submit Price
+            </Link>
+            <Link to="/exchange" className="navbar-item">
+              Exchange
+            </Link>
+            <Link to="/supplier" className="navbar-item">
+              Supplier
             </Link>
           </div>
 

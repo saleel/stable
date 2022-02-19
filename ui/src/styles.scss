@@ -7,6 +7,7 @@
   --gray-400: #a0aec0;
   --gray-500: #718096;
   --gray-700: #2d3748;
+  --red-50: #FFF5F5;
   --red-200: #feb2b2;
   --red-300: #f56565;
   --green-200: #9ae6b4;
@@ -426,6 +427,13 @@ body {
       border-top-color: transparent;
     }
   }
+}
+
+.message-warning {
+  background: var(--red-50);
+  padding: 1rem;
+  font-size: 1.1rem;
+  border-radius: 3px;
 }
 
 @keyframes shimmer {

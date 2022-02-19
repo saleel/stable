@@ -70,7 +70,7 @@ function usePromise(promise, options = {}) {
 
   const [result, setResult] = React.useState(cachedData ? cachedData.data : defaultValue);
   const [fetchedAt, setFetchedAt] = React.useState(cachedData ? cachedData.storedAt : undefined);
-  const [isFetching, setIsFetching] = React.useState(false);
+  const [isFetching, setIsFetching] = React.useState(!(cachedData && cachedData.data));
   const [error, setError] = React.useState();
 
   let didCancel = false;
