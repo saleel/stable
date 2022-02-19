@@ -36,7 +36,7 @@ function ExchangePage() {
 
   React.useEffect(() => {
     if (!stablesToMint) {
-      setMintMessage('Enter the number of STABLE tokens you would like to mint.');
+      setMintMessage('Enter the number of STABLE tokens to mint.');
     } else if (szrRequiredToMint > tokenBalance.SZR) {
       setIsMintValid(false);
       setMintMessage('You do not have sufficient SZR balance.');
@@ -68,7 +68,7 @@ function ExchangePage() {
 
   React.useEffect(() => {
     if (!stablesToBurn) {
-      setBurnMessage('Enter the number of STABLE tokens you would like to burn.');
+      setBurnMessage('Enter the number of STABLE tokens to burn.');
     } else if (stablesToBurn > tokenBalance.STABLE) {
       setIsBurnValid(false);
       setBurnMessage('You do not have sufficient STABLE balance.');
@@ -107,108 +107,127 @@ function ExchangePage() {
 
       {address && (
         <>
-          <div>
-            Your are connected to <code>{address}</code>
-          </div>
-          <div>
-            Your SZR Balance: {tokenBalance && tokenBalance.SZR}
-          </div>
-          <div>
-            Your STABLE Balance: {tokenBalance && tokenBalance.STABLE}
-          </div>
-          <div>
-            SZR Price: {tokenPrice && tokenPrice.SZR} USD
-          </div>
-          <div>
-            STABLE Price: {tokenPrice && tokenPrice.STABLE} USD
-          </div>
-          <div>
-            STABLE Collateralized: {contractState.totalStablesRedeemable}
-          </div>
-          <div>
-            Over Collateralization Ratio: {contractState.overCollateralizationRatio}%
-          </div>
-          <div>
-            Mintable STABLE: {contractState.mintableStableTokenCount}
-          </div>
 
+          <nav className="level mb-6">
+            <div className="level-item has-text-centered">
+              <div>
+                <p className="heading">SZR Balance</p>
+                <p className="title">{tokenBalance && tokenBalance.SZR?.toFixed(2)}</p>
+              </div>
+            </div>
+            <div className="level-item has-text-centered">
+              <div>
+                <p className="heading">STABLE Balance</p>
+                <p className="title">{tokenBalance && tokenBalance.STABLE?.toFixed(2)}</p>
+              </div>
+            </div>
+            <div className="level-item has-text-centered">
+              <div>
+                <p className="heading">SZR Price</p>
+                <p className="title">{tokenPrice && tokenPrice.SZR?.toFixed(2)}</p>
+              </div>
+            </div>
+            <div className="level-item has-text-centered">
+              <div>
+                <p className="heading">STABLE Price</p>
+                <p className="title">{tokenPrice && tokenPrice.STABLE?.toFixed(2)}</p>
+              </div>
+            </div>
+            <div className="level-item has-text-centered">
+              <div>
+                <p className="heading">STABLE Mintable/Collateralized</p>
+                <p className="title">{contractState.mintableStableTokenCount} / {contractState.totalStablesRedeemable}</p>
+              </div>
+            </div>
+          </nav>
+
+          <div className="exchange-form p-3">
+            Wallet connected. Address:<code>{address}</code>
+          </div>
           <br />
 
-          <form className="form exchange-form" onSubmit={onMintSubmit}>
-            <h4 className="subtitle">Mint STABLE</h4>
-            <div className="field">
-              <div className="control">
-                <input
-                  id="stableAmount"
-                  name="price"
-                  type="number"
-                  step="1"
-                  className="input is-medium"
-                  placeholder="Number of STABLE to mint"
-                  value={stablesToMint}
-                  onChange={(e) => { setStablesToMint(e.target.value); }}
-                />
-              </div>
+          <div className="columns">
+            <div className="column">
+              <form className="exchange-form" onSubmit={onMintSubmit}>
+                <h4 className="subtitle">Mint STABLE</h4>
+                <div className="field">
+                  <div className="control">
+                    <input
+                      id="stableAmount"
+                      name="price"
+                      type="number"
+                      step="1"
+                      className="input is-medium"
+                      placeholder="Number of STABLE to mint"
+                      value={stablesToMint}
+                      onChange={(e) => { setStablesToMint(e.target.value); }}
+                    />
+                  </div>
+                </div>
+
+                <div className={mintHash ? 'message success' : 'message'}>
+                  {mintMessage}
+                  {mintHash && (
+                    <>
+                      <br />
+                      Transaction Hash:
+                      <a
+                        rel="noreferrer"
+                        target="_blank"
+                        className="ml-3"
+                        href={`${process.env.REACT_APP_BLOCKCHAIN_EXPLORER_URL}/tx/${mintHash}`}
+                      >{trimAddress(mintHash)}
+                      </a>
+                    </>
+                  )}
+                </div>
+
+                <button disabled={!isMintValid || !stablesToMint} className="button btn-submit-prices is-medium is-centered" type="submit">Mint</button>
+              </form>
             </div>
 
-            <div className={mintHash ? 'message success' : 'message'}>
-              {mintMessage}
-              {mintHash && (
-                <>
-                  <br />
-                  Transaction Hash:
-                  <a
-                    rel="noreferrer"
-                    target="_blank"
-                    className="ml-3"
-                    href={`${process.env.REACT_APP_BLOCKCHAIN_EXPLORER_URL}/tx/${mintHash}`}
-                  >{trimAddress(mintHash)}
-                  </a>
-                </>
-              )}
+            <hr />
+
+            <div className="column">
+              <form className="exchange-form" onSubmit={onBurnSubmit}>
+                <h4 className="subtitle">Burn STABLE</h4>
+                <div className="field">
+                  <div className="control">
+                    <input
+                      id="stableAmount"
+                      name="price"
+                      type="number"
+                      step="1"
+                      className="input is-medium"
+                      placeholder="Number of STABLE to burn"
+                      value={stablesToBurn}
+                      onChange={(e) => { setStablesToBurn(e.target.value); }}
+                    />
+                  </div>
+                </div>
+
+                <div className={burnHash ? 'message success' : 'message'}>
+                  {burnMessage}
+                  {burnHash && (
+                    <>
+                      <br />
+                      Transaction Hash:
+                      <a
+                        rel="noreferrer"
+                        target="_blank"
+                        className="ml-3"
+                        href={`${process.env.REACT_APP_BLOCKCHAIN_EXPLORER_URL}/tx/${burnHash}`}
+                      >{trimAddress(burnHash)}
+                      </a>
+                    </>
+                  )}
+                </div>
+
+                <button disabled={!isBurnValid || !stablesToBurn} className="button btn-submit-prices is-medium is-centered" type="submit">Burn</button>
+              </form>
             </div>
+          </div>
 
-            <button disabled={!isMintValid || !stablesToMint} className="button btn-submit-prices is-medium is-centered" type="submit">Mint</button>
-          </form>
-
-          <hr />
-
-          <form className="form exchange-form" onSubmit={onBurnSubmit}>
-            <h4 className="subtitle">Burn STABLE</h4>
-            <div className="field">
-              <div className="control">
-                <input
-                  id="stableAmount"
-                  name="price"
-                  type="number"
-                  step="1"
-                  className="input is-medium"
-                  placeholder="Number of STABLE to burn"
-                  value={stablesToBurn}
-                  onChange={(e) => { setStablesToBurn(e.target.value); }}
-                />
-              </div>
-            </div>
-
-            <div className={burnHash ? 'message success' : 'message'}>
-              {burnMessage}
-              {burnHash && (
-                <>
-                  <br />
-                  Transaction Hash:
-                  <a
-                    rel="noreferrer"
-                    target="_blank"
-                    className="ml-3"
-                    href={`${process.env.REACT_APP_BLOCKCHAIN_EXPLORER_URL}/tx/${burnHash}`}
-                  >{trimAddress(burnHash)}
-                  </a>
-                </>
-              )}
-            </div>
-
-            <button disabled={!isBurnValid || !stablesToBurn} className="button btn-submit-prices is-medium is-centered" type="submit">Burn</button>
-          </form>
         </>
       )}
 

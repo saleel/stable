@@ -434,7 +434,6 @@ body {
 
 .message {
   padding: 1rem;
-  font-size: 1.1rem;
   border-radius: 3px;
 
   &.warning {
@@ -447,7 +446,7 @@ body {
 }
 
 .exchange-form {
-  padding: 1.5rem;
+  padding: 1.5rem 1rem;
   border-radius: 3px;
   background-color: var(--gray-100);
   border: 2px solid var(--gray-200);
