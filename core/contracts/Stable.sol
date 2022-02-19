@@ -23,8 +23,8 @@ contract Stable is Ownable {
   uint256 public aggregationRoundId; // Start date (timestamp) of the current aggregation round.
   uint32 public aggregationDuration = 1 days;
   uint16 public aggregationRoundOverdueDuration = 3 hours; // Time after aggregation end time in which an aggregator should update prices.
-  uint256 public szrRewardPerAggregationRound = 2 * 10**18; // SZR tokens rewarded to aggregator for each aggregation round.
-  uint256 public szrRewardForWinningSubmissions = 5 * 10**17; // SZR tokens rewarded to aggregator for each aggregation round.
+  uint256 public szrRewardPerAggregationRound = 2 * 10**18; // SZR tokens rewarded to aggregator for each aggregation round (default 2).
+  uint256 public szrRewardForWinningSubmissions = 5 * 10**17; // SZR tokens rewarded to winning submissions for each aggregation round (default 0.5).
   uint256 public aggregatorLockDuration = 30 days; // Duration after which aggregator can withdraw their locked SZR.
   mapping(address => uint256) public aggregatorLockedAmounts; // SZR locked by aggregators to claim aggregation rounds.
   mapping(address => uint256) public aggregatorLockTime; // Timestamp at which aggregator locked funds.
@@ -199,7 +199,7 @@ contract Stable is Ownable {
 
   // Withdraw rewards (aggregator and supplier)
   function withdrawRewards(uint256 _amount) public {
-    require(_amount >= rewards[msg.sender], "Not enough balance");
+    require(_amount <= rewards[msg.sender], "Not enough balance");
 
     rewards[msg.sender] -= _amount;
     szrToken.transfer(msg.sender, _amount);
@@ -249,6 +249,8 @@ contract Stable is Ownable {
 
   // Customer redeeming at supplier
   function redeemStable(uint256 _amount, address _supplier) public {
+    require(suppliers[_supplier].stablesRedeemable > 0, "Invalid supplier");
+
     suppliers[_supplier].stablesRedeemed += _amount;
     totalStablesRedeemable -= _amount;
 
@@ -274,7 +276,7 @@ contract Stable is Ownable {
     // Ensure new minted amount is within mintable limit (backed by suppliers + over collateralizd)
     uint256 currentSupply = stableToken.totalSupply();
     uint256 newSupply = currentSupply + _amount;
-    require(getMintableStableTokenCount() >= newSupply, "No collateral to mint");
+    require(getMintableStableTokenCount() >= _amount, "No collateral to mint");
 
     // Calculate required amount of SZR
     // To mint $1 worth of Stable, claim $1 worth of SZR
@@ -321,8 +323,10 @@ contract Stable is Ownable {
 
   // Get amount of SZR claimable by the supplier
   function getSZRWithdrawableBySupplier(address _account) public view returns (uint256) {
-    uint256 claimShare = suppliers[_account].stablesRedeemable / totalStablesRedeemable;
-    uint256 withdrawable = (claimShare * totalSZRClaimable * suppliers[_account].claimPercent) / 100;
+    // Multiplication before division
+    uint256 withdrawable = ((suppliers[_account].stablesRedeemable *
+      suppliers[_account].claimPercent *
+      totalSZRClaimable) / (totalStablesRedeemable * 100));
 
     if (suppliers[_account].szrWithdrawn >= withdrawable) {
       return 0;
@@ -332,7 +336,9 @@ contract Stable is Ownable {
   }
 
   function getMintableStableTokenCount() public view returns (uint256) {
-    return totalStablesRedeemable + ((totalStablesRedeemable * overCollateralizationRatio) / 100);
+    return
+      (totalStablesRedeemable + ((totalStablesRedeemable * overCollateralizationRatio) / 100)) -
+      stableToken.totalSupply();
   }
 
   function getGlobalPriceIndex() public view returns (uint256) {
