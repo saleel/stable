@@ -61,13 +61,11 @@ function AddPricePage() {
   }
 
   return (
-    <div className="add-price-form">
+    <div className="add-price-page">
 
       <h1 className="title">Add Prices</h1>
       <div className="subtitle">
-        Date:
-        {' '}
-        {formatContractDate(aggregationRoundId)}
+        Current Aggregation Round: {aggregationRoundId.toString()}
       </div>
       <hr />
 
@@ -76,7 +74,7 @@ function AddPricePage() {
       )}
 
       {address && (
-        <>
+        <div  className='add-price-form'>
           <div className="info-box mb-5">
             Wallet connected. Address:<code>{address}</code>
           </div>
@@ -145,7 +143,7 @@ function AddPricePage() {
           {message && (
             <div className="message mt-5">{message}</div>
           )}
-        </>
+        </div>
       )}
 
     </div>

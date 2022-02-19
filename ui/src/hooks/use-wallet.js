@@ -34,12 +34,14 @@ function useWallet() {
 
     return (
       <>
-        <h4 className="subtitle">Connect your ETH wallet</h4>
-        <div className="subtitle">
-          <button type="button" onClick={onConnectClick}>
-            Connect
-          </button>
+        <h4 className="subtitle">Connect to your ETH wallet using Metamask (or similar) to interact with the Stable contract.</h4>
+        <div className="mt-3 mb-5">
+          <img src="https://images.ctfassets.net/9sy2a0egs6zh/4zJfzJbG3kTDSk5Wo4RJI1/1b363263141cf629b28155e2625b56c9/mm-logo.svg" alt="Metamas" />
         </div>
+        <button className="button btn-submit-prices is-medium" type="button" onClick={onConnectClick}>
+          Connect
+        </button>
+
       </>
     );
   }
