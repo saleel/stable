@@ -62,3 +62,4 @@ This is very `gas` efficient as the function only emits an event.
 - Allow users to track Price Index based on their choice of product basket.
 - Rewards for price submitters to be made in the same contract.
 - A lot of these would depend on the direction of this project.
+- Responsive design for app
