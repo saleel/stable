@@ -206,10 +206,11 @@ export async function getSupplier(address) {
   return {
     claimPercent: result.claimPercent,
     name: result.name,
-    stablesRedeemable: result.stablesRedeemable.toNumber(),
-    stablesRedeemed: result.stablesRedeemed.toNumber(),
+    stablesRedeemable: formatToken(result.stablesRedeemable),
+    stablesRedeemed: formatToken(result.stablesRedeemed),
     szrRewardsPerRedemption: formatToken(result.szrRewardsPerRedemption),
     szrWithdrawable: formatToken(szrWithdrawable),
+    szrWithdrawn: formatToken(result.szrWithdrawn),
   };
 }
 
@@ -267,6 +268,14 @@ export async function burnStables(address, amount) {
   }
 
   const result = await stableContract.connect(signer).burnStable(amountInWei);
+
+  return result.hash;
+}
+
+export async function withdrawSZR(address, amount) {
+  const amountInWei = ethers.utils.parseEther(amount.toString());
+  const signer = provider.getSigner(address);
+  const result = await stableContract.connect(signer).supplierWithdrawSZR(amountInWei);
 
   return result.hash;
 }

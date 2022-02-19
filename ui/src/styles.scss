@@ -37,9 +37,10 @@ body {
 .navbar-menu {
   margin: 0 auto;
   max-width: 900px;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
   margin-top: 0.5rem;
   margin-bottom: 1rem;
+  border-bottom: 2px solid var(--grey-200);
 }
 
 .navbar-start {
@@ -47,12 +48,14 @@ body {
 }
 
 .navbar-item {
-  font-weight: 600;
+  font-weight: 500;
   opacity: 0.9;
-  font-size: 1.1rem;
-  border-radius: 3px;
-  padding: 0.5rem 1rem !important;
+  font-size: 1.105rem;
+  border-radius: 5px;
+  padding: 0.5rem 0.75rem !important;
   color: var(--gray-700) !important;
+  background-color: var(--gray-200) !important;
+  margin-right: 1rem;
 
   &:hover,
   &:active,
@@ -459,6 +462,13 @@ body {
     color: var(--text-color);
     opacity: 0.8;
   }
+}
+
+.info-box {
+  padding: 1rem;
+  border-radius: 3px;
+  background-color: var(--gray-100);
+  border: 2px solid var(--gray-200);
 }
 
 @keyframes shimmer {

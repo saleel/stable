@@ -107,7 +107,6 @@ function ExchangePage() {
 
       {address && (
         <>
-
           <nav className="level mb-6">
             <div className="level-item has-text-centered">
               <div>
@@ -141,7 +140,7 @@ function ExchangePage() {
             </div>
           </nav>
 
-          <div className="exchange-form p-3">
+          <div className="info-box">
             Wallet connected. Address:<code>{address}</code>
           </div>
           <br />
