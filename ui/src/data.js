@@ -113,12 +113,14 @@ export async function getLatestPriceIndex({ country }) {
   };
 }
 
+// TODO: TheGraph only allows max 1000 items.
+// Implement multiple calls until all items are queried
 export async function getPriceSubmissions({ country, productId }) {
   const { priceSubmissions } = await axiosGraphql({
     data: {
       query: `
         {
-          priceSubmissions(where: { country: "${country}", product: "${productId}" }) {
+          priceSubmissions(first: 1000, where: { country: "${country}", product: "${productId}" }) {
             transactionId
             price
             currency
@@ -133,12 +135,13 @@ export async function getPriceSubmissions({ country, productId }) {
   return priceSubmissions;
 }
 
-export async function getPriceIndexHistory({ country }) {
+export async function getPriceIndexHistory() {
   const { priceIndexes } = await axiosGraphql({
     data: {
       query: `
         {
-          priceIndexes(where: {country: "${country}" }, orderBy:createdAt, orderDirection:desc) {
+          priceIndexes(first: 1000, orderBy:createdAt, orderDirection:desc) {
+            country
             createdAt
             value
           }
@@ -155,7 +158,7 @@ export async function getGlobalPriceIndexHistory() {
     data: {
       query: `
         {
-          globalPriceIndexes(orderBy:createdAt, orderDirection:desc) {
+          globalPriceIndexes(first: 1000, orderBy:createdAt, orderDirection:desc) {
             createdAt
             value
           }
