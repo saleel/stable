@@ -63,7 +63,7 @@ function SubmitPricePage() {
     <div className="add-price-page">
 
       <h1 className="title">Add Prices</h1>
-      <div className="subtitle">
+      <div className="subtitle page-subtitle">
         Current Aggregation Round: {aggregationRoundId.toString()}
       </div>
       <hr />

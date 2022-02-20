@@ -79,8 +79,13 @@ body {
   padding: 0 0 2rem 0;
 
   h1 {
-    font-size: 3rem;
+    font-size: 2.75rem;
+    line-height: 3.25rem;
   }
+}
+
+.page-subtitle {
+  font-size: 1.15rem;
 }
 
 .metrics {

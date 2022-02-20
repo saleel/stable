@@ -47,7 +47,7 @@ function RewardsPage() {
     <div className="supplier-page">
 
       <h1 className="title">Rewards</h1>
-      <div className="subtitle">
+      <div className="subtitle page-subtitle">
         Claim your <code>$SZR</code> rewards.
       </div>
       <hr />

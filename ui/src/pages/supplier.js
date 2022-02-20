@@ -46,7 +46,7 @@ function SupplierPage() {
     <div className="supplier-page">
 
       <h1 className="title">Supplier</h1>
-      <div className="subtitle">
+      <div className="subtitle page-subtitle">
         Borrow SZR by staking reputation to promise supply of products in exchange for <code>STABLE</code> token.
       </div>
       <hr />

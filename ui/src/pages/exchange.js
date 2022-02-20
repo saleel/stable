@@ -94,7 +94,7 @@ function ExchangePage() {
     <div className="exchange-page">
 
       <h1 className="title">Exchange</h1>
-      <div className="subtitle">
+      <div className="subtitle page-subtitle">
         Mint or burn  <code>$STABLE</code>  tokens in exchange for <code>$SZR</code>
         <br />
         You can exchange 1USD worth of SZR for 1USD worth of STABLE
