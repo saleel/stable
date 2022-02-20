@@ -21,13 +21,13 @@ function ExchangePage() {
   const [burnHash, setBurnHash] = React.useState('');
   const [isBurnValid, setIsBurnValid] = React.useState(true);
 
-  const [tokenBalance] = usePromise(() => getTokenBalance(address), {
+  const [tokenBalance, { isFetching: isFetchingToken }] = usePromise(() => getTokenBalance(address), {
     dependencies: [address], defaultValue: {},
   });
-  const [contractState] = usePromise(() => getContractState(address), {
+  const [contractState, { isFetching: isFetchingState }] = usePromise(() => getContractState(address), {
     defaultValue: {},
   });
-  const [tokenPrice] = usePromise(() => getTokenPrice());
+  const [tokenPrice, { isFetching: isFetchingPrice }] = usePromise(() => getTokenPrice());
 
   let szrRequiredToMint = 0;
   if (stablesToMint && tokenPrice) {
@@ -108,31 +108,31 @@ function ExchangePage() {
       {address && (
         <>
           <nav className="level mb-6">
-            <div className="level-item has-text-centered">
+            <div className={`level-item has-text-centered ${isFetchingToken ? 'skeleton-loader' : ''}`}>
               <div>
                 <p className="heading">SZR Balance</p>
                 <p className="title">{tokenBalance && tokenBalance.SZR?.toFixed(2)}</p>
               </div>
             </div>
-            <div className="level-item has-text-centered">
+            <div className={`level-item has-text-centered ${isFetchingToken ? 'skeleton-loader' : ''}`}>
               <div>
                 <p className="heading">STABLE Balance</p>
                 <p className="title">{tokenBalance && tokenBalance.STABLE?.toFixed(2)}</p>
               </div>
             </div>
-            <div className="level-item has-text-centered">
+            <div className={`level-item has-text-centered ${isFetchingPrice ? 'skeleton-loader' : ''}`}>
               <div>
                 <p className="heading">SZR Price</p>
                 <p className="title">{tokenPrice && tokenPrice.SZR?.toFixed(2)}</p>
               </div>
             </div>
-            <div className="level-item has-text-centered">
+            <div className={`level-item has-text-centered ${isFetchingPrice ? 'skeleton-loader' : ''}`}>
               <div>
                 <p className="heading">STABLE Price</p>
                 <p className="title">{tokenPrice && tokenPrice.STABLE?.toFixed(2)}</p>
               </div>
             </div>
-            <div className="level-item has-text-centered">
+            <div className={`level-item has-text-centered ${isFetchingState ? 'skeleton-loader' : ''}`}>
               <div>
                 <p className="heading">STABLE Mintable/Collateralized</p>
                 <p className="title">{contractState.mintableStableTokenCount} / {contractState.totalStablesRedeemable}</p>

@@ -27,7 +27,7 @@ function ProductListItem(props) {
 
   if (loading) {
     return (
-      <div className="product-list-item columns loading" />
+      <div className="product-list-item columns skeleton-loader" />
     );
   }
 
