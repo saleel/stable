@@ -181,8 +181,8 @@ async function beginAggregation() {
   const ethBalance = await provider.getBalance(address);
 
   console.log('Address', address);
-  console.log('ETH Balance', ethBalance.toString());
-  console.log('SZR Balance', szrBalance.toString());
+  console.log('ETH Balance', ethers.utils.formatEther(ethBalance.toString()));
+  console.log('SZR Balance', ethers.utils.formatEther(szrBalance.toString()));
 
   // Prepare country contracts
   /** @type{Record<string, import("./typechain-types/CountryTracker").CountryTracker >} */
