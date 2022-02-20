@@ -179,10 +179,6 @@ async function beginAggregation() {
   /** @type {import("./typechain-types/SZRToken").SZRToken} */
   const srzContract = new ethers.Contract(await stableContract.szrToken(), szrAbi, provider).connect(wallet);
 
-  console.log(`Address: ${wallet.address.toLowerCase()}`);
-  console.log(`Balance ETH: ${await wallet.getBalance()}`);
-  console.log(`Balance SZR: ${await srzContract.balanceOf(wallet.address.toLowerCase())}`);
-
   const countries = ['UK', 'US', 'IN'];
 
   const address = wallet.address.toLowerCase();
