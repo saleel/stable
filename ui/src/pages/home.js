@@ -46,7 +46,7 @@ function HomePage() {
     }
   }
 
-  const productInBasket = products.filter(p => Number(p.weightage)).length;
+  const productInBasket = products.filter((p) => Number(p.weightage)).length;
 
   return (
     <div className="home-page">
