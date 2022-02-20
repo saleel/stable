@@ -8,7 +8,7 @@ const stableAbi = require('./abis/Stable.json');
 const szrAbi = require('./abis/StabilizerToken.json');
 const countryTrackerAbi = require('./abis/CountryTracker.json');
 
-const SLEEP_INTERVAL = 180;
+const SLEEP_INTERVAL = 240;
 const LOCK_AMOUNT = ethers.utils.parseEther('20'); // SZR to lock
 
 const sleep = (sec = SLEEP_INTERVAL) => new Promise((resolve) => {
@@ -207,7 +207,10 @@ async function beginAggregation() {
     if (Number(ethers.utils.formatEther(lockedAmount.toString())) === 0) {
       console.log('Enrolling as aggregator');
       await srzContract.approve(process.env.STABLE_CONTRACT, LOCK_AMOUNT);
+      await sleep(10);
+
       await stableContract.enrollAsAggregator(LOCK_AMOUNT);
+      await sleep(10);
     }
 
     const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(address);
@@ -215,13 +218,12 @@ async function beginAggregation() {
     if (canClaimAggregationRound) {
       console.log('Trying to become aggregator');
       await stableContract.claimNextAggregationRound();
+      await sleep(10);
     } else {
       console.log('Cannot become aggregator');
       return;
     }
   }
-
-  await sleep(10);
 
   assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), address);
 

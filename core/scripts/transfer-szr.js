@@ -5,7 +5,7 @@ const szrAbi = require("../artifacts/contracts/StabilizerToken.sol/StabilizerTok
 const { stable: stableContractAddress } = require("./deployed.json");
 
 const amount = ethers.utils.parseEther("100");
-const recipient = "0xEddC167ed323db122ABa7344bd84DFA49539517b";
+const recipient = "0xbaae37Fc606c8d7c54366911Db142F7C0abA11ab";
 
 async function transfer() {
   const { provider } = ethers;
