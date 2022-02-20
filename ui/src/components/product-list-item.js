@@ -33,9 +33,9 @@ function ProductListItem(props) {
 
   return (
     <div role="button" tabIndex={0} className="product-list-item columns" onClick={onClick}>
-      {product.weightage !== 0 && product.weightage !== 100 && (
+      {product.weightage !== 100 && (
         <div className="pli-weightage">
-          {(product.weightage / 100).toFixed(1)}
+          {+(product.weightage / 100).toFixed(1)}
         </div>
       )}
       <div className="column is-1 pli-image">
