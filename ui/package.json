@@ -59,6 +59,9 @@
       ],
       "react/jsx-one-expression-per-line": [
         0
+      ],
+      "no-restricted-syntax": [
+        0
       ]
     }
   },

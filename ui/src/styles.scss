@@ -101,6 +101,15 @@ body {
   }
 }
 
+.product-category {
+  text-transform: uppercase;
+  opacity: 0.8;
+  font-weight: 600;
+  word-spacing: 2px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
 .product-list,
 .metrics {
   width: 100%;
