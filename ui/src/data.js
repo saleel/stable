@@ -153,6 +153,7 @@ export async function getGlobalPriceIndexHistory() {
       query: `
         {
           globalPriceIndexes(first: 1000, orderBy:createdAt, orderDirection:desc) {
+            id
             createdAt
             value
           }

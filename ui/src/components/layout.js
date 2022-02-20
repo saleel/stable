@@ -69,9 +69,10 @@ function Layout() {
 
         <div>
           Copyright &copy; 2022 Project Stable.
-          Product icons from <a target="_blank" href="https://icons8.com/" rel="noreferrer">icons8.com</a>
+          Product icons and logo from <a target="_blank" href="https://icons8.com/" rel="noreferrer">icons8.com</a>
         </div>
         <div>
+          {'Status: POC/Testing. '}
           {'Contract on Aurora: '}
           <a
             target="_blank"

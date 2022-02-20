@@ -38,7 +38,7 @@ function PriceIndexPAge() {
       <>
         <div className="price-history-chart mb-3">
           <Chart
-            data={priceIndexHistoryForCurrentCountry}
+            data={[...priceIndexHistoryForCurrentCountry].reverse()}
             xAxisKey="createdAt"
             yAxisKeys={['value']}
             xAxisFormatter={formatContractDate}

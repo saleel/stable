@@ -3,7 +3,9 @@ import React from 'react';
 import Chart from '../components/chart';
 import { getGlobalPriceIndexHistory } from '../data';
 import usePromise from '../hooks/use-promise';
-import { formatContractDate, formatContractDateWithYear, formatPrice } from '../utils';
+import {
+  formatContractDate, formatContractDateWithYear, formatPrice, sortByContractDate,
+} from '../utils';
 import Table from '../components/table';
 import Loading from '../components/loading';
 
@@ -15,6 +17,8 @@ function GlobalPriceIndexPAge() {
   if (!globalPriceIndexHistory.length || isFetching) {
     return <Loading />;
   }
+
+  const history = sortByContractDate(globalPriceIndexHistory, 'id');
 
   return (
     <div className="global-price-index-page">
@@ -29,8 +33,8 @@ function GlobalPriceIndexPAge() {
 
       <div className="price-history-chart mb-3">
         <Chart
-          data={globalPriceIndexHistory}
-          xAxisKey="createdAt"
+          data={[...history].reverse()}
+          xAxisKey="id"
           yAxisKeys={['value']}
           xAxisFormatter={formatContractDate}
           yAxisFormatter={formatPrice}
@@ -38,13 +42,13 @@ function GlobalPriceIndexPAge() {
       </div>
 
       <Table
-        data={globalPriceIndexHistory}
+        data={history}
         fields={{
-          createdAt: formatContractDateWithYear,
+          id: formatContractDateWithYear,
           value: formatPrice,
         }}
         labels={{
-          createdAt: 'Date',
+          id: 'Date',
           value: 'Global Price Index',
         }}
       />
