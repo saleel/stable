@@ -1,4 +1,5 @@
 import format from 'date-fns/format';
+import { utils } from 'ethers';
 
 export function contractDateToJsDate(integerDate) {
   const stringDate = integerDate.toString();
@@ -23,4 +24,12 @@ export function calculatePriceChange(oldPrice, newPrice) {
 
 export function formatPrice(priceValue) {
   return +Number(priceValue / 100).toFixed(2);
+}
+
+export function formatToken(bigNumber) {
+  return Number(utils.formatEther(bigNumber.toString()));
+}
+
+export function trimAddress(address) {
+  return `${address.slice(0, 5)}...${address.slice(-5)}`;
 }

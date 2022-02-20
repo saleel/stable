@@ -1,13 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react';
 import { useParams } from 'react-router';
+import { useLocalStorage } from '@rehooks/local-storage';
 import MetricBox from '../components/metric-box';
 import Chart from '../components/chart';
 import { getProduct, getUSDRate, getPriceSubmissions } from '../data';
-import { useLocalStorage } from '@rehooks/local-storage';
 import usePromise from '../hooks/use-promise';
 import {
-  calculatePriceChange, formatContractDate, formatContractDateWithYear, formatPrice,
+  calculatePriceChange, formatContractDate, formatContractDateWithYear, formatPrice, trimAddress,
 } from '../utils';
 import Table from '../components/table';
 import { Countries } from '../constants';
@@ -79,13 +79,23 @@ function ProductPage() {
   }
 
   function priceComparisonView() {
-    const pricesPerCountries = product.prices.map((p) => ({
-      ...p,
-      [p.country]: formatPrice(p.value),
-      usdEquivalent: formatPrice(getUSDRate(p.currency, p.value)),
-    })).reverse();
+    const pricesCountryMapping = {};
+    const sortedPrices = product.prices.reverse();
 
-    const latestPricesForCountry = Object.keys(Countries).map((c) => pricesPerCountries.find((p) => p.country === c));
+    for (const price of sortedPrices) {
+      if (!pricesCountryMapping[price.createdAt]) {
+        pricesCountryMapping[price.createdAt] = { createdAt: price.createdAt };
+      }
+      pricesCountryMapping[price.createdAt][price.country] = formatPrice(getUSDRate(price.currency, price.value));
+    }
+
+    const pricesPerCountries = Object.values(pricesCountryMapping);
+
+    // First item would be the latest
+    const latestPricesForCountry = Object.keys(Countries).map((c) => sortedPrices.find((p) => p.country === c));
+
+    console.log(pricesPerCountries);
+    console.log(latestPricesForCountry);
 
     return (
       <>
@@ -95,7 +105,6 @@ function ProductPage() {
             xAxisKey="createdAt"
             yAxisKeys={Object.keys(Countries)}
             xAxisFormatter={formatContractDate}
-            yAxisFormatter={formatPrice}
           />
         </div>
 
@@ -103,12 +112,12 @@ function ProductPage() {
           data={latestPricesForCountry}
           fields={{
             country: (value) => Countries[value],
-            value: (_, row) => `${row.currency} ${row[row.country]}`,
-            usdEquivalent: (value) => `${value}`,
+            value: (_, row) => `${row.currency} ${formatPrice(row.value)}`,
+            usdEquivalent: (_, row) => `${formatPrice(getUSDRate(row.currency, row.value))}`,
           }}
           labels={{
             country: 'Country',
-            value: 'Price',
+            value: 'Latest Price',
             usdEquivalent: 'USD Equivalent',
           }}
         />
@@ -121,8 +130,14 @@ function ProductPage() {
     const { address, transactionId } = props;
     return (
       <>
-        <span>{`${address.slice(0, 5)}...${address.slice(-5)}`}</span>
-        <a rel="noreferrer" target="_blank" className="ml-3" href={`${process.env.BLOCKCHAIN_EXPLORER_URL}/${transactionId}`}>tx</a>
+        <span>{trimAddress(address)}</span>
+        <a
+          rel="noreferrer"
+          target="_blank"
+          className="ml-3"
+          href={`${process.env.REACT_APP_BLOCKCHAIN_EXPLORER_URL}/tx/${transactionId}`}
+        >tx
+        </a>
       </>
     );
   }

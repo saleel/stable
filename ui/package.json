@@ -21,6 +21,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "lint": "eslint --fix",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -49,6 +50,18 @@
       ],
       "jsx-a11y/no-static-element-interactions": [
         0
+      ],
+      "react/prop-types": [
+        0
+      ],
+      "import/prefer-default-export": [
+        0
+      ],
+      "react/jsx-one-expression-per-line": [
+        0
+      ],
+      "no-restricted-syntax": [
+        0
       ]
     }
   },
@@ -65,7 +78,6 @@
     ]
   },
   "devDependencies": {
-    "eslint": "^8.8.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jsx-a11y": "^6.5.1",

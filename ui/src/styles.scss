@@ -1,5 +1,6 @@
 @import "../node_modules/bulma/bulma.sass";
 
+// Colors from Chakra UI https://chakra-ui.com/docs/theming/theme
 :root {
   --gray-100: #f7fafc;
   --gray-200: #edf2f7;
@@ -7,8 +8,11 @@
   --gray-400: #a0aec0;
   --gray-500: #718096;
   --gray-700: #2d3748;
+  --red-50: #fff5f5;
   --red-200: #feb2b2;
   --red-300: #f56565;
+  --green-50: #f0fff4;
+  --green-100: #c6f6d5;
   --green-200: #9ae6b4;
   --green-300: #48bb78;
   --text-color: #021e2d;
@@ -33,9 +37,10 @@ body {
 .navbar-menu {
   margin: 0 auto;
   max-width: 900px;
-  padding: 0 1rem;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
+  padding: 0 1.25rem;
+  margin-top: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--grey-200);
 }
 
 .navbar-start {
@@ -43,18 +48,20 @@ body {
 }
 
 .navbar-item {
-  font-weight: 600;
+  font-weight: 500;
   opacity: 0.9;
-  font-size: 1.1rem;
-  border-radius: 3px;
-  padding: 0.5rem 1rem !important;
+  font-size: 1.105rem;
+  border-radius: 5px;
+  padding: 0.5rem 0.75rem !important;
   color: var(--gray-700) !important;
+  background-color: var(--gray-200) !important;
+  margin-right: 1rem;
 
   &:hover,
   &:active,
   &.active {
     opacity: 1;
-    background-color: var(--gray-100) !important;
+    background-color: var(--gray-300) !important;
   }
 }
 
@@ -82,6 +89,27 @@ body {
   justify-content: space-between;
 }
 
+.country-dropdown {
+  .dropdown-trigger button {
+    background-color: var(--gray-200);
+    border: 0;
+    width: 125px;
+    justify-content: space-between;
+  }
+  .dropdown-content {
+    background-color: var(--gray-100);
+  }
+}
+
+.product-category {
+  text-transform: uppercase;
+  opacity: 0.8;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
 .product-list,
 .metrics {
   width: 100%;
@@ -91,7 +119,6 @@ body {
 
 .product-list-item {
   border-radius: 5px;
-  overflow: hidden;
   align-items: center;
   margin: 0.5rem 0;
   height: 4.25rem;
@@ -162,6 +189,7 @@ body {
   display: flex;
   justify-content: flex-start;
   align-self: center;
+  opacity: 0.9;
 
   img {
     height: 40px;
@@ -211,6 +239,21 @@ body {
   border-top: 5px solid var(--green-300);
 }
 
+.pli-weightage {
+  position: absolute;
+  right: -16px;
+  width: 32px;
+  height: 32px;
+  background-color: var(--gray-200);
+  border-radius: 3px;
+  border: 1px solid var(--gray-300);
+  padding: 8px 6px;
+  line-height: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  opacity: 0.8;
+}
+
 .metric-box {
   background-color: #efefef;
   height: 6.5rem;
@@ -252,6 +295,10 @@ body {
       animation: shimmer 1s infinite;
       content: "";
     }
+  }
+
+  &.is-link {
+    cursor: pointer;
   }
 }
 
@@ -368,9 +415,9 @@ body {
 
     a {
       display: block;
-      font-size: 1.25rem;
-      font-weight: 500;
-      padding: 0.5rem 1rem 0.5rem 0;
+      font-size: 1.15rem;
+      font-weight: 600;
+      padding: 0.75rem 1rem 0.5rem 0.1rem;
       margin-right: 1rem;
       color: var(--text-color);
     }
@@ -409,6 +456,10 @@ body {
   border: 1px solid var(--gray-300);
   border-radius: 3px;
   margin: 2px;
+
+  &:last-child {
+    margin-bottom: 1rem !important;
+  }
 }
 
 .btn-submit-prices {
@@ -425,6 +476,65 @@ body {
       border-right-color: transparent;
       border-top-color: transparent;
     }
+  }
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 3px;
+
+  &.warning {
+    background: var(--red-50);
+  }
+
+  &.success {
+    background: var(--green-100);
+  }
+}
+
+.exchange-form {
+  padding: 1.5rem 1rem;
+  border-radius: 3px;
+  background-color: var(--gray-100);
+  border: 2px solid var(--gray-200);
+
+  .subtitle {
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    color: var(--text-color);
+    opacity: 0.8;
+  }
+}
+
+.info-box {
+  padding: 1rem;
+  border-radius: 3px;
+  background-color: var(--gray-100);
+  border: 2px solid var(--gray-200);
+}
+
+.spinner-loading {
+  font-size: 2rem;
+  padding: 2rem;
+
+  &:after {
+    position: absolute;
+    left: calc(50% - (1em * 0.5));
+    top: calc(50% - (1em * 0.5));
+    position: absolute !important;
+    -webkit-animation: spinAround 0.5s infinite linear;
+    animation: spinAround 0.5s infinite linear;
+    border: 2px solid var(--text-color);
+    border-radius: 9999px;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    content: "";
+    display: block;
+    height: 1em;
+    position: relative;
+    width: 1em;
   }
 }
 

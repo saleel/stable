@@ -110,7 +110,7 @@ export function handlePriceIndexUpdated(event: PriceIndexUpdated): void {
 
   priceIndex.countryTracker = countryTracker.id;
   priceIndex.value = event.params.priceIndex.toI32();  // TODO: Check if max possible price value can exceed i32
-  priceIndex.updatedAt = aggregationRoundId.toI32();
+  priceIndex.createdAt = aggregationRoundId.toI32();
   priceIndex.currency = countryTracker.currency;
   priceIndex.country = countryTracker.country;
 
@@ -123,11 +123,12 @@ export function handlePriceIndexUpdated(event: PriceIndexUpdated): void {
   const stableAddress = context.getString('stableAddress');
   const stableContract = StableContract.bind(Address.fromString(stableAddress));
   const blockTime = event.block.timestamp.toI32();
+
   // Round to nearest 00:00 GMT time
-  const globalPriceIndexId = blockTime - (blockTime % (24 * 60 * 60));
-  let globalPriceIndex = GlobalPriceIndex.load(globalPriceIndexId.toString());
+  const globalPriceIndexId = aggregationRoundId.toString();
+  let globalPriceIndex = GlobalPriceIndex.load(globalPriceIndexId);
   if (!globalPriceIndex) {
-    globalPriceIndex = new GlobalPriceIndex(globalPriceIndexId.toString());
+    globalPriceIndex = new GlobalPriceIndex(globalPriceIndexId);
     globalPriceIndex.createdAt = event.block.timestamp.toI32();
   }
   globalPriceIndex.value = stableContract.getGlobalPriceIndex().toI32();

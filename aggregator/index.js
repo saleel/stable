@@ -9,6 +9,7 @@ const szrAbi = require('./abis/StabilizerToken.json');
 const countryTrackerAbi = require('./abis/CountryTracker.json');
 
 const SLEEP_INTERVAL = 180;
+const LOCK_AMOUNT = ethers.utils.parseEther('20'); // SZR to lock
 
 const sleep = (sec = SLEEP_INTERVAL) => new Promise((resolve) => {
   setTimeout(resolve, sec * 1000);
@@ -145,7 +146,7 @@ async function startAggregationForCountry({ contract, minPriceConfirmations }) {
   const productPrices = calculateAveragePrice({ priceSubmissions, minPriceConfirmations });
 
   if (Object.keys(productPrices).length === 0) {
-    console.log('Nothing to update');
+    console.log('Nothing to update'); // TODO: should update with PI old value to avoid errors on completeAggregation
     return false;
   }
 
@@ -184,28 +185,36 @@ async function beginAggregation() {
 
   const countries = ['UK', 'US', 'IN'];
 
+  const address = wallet.address.toLowerCase();
+  const szrBalance = await srzContract.balanceOf(address);
+  const ethBalance = await provider.getBalance(address);
+
+  console.log('Address', address);
+  console.log('ETH Balance', ethers.utils.formatEther(ethBalance.toString()));
+  console.log('SZR Balance', ethers.utils.formatEther(szrBalance.toString()));
+
   // Prepare country contracts
   /** @type{Record<string, import("./typechain-types/CountryTracker").CountryTracker >} */
   const countryContracts = {};
   for (const country of countries) {
     // eslint-disable-next-line no-await-in-loop
-    const address = await stableContract.countryTrackers(country);
-    const countryContract = new ethers.Contract(address, countryTrackerAbi, provider);
+    const countryAddress = await stableContract.countryTrackers(country);
+    const countryContract = new ethers.Contract(countryAddress, countryTrackerAbi, provider);
     countryContracts[country] = countryContract.connect(wallet);
   }
 
   // Check aggregation status/role
-  if ((await stableContract.currentAggregator()).toLowerCase() !== wallet.address.toLowerCase().toLowerCase()) {
+  if ((await stableContract.currentAggregator()).toLowerCase() !== address) {
     console.log('Not an aggregator now');
 
-    const lockedAmount = await stableContract.aggregatorLockedAmounts(wallet.address.toLowerCase());
-    if (lockedAmount === 0) {
+    const lockedAmount = await stableContract.aggregatorLockedAmounts(address);
+    if (Number(ethers.utils.formatEther(lockedAmount.toString())) === 0) {
       console.log('Enrolling as aggregator');
-      await srzContract.approve(process.env.STABLE_CONTRACT, 1000);
-      await stableContract.enrollAsAggregator(20);
+      await srzContract.approve(process.env.STABLE_CONTRACT, LOCK_AMOUNT);
+      await stableContract.enrollAsAggregator(LOCK_AMOUNT);
     }
 
-    const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(wallet.address.toLowerCase());
+    const canClaimAggregationRound = await stableContract.canClaimNextAggregationRound(address);
 
     if (canClaimAggregationRound) {
       console.log('Trying to become aggregator');
@@ -218,7 +227,7 @@ async function beginAggregation() {
 
   await sleep(10);
 
-  assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), wallet.address.toLowerCase());
+  assert.strictEqual((await stableContract.currentAggregator()).toLowerCase(), address);
 
   const aggregationEndTime = await countryContracts.US.aggregationRoundEndTime();
   const currentTime = Math.round(new Date().getTime() / 1000);
@@ -245,7 +254,7 @@ async function beginAggregation() {
 
   if (updatedCount) {
     await sleep(10);
-    await stableContract.completeAggregation();
+    await stableContract.completeAggregation([]);
     console.log('Aggregation round completed');
   }
 

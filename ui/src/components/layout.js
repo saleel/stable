@@ -14,21 +14,27 @@ function Layout() {
             <Link to="/" className="navbar-item">
               Home
             </Link>
-
-            <Link to="/submit" className="navbar-item">
+            <Link to="/submit-price" className="navbar-item">
               Submit Price
+            </Link>
+            <Link to="/exchange" className="navbar-item">
+              Exchange
+            </Link>
+            <Link to="/supplier" className="navbar-item">
+              Supplier
+            </Link>
+            <Link to="/rewards" className="navbar-item">
+              Rewards
             </Link>
           </div>
 
           <div className="navbar-end" />
 
-          <div className="dropdown is-hoverable">
+          <div className="country-dropdown dropdown is-hoverable">
             <div className="dropdown-trigger">
               <button type="button" className="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                <span>{country}</span>
-                <span className="icon is-small">
-                  <i className="fas fa-angle-down" aria-hidden="true" />
-                </span>
+                <span>&#127758;&nbsp; {country}</span>
+                <span>▼</span>
               </button>
             </div>
             <div className="dropdown-menu" id="dropdown-menu" role="menu">
@@ -47,6 +53,7 @@ function Layout() {
           </div>
 
         </div>
+
       </nav>
 
       <div className="container">

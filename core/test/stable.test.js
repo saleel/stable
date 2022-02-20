@@ -17,14 +17,15 @@ describe("Stable", () => {
   let owner;
   let user1;
   let user2;
+  let user3;
 
   beforeEach(async () => {
-    [owner, user1, user2] = await ethers.getSigners();
+    [owner, user1, user2, user3] = await ethers.getSigners();
 
     const Stable = await ethers.getContractFactory("Stable", owner);
 
     stable = await Stable.deploy(
-      1000, // SCR supply
+      ethers.utils.parseEther("100000000"), // SZR initial supply
       20, // over-coll ratio
       Math.round(new Date().getTime() / 1000) - 2 * 86400, // 2 days before
       "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
@@ -51,8 +52,8 @@ describe("Stable", () => {
       owner
     );
 
-    SZRToken.transfer(user1.address, 100);
-    SZRToken.transfer(user2.address, 600);
+    SZRToken.transfer(user1.address, ethers.utils.parseEther("100"));
+    SZRToken.transfer(user2.address, ethers.utils.parseEther("2500"));
 
     StableToken = await ethers.getContractAt(
       "StableToken",
@@ -61,10 +62,21 @@ describe("Stable", () => {
   });
 
   // Helper function for some tests
-  async function updatePrices(expectedPI = 1000) {
-    if ((await stable.aggregatorLockedAmounts(user1.address)) === 0) {
-      await SZRToken.connect(user1).approve(stable.address, 200);
-      await stable.connect(user1).enrollAsAggregator(100);
+  async function updatePrices(requiredPI = 1000) {
+    if (
+      Number(
+        ethers.utils.formatEther(
+          await stable.aggregatorLockedAmounts(user1.address)
+        )
+      ) === 0
+    ) {
+      await SZRToken.connect(user1).approve(
+        stable.address,
+        ethers.utils.parseEther("2000")
+      );
+      await stable
+        .connect(user1)
+        .enrollAsAggregator(ethers.utils.parseEther("100"));
     }
 
     await stable.connect(user1).claimNextAggregationRound();
@@ -73,10 +85,10 @@ describe("Stable", () => {
       .updatePrices(
         await stable.aggregationRoundId(),
         ["ZC", "ZW", "ZR", "ZS", "KE"],
-        [expectedPI, expectedPI, expectedPI, expectedPI, expectedPI],
-        expectedPI
+        [requiredPI, requiredPI, requiredPI, requiredPI, requiredPI],
+        requiredPI
       );
-    await stable.connect(user1).completeAggregation();
+    await stable.connect(user1).completeAggregation([]);
   }
 
   it("should be able to create country tracker contracts", async () => {
@@ -104,10 +116,17 @@ describe("Stable", () => {
   });
 
   it("should allow user to function as aggregator", async () => {
-    await SZRToken.connect(user1).approve(stable.address, 200);
-    await stable.connect(user1).enrollAsAggregator(100);
+    await SZRToken.connect(user1).approve(
+      stable.address,
+      ethers.utils.parseEther("100")
+    );
+    await stable
+      .connect(user1)
+      .enrollAsAggregator(ethers.utils.parseEther("100"));
 
-    expect(await stable.aggregatorLockedAmounts(user1.address)).to.equal(100);
+    expect(await stable.aggregatorLockedAmounts(user1.address)).to.equal(
+      ethers.utils.parseEther("100")
+    );
 
     await stable.connect(user1).claimNextAggregationRound();
 
@@ -123,54 +142,89 @@ describe("Stable", () => {
       );
 
     expect(await ukTracker.priceUpdatedForAggRound()).to.equal(true);
-    await stable.connect(user1).completeAggregation();
+    await stable.connect(user1).completeAggregation([user2.address]);
 
-    expect(await stable.rewards(user1.address)).to.equal(2);
+    expect(await stable.rewards(user1.address)).to.equal(
+      ethers.utils.parseEther("2")
+    ); // agg rewards
 
-    await stable.connect(user1).withdrawRewards(2);
+    expect(await stable.rewards(user2.address)).to.equal(
+      ethers.utils.parseEther("0.5")
+    ); // submitter rewards
 
-    expect(await SZRToken.balanceOf(user1.address)).to.equal(2);
+    await stable.connect(user1).withdrawRewards(ethers.utils.parseEther("2"));
+
+    expect(await SZRToken.balanceOf(user1.address)).to.equal(
+      ethers.utils.parseEther("2")
+    );
   });
 
   it("should allow supplier to claim SZR", async () => {
     // Update price to set price index
     await updatePrices();
 
-    await stable.addSupplier(user1.address, "ABC Market", 1000, 50, 2);
-
-    const priceOfStable = await stable.getStableTokenPrice();
-    const priceOfSZR = await stable.getSZRPriceInUSD();
-
-    await SZRToken.connect(user2).approve(stable.address, 60);
+    await stable.addSupplier(
+      user1.address,
+      "ABC Market",
+      ethers.utils.parseEther("1000"),
+      50,
+      2
+    );
 
     const stablesToMint = await stable.getMintableStableTokenCount(); // max possible
 
+    // normal user mint stables
+    await SZRToken.connect(user2).approve(
+      stable.address,
+      stablesToMint.mul(100)
+    );
     await stable.connect(user2).mintStable(stablesToMint);
 
-    const totalSZRClaimable =
-      ((stablesToMint * priceOfStable) / priceOfSZR) * (1 - 20 / 100); // minus burned
+    const priceOfStable = await stable.getStableTokenPrice();
+    const priceOfSZR = 499; // Because new stable was minted to reward aggregator
 
-    const claimable = Math.round((50 / 100) * totalSZRClaimable);
-
-    expect(await stable.getSZRWithdrawableBySupplier(user1.address)).to.equal(
-      claimable
+    const szrClaimable = Math.round(
+      (((1000 * 50) / 100) * priceOfStable) / priceOfSZR
     );
 
-    await stable.connect(user1).supplierWithdrawSZR(claimable);
+    expect(
+      Math.round(
+        ethers.utils.formatEther(
+          (await stable.getSZRWithdrawableBySupplier(user1.address)).toString()
+        )
+      )
+    ).to.equal(szrClaimable);
 
-    expect(await SZRToken.balanceOf(user1.address)).to.equal(claimable);
+    await stable
+      .connect(user1)
+      .supplierWithdrawSZR(ethers.utils.parseEther(szrClaimable.toString()));
+
+    expect((await SZRToken.balanceOf(user1.address)).toString()).to.equal(
+      ethers.utils.parseEther(szrClaimable.toString())
+    );
   });
 
   it("should allow users to exchange SZR for Stables", async () => {
     // Update price to set price index
     await updatePrices(1000);
 
-    await stable.addSupplier(user1.address, "ABC Market", 1000, 50, 0);
-    await SZRToken.connect(user2).approve(stable.address, 60);
+    await stable.addSupplier(
+      user3.address,
+      "ABC Market",
+      ethers.utils.parseEther("1000"),
+      50,
+      0
+    );
+    await SZRToken.connect(user2).approve(
+      stable.address,
+      ethers.utils.parseEther("2500")
+    );
 
     let priceOfSZR = await stable.getSZRPriceInUSD();
 
-    const szrBalanceStarting = await SZRToken.balanceOf(user2.address);
+    const szrBalanceStarting = ethers.utils.formatEther(
+      await SZRToken.balanceOf(user2.address)
+    );
     const stablesToMint = await stable.getMintableStableTokenCount(); // max possible
     await stable.connect(user2).mintStable(stablesToMint);
 
@@ -178,20 +232,25 @@ describe("Stable", () => {
     expect(await StableToken.balanceOf(user2.address)).to.equal(stablesToMint);
 
     const szrUsedForMinting =
-      szrBalanceStarting - (await SZRToken.balanceOf(user2.address));
+      szrBalanceStarting -
+      ethers.utils.formatEther(await SZRToken.balanceOf(user2.address));
+
     const szrBalanceAfterMint = szrBalanceStarting - szrUsedForMinting;
     const usdSpentForMinting = szrUsedForMinting * priceOfSZR;
 
     priceOfSZR = await stable.getSZRPriceInUSD();
 
     await updatePrices(1100); // 10% increase
+
     await stable.connect(user2).burnStable(stablesToMint);
 
     const usdToReceiveAfterBurn = (usdSpentForMinting * 1100) / 1000; // 10% extra
     const expectedSZRReceived = Math.floor(usdToReceiveAfterBurn / priceOfSZR);
 
-    expect(await SZRToken.balanceOf(user2.address)).to.equal(
-      szrBalanceAfterMint + expectedSZRReceived
-    );
+    expect(
+      Math.floor(
+        ethers.utils.formatEther(await SZRToken.balanceOf(user2.address))
+      )
+    ).to.equal(Math.round(szrBalanceAfterMint + expectedSZRReceived));
   });
 });

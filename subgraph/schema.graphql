@@ -38,7 +38,7 @@ type PriceIndex @entity {
   country: String!
   currency: String!
   value: Int!
-  updatedAt: Int!
+  createdAt: Int!
 }
 
 type ProductBasketItem @entity {

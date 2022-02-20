@@ -3,7 +3,6 @@
 import React from 'react';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 
-
 const cache = {
   get(key) {
     if (!key) return undefined;
@@ -42,7 +41,6 @@ const cache = {
   },
 };
 
-
 /**
  * @typedef UsePromiseOptions
  * @property [defaultValue] {any}
@@ -52,7 +50,6 @@ const cache = {
  * @property [updateWithRevalidated = false] {boolean}
  * @property [cachePeriodInSecs = 10] {number}
  */
-
 
 /**
  * @template T
@@ -73,11 +70,10 @@ function usePromise(promise, options = {}) {
 
   const [result, setResult] = React.useState(cachedData ? cachedData.data : defaultValue);
   const [fetchedAt, setFetchedAt] = React.useState(cachedData ? cachedData.storedAt : undefined);
-  const [isFetching, setIsFetching] = React.useState(false);
+  const [isFetching, setIsFetching] = React.useState(!(cachedData && cachedData.data));
   const [error, setError] = React.useState();
 
   let didCancel = false;
-
 
   async function fetch() {
     if (cachedData) {
@@ -116,7 +112,6 @@ function usePromise(promise, options = {}) {
     setIsFetching(false);
   }
 
-
   React.useEffect(() => {
     const allConditionsValid = conditions.every((condition) => {
       if (typeof condition === 'function') return !!condition();
@@ -134,7 +129,6 @@ function usePromise(promise, options = {}) {
     };
   }, [...dependencies, ...conditions]);
 
-
   function reFetch() {
     if (cacheKey) {
       cache.delete(cacheKey);
@@ -143,11 +137,9 @@ function usePromise(promise, options = {}) {
     return fetch();
   }
 
-
   return [result, {
     isFetching, fetchedAt, reFetch, error,
   }];
 }
-
 
 export default usePromise;

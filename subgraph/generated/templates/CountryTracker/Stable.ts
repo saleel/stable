@@ -140,19 +140,22 @@ export class Stable__suppliersResult {
   value2: BigInt;
   value3: i32;
   value4: BigInt;
+  value5: BigInt;
 
   constructor(
     value0: string,
     value1: BigInt,
     value2: BigInt,
     value3: i32,
-    value4: BigInt
+    value4: BigInt,
+    value5: BigInt
   ) {
     this.value0 = value0;
     this.value1 = value1;
     this.value2 = value2;
     this.value3 = value3;
     this.value4 = value4;
+    this.value5 = value5;
   }
 
   toMap(): TypedMap<string, ethereum.Value> {
@@ -165,6 +168,7 @@ export class Stable__suppliersResult {
       ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(this.value3))
     );
     map.set("value4", ethereum.Value.fromUnsignedBigInt(this.value4));
+    map.set("value5", ethereum.Value.fromUnsignedBigInt(this.value5));
     return map;
   }
 }
@@ -243,43 +247,20 @@ export class Stable extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toI32());
   }
 
-  aggregationRoundsClaimed(param0: Address): i32 {
+  aggregationRoundsClaimed(param0: Address): BigInt {
     let result = super.call(
       "aggregationRoundsClaimed",
-      "aggregationRoundsClaimed(address):(uint16)",
-      [ethereum.Value.fromAddress(param0)]
-    );
-
-    return result[0].toI32();
-  }
-
-  try_aggregationRoundsClaimed(param0: Address): ethereum.CallResult<i32> {
-    let result = super.tryCall(
-      "aggregationRoundsClaimed",
-      "aggregationRoundsClaimed(address):(uint16)",
-      [ethereum.Value.fromAddress(param0)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toI32());
-  }
-
-  aggregatorLastUpdateTime(param0: Address): BigInt {
-    let result = super.call(
-      "aggregatorLastUpdateTime",
-      "aggregatorLastUpdateTime(address):(uint256)",
+      "aggregationRoundsClaimed(address):(uint32)",
       [ethereum.Value.fromAddress(param0)]
     );
 
     return result[0].toBigInt();
   }
 
-  try_aggregatorLastUpdateTime(param0: Address): ethereum.CallResult<BigInt> {
+  try_aggregationRoundsClaimed(param0: Address): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "aggregatorLastUpdateTime",
-      "aggregatorLastUpdateTime(address):(uint256)",
+      "aggregationRoundsClaimed",
+      "aggregationRoundsClaimed(address):(uint32)",
       [ethereum.Value.fromAddress(param0)]
     );
     if (result.reverted) {
@@ -312,10 +293,33 @@ export class Stable extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  aggregatorLockTime(param0: Address): BigInt {
+    let result = super.call(
+      "aggregatorLockTime",
+      "aggregatorLockTime(address):(uint256)",
+      [ethereum.Value.fromAddress(param0)]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_aggregatorLockTime(param0: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "aggregatorLockTime",
+      "aggregatorLockTime(address):(uint256)",
+      [ethereum.Value.fromAddress(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   aggregatorLockedAmounts(param0: Address): BigInt {
     let result = super.call(
       "aggregatorLockedAmounts",
-      "aggregatorLockedAmounts(address):(uint32)",
+      "aggregatorLockedAmounts(address):(uint256)",
       [ethereum.Value.fromAddress(param0)]
     );
 
@@ -325,7 +329,7 @@ export class Stable extends ethereum.SmartContract {
   try_aggregatorLockedAmounts(param0: Address): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "aggregatorLockedAmounts",
-      "aggregatorLockedAmounts(address):(uint32)",
+      "aggregatorLockedAmounts(address):(uint256)",
       [ethereum.Value.fromAddress(param0)]
     );
     if (result.reverted) {
@@ -591,7 +595,7 @@ export class Stable extends ethereum.SmartContract {
   mininumPriceConfirmations(): i32 {
     let result = super.call(
       "mininumPriceConfirmations",
-      "mininumPriceConfirmations():(uint8)",
+      "mininumPriceConfirmations():(uint16)",
       []
     );
 
@@ -601,7 +605,7 @@ export class Stable extends ethereum.SmartContract {
   try_mininumPriceConfirmations(): ethereum.CallResult<i32> {
     let result = super.tryCall(
       "mininumPriceConfirmations",
-      "mininumPriceConfirmations():(uint8)",
+      "mininumPriceConfirmations():(uint16)",
       []
     );
     if (result.reverted) {
@@ -724,7 +728,7 @@ export class Stable extends ethereum.SmartContract {
   suppliers(param0: Address): Stable__suppliersResult {
     let result = super.call(
       "suppliers",
-      "suppliers(address):(string,uint256,uint256,uint16,uint256)",
+      "suppliers(address):(string,uint256,uint256,uint16,uint256,uint256)",
       [ethereum.Value.fromAddress(param0)]
     );
 
@@ -733,14 +737,15 @@ export class Stable extends ethereum.SmartContract {
       result[1].toBigInt(),
       result[2].toBigInt(),
       result[3].toI32(),
-      result[4].toBigInt()
+      result[4].toBigInt(),
+      result[5].toBigInt()
     );
   }
 
   try_suppliers(param0: Address): ethereum.CallResult<Stable__suppliersResult> {
     let result = super.tryCall(
       "suppliers",
-      "suppliers(address):(string,uint256,uint256,uint16,uint256)",
+      "suppliers(address):(string,uint256,uint256,uint16,uint256,uint256)",
       [ethereum.Value.fromAddress(param0)]
     );
     if (result.reverted) {
@@ -753,9 +758,33 @@ export class Stable extends ethereum.SmartContract {
         value[1].toBigInt(),
         value[2].toBigInt(),
         value[3].toI32(),
-        value[4].toBigInt()
+        value[4].toBigInt(),
+        value[5].toBigInt()
       )
     );
+  }
+
+  szrRewardForWinningSubmissions(): BigInt {
+    let result = super.call(
+      "szrRewardForWinningSubmissions",
+      "szrRewardForWinningSubmissions():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_szrRewardForWinningSubmissions(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "szrRewardForWinningSubmissions",
+      "szrRewardForWinningSubmissions():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   szrRewardPerAggregationRound(): BigInt {
@@ -799,7 +828,7 @@ export class Stable extends ethereum.SmartContract {
   totalLockedAmount(): BigInt {
     let result = super.call(
       "totalLockedAmount",
-      "totalLockedAmount():(uint32)",
+      "totalLockedAmount():(uint256)",
       []
     );
 
@@ -809,7 +838,7 @@ export class Stable extends ethereum.SmartContract {
   try_totalLockedAmount(): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "totalLockedAmount",
-      "totalLockedAmount():(uint32)",
+      "totalLockedAmount():(uint256)",
       []
     );
     if (result.reverted) {
@@ -1051,6 +1080,10 @@ export class CompleteAggregationCall__Inputs {
 
   constructor(call: CompleteAggregationCall) {
     this._call = call;
+  }
+
+  get winners(): Array<Address> {
+    return this._call.inputValues[0].value.toAddressArray();
   }
 }
 
@@ -1349,6 +1382,10 @@ export class UpdateAggregationSettingsCall__Inputs {
 
   get _aggregatorLockDuration(): BigInt {
     return this._call.inputValues[4].value.toBigInt();
+  }
+
+  get _szrRewardForWinningSubmissions(): BigInt {
+    return this._call.inputValues[5].value.toBigInt();
   }
 }
 

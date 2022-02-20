@@ -3,3 +3,9 @@ export const Countries = {
   IN: 'India',
   UK: 'UK',
 };
+
+export const Currencies = {
+  US: 'USD',
+  IN: 'INR',
+  UK: 'GBP',
+};

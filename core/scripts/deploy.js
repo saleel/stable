@@ -47,7 +47,7 @@ async function deploy() {
 
   const Stable = await hre.ethers.getContractFactory("Stable");
   const stable = await Stable.deploy(
-    1000000,
+    hre.ethers.utils.parseEther("100000000"), // 100M initial supply
     20,
     Math.round(new Date("2022-01-01").getTime() / 1000),
     productsCID
@@ -111,7 +111,7 @@ async function deploy() {
   await stable.updateBasket(
     "US",
     futures.map((s) => s.id),
-    []
+    futures.map(() => 150)
   );
 
   console.log(`Added futures`);
@@ -121,21 +121,21 @@ async function deploy() {
   await stable.updateBasket(
     "US",
     otherItems.map((s) => s.id),
-    []
+    otherItems.map(() => 125)
   );
   await sleep();
 
   await stable.updateBasket(
     "UK",
     otherItems.map((s) => s.id),
-    []
+    otherItems.map(() => 125)
   );
   await sleep();
 
   await stable.updateBasket(
     "IN",
     otherItems.map((s) => s.id),
-    []
+    otherItems.map(() => 125)
   );
   await sleep();
 
