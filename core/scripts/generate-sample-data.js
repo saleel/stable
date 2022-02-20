@@ -86,7 +86,7 @@ async function submitPrices({
     let newPrice;
 
     if (lastPrice && !isCrypto) {
-      newPrice = lastPrice * dailyIncrement * variant;
+      newPrice = lastPrice * dailyIncrement;
     } else {
       newPrice = generateRandomPrice({
         product,

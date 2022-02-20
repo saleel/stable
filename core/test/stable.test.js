@@ -53,7 +53,7 @@ describe("Stable", () => {
     );
 
     SZRToken.transfer(user1.address, ethers.utils.parseEther("100"));
-    SZRToken.transfer(user2.address, ethers.utils.parseEther("1200"));
+    SZRToken.transfer(user2.address, ethers.utils.parseEther("2500"));
 
     StableToken = await ethers.getContractAt(
       "StableToken",
@@ -174,7 +174,10 @@ describe("Stable", () => {
     const stablesToMint = await stable.getMintableStableTokenCount(); // max possible
 
     // normal user mint stables
-    await SZRToken.connect(user2).approve(stable.address, stablesToMint);
+    await SZRToken.connect(user2).approve(
+      stable.address,
+      stablesToMint.mul(100)
+    );
     await stable.connect(user2).mintStable(stablesToMint);
 
     const priceOfStable = await stable.getStableTokenPrice();
@@ -214,7 +217,7 @@ describe("Stable", () => {
     );
     await SZRToken.connect(user2).approve(
       stable.address,
-      ethers.utils.parseEther("250")
+      ethers.utils.parseEther("2500")
     );
 
     let priceOfSZR = await stable.getSZRPriceInUSD();

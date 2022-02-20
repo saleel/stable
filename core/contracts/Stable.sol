@@ -344,8 +344,8 @@ contract Stable is Ownable {
   function getGlobalPriceIndex() public view returns (uint256) {
     uint256 weightedSum = 0;
     uint32 totalWeightage = 0;
-    for (uint16 i = 0; i < countries.length; i++) {
-      weightedSum += CountryTracker(countryTrackers[countries[i]]).priceIndex();
+    for (uint32 i = 0; i < countries.length; i++) {
+      weightedSum += (CountryTracker(countryTrackers[countries[i]]).priceIndex() * countryWeightage[countries[i]]);
       totalWeightage += countryWeightage[countries[i]];
     }
 

@@ -111,7 +111,7 @@ async function deploy() {
   await stable.updateBasket(
     "US",
     futures.map((s) => s.id),
-    []
+    futures.map(() => 150)
   );
 
   console.log(`Added futures`);
@@ -121,21 +121,21 @@ async function deploy() {
   await stable.updateBasket(
     "US",
     otherItems.map((s) => s.id),
-    []
+    otherItems.map(() => 125)
   );
   await sleep();
 
   await stable.updateBasket(
     "UK",
     otherItems.map((s) => s.id),
-    []
+    otherItems.map(() => 125)
   );
   await sleep();
 
   await stable.updateBasket(
     "IN",
     otherItems.map((s) => s.id),
-    []
+    otherItems.map(() => 125)
   );
   await sleep();
 
