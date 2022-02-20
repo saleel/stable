@@ -28,7 +28,7 @@ describe("Stable", () => {
       ethers.utils.parseEther("100000000"), // SZR initial supply
       20, // over-coll ratio
       Math.round(new Date().getTime() / 1000) - 2 * 86400, // 2 days before
-      "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
+      "bafkreifmf5gcccn3dry4ddhsrqhhnexlyyyr7ntrmqw3usfwa4ohsyt55e"
     );
 
     await stable.deployed();
@@ -108,11 +108,11 @@ describe("Stable", () => {
   it("should be able to add new product", async () => {
     await expect(
       stable.updateProducts(
-        "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
+        "bafkreifmf5gcccn3dry4ddhsrqhhnexlyyyr7ntrmqw3usfwa4ohsyt55e"
       )
     )
       .to.emit(stable, "ProductDetailsUpdated")
-      .withArgs("bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa");
+      .withArgs("bafkreifmf5gcccn3dry4ddhsrqhhnexlyyyr7ntrmqw3usfwa4ohsyt55e");
   });
 
   it("should allow user to function as aggregator", async () => {

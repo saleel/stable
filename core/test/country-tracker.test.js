@@ -26,7 +26,7 @@ describe("CountryTracker", () => {
       1000, // SCR supply
       20, // coll ratio
       Math.round(new Date().getTime() / 1000) - 2 * 86400, // 2 days before
-      "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa"
+      "bafkreifmf5gcccn3dry4ddhsrqhhnexlyyyr7ntrmqw3usfwa4ohsyt55e"
     );
 
     await stable.deployed();

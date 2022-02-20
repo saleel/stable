@@ -4,7 +4,7 @@ const hre = require("hardhat");
 const axios = require("axios");
 
 const productsCID =
-  "bafkreibroamdx2xuh4p3vjqiuhk7564vz7kgz2lyed5v4jqyuhmdsyrtpa";
+  "bafkreifmf5gcccn3dry4ddhsrqhhnexlyyyr7ntrmqw3usfwa4ohsyt55e";
 
 const sleep = (sec = 0) =>
   new Promise((resolve) => {
