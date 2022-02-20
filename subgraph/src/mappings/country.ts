@@ -122,14 +122,13 @@ export function handlePriceIndexUpdated(event: PriceIndexUpdated): void {
   // Update the global price index
   const stableAddress = context.getString('stableAddress');
   const stableContract = StableContract.bind(Address.fromString(stableAddress));
-  const blockTime = event.block.timestamp.toI32();
 
   // Round to nearest 00:00 GMT time
   const globalPriceIndexId = aggregationRoundId.toString();
   let globalPriceIndex = GlobalPriceIndex.load(globalPriceIndexId);
   if (!globalPriceIndex) {
     globalPriceIndex = new GlobalPriceIndex(globalPriceIndexId);
-    globalPriceIndex.createdAt = event.block.timestamp.toI32();
+    globalPriceIndex.createdAt = aggregationRoundId.toI32();
   }
   globalPriceIndex.value = stableContract.getGlobalPriceIndex().toI32();
   globalPriceIndex.updatedAt = event.block.timestamp.toI32();
