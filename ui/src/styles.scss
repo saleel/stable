@@ -105,9 +105,10 @@ body {
   text-transform: uppercase;
   opacity: 0.8;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   margin-top: 0.5rem;
   margin-bottom: 0.25rem;
+  font-size: 0.95rem;
 }
 
 .product-list,
@@ -241,16 +242,16 @@ body {
 
 .pli-weightage {
   position: absolute;
-  right: -16px;
-  width: 32px;
-  height: 32px;
+  left: -15px;
+  width: 25px;
+  height: 25px;
   background-color: var(--gray-200);
   border-radius: 3px;
   border: 1px solid var(--gray-300);
-  padding: 8px 6px;
+  padding: 5px 2px;
   line-height: 12px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 0.85rem;
   opacity: 0.8;
 }
 
@@ -535,6 +536,29 @@ body {
     height: 1em;
     position: relative;
     width: 1em;
+  }
+}
+
+.copyright {
+  margin: 0 auto;
+  max-width: 900px !important;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+@media screen and (min-width: 800px) {
+  .copyright {
+    height: 10rem;
+  }
+  
+  .main {
+    min-height: calc(100vh - 5.5rem - 10rem);
+  }
+  
+  .navbar {
+    height: 5.5rem;
   }
 }
 

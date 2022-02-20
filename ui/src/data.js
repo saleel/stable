@@ -28,6 +28,7 @@ const USDConversionRates = {
   INR: 0.013,
 };
 
+
 export function getUSDRate(currency, amount) {
   return USDConversionRates[currency] * amount;
 }

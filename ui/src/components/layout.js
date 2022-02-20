@@ -56,8 +56,43 @@ function Layout() {
 
       </nav>
 
-      <div className="container">
+      <div className="container main">
         <Outlet />
+      </div>
+
+      <div className="copyright">
+        <hr />
+
+        <div>
+          Copyright &copy; 2022 Project Stable.
+          Product icons from <a target="_blank" href="https://icons8.com/" rel="noreferrer">icons8.com</a>
+        </div>
+        <div>
+          {'Contract on Aurora: '}
+          <a
+            target="_blank"
+            href={`https://aurorascan.dev/address/${process.env.REACT_APP_STABLE_CONTRACT_ADDRESS}`}
+            rel="noreferrer"
+          >{process.env.REACT_APP_STABLE_CONTRACT_ADDRESS}
+          </a>
+        </div>
+        <div>
+          {'SZR Token: '}
+          <a
+            target="_blank"
+            href={`https://aurorascan.dev/token/${process.env.REACT_APP_SZR_CONTRACT_ADDRESS}`}
+            rel="noreferrer"
+          >{process.env.REACT_APP_SZR_CONTRACT_ADDRESS}
+          </a>
+          <span> | </span>
+          {'STABLE Token: '}
+          <a
+            target="_blank"
+            href={`https://aurorascan.dev/token/${process.env.REACT_APP_STABLE_TOKEN_CONTRACT_ADDRESS}`}
+            rel="noreferrer"
+          >{process.env.REACT_APP_STABLE_TOKEN_CONTRACT_ADDRESS}
+          </a>
+        </div>
       </div>
 
     </>
