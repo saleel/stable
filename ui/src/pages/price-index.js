@@ -7,6 +7,7 @@ import usePromise from '../hooks/use-promise';
 import { formatContractDate, formatContractDateWithYear, formatPrice } from '../utils';
 import Table from '../components/table';
 import Loading from '../components/loading';
+import { Countries } from '../constants';
 
 function PriceIndexPAge() {
   const [country] = useLocalStorage('country', 'US');
@@ -24,9 +25,9 @@ function PriceIndexPAge() {
   return (
     <div className="price-index-page">
 
-      <h1 className="title">Price Index of {country}</h1>
+      <h1 className="title">Price Index of {Countries[country]}</h1>
       <div className="subtitle">
-        <div>Price Index is weighted average of prices all products in the {country} basket choose by the DAO.</div>
+        <div>Price Index is weighted average of prices all products in the {Countries[country]} basket choose by the DAO.</div>
         Price Index can be seen as a measure of inflation.
       </div>
 

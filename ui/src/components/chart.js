@@ -18,7 +18,7 @@ function Chart(props) {
         }}
       >
         <XAxis dataKey={xAxisKey} tickFormatter={xAxisFormatter} />
-        <YAxis tickFormatter={yAxisFormatter} />
+        <YAxis tickFormatter={yAxisFormatter} domain={['auto', 'auto']} />
         <Tooltip labelFormatter={xAxisFormatter} formatter={yAxisFormatter} />
 
         {yAxisKeys.map((yAxisKey, i) => (

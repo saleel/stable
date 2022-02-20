@@ -140,6 +140,8 @@ body {
   }
 
   &.loading {
+    overflow: hidden;
+
     &:hover {
       cursor: default !important;
     }

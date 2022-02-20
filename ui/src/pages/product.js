@@ -183,7 +183,7 @@ function ProductPage() {
           <>
             <MetricBox
               label={`Latest Price in ${country}`}
-              value={latestPrice.value}
+              value={formatPrice(latestPrice.value)}
               unit={latestPrice.currency}
             />
             <MetricBox
