@@ -14,7 +14,7 @@ function SubmitPricePage() {
   const [country] = useLocalStorage('country', 'US');
 
   const [aggregationRoundId] = usePromise(() => getAggregationRoundId(country), {
-    conditions: [country],
+    conditions: [country, address],
   });
   const [products] = usePromise(() => getProductsWithWeightage({ country }), {
     defaultValue: [],
@@ -45,7 +45,7 @@ function SubmitPricePage() {
       await submitPrices({
         address, country, priceMapping: pricesToAdd, source: 'manual',
       });
-      setMessage('Prices submitted successfully');
+      setMessage('Prices submitted successfully.');
       setPricesToAdd({});
     } catch (err) {
       setMessage(err.message);
@@ -55,16 +55,12 @@ function SubmitPricePage() {
     e.target.removeAttribute('disabled');
   }
 
-  if (!aggregationRoundId) {
-    return null;
-  }
-
   return (
     <div className="add-price-page">
 
-      <h1 className="title">Add Prices</h1>
+      <h1 className="title">Submit Prices</h1>
       <div className="subtitle page-subtitle">
-        Current Aggregation Round: {aggregationRoundId.toString()}
+        <span>Current Aggregation Round: {aggregationRoundId?.toString()}</span>
       </div>
       <hr />
 

@@ -8,12 +8,6 @@ import stableTokenContractInterface from './abis/StableToken.json';
 import { formatPrice, formatToken } from './utils';
 import { Currencies } from './constants';
 
-const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-
-const stableContractAddress = process.env.REACT_APP_STABLE_CONTRACT_ADDRESS;
-/** @type{import("../../core/typechain-types/Stable").Stable} */
-const stableContract = new ethers.Contract(stableContractAddress, stableContractInterface, provider);
-
 const axiosGraphql = axios.create({
   baseURL: process.env.REACT_APP_GRAPHQL_ENDPOINT,
   method: 'POST',
@@ -172,11 +166,24 @@ export async function getGlobalPriceIndexHistory() {
 
 /**
  *
+ * @returns {import("../../core/typechain-types/Stable").Stable}
+ */
+function getStableContract() {
+  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const stableContractAddress = process.env.REACT_APP_STABLE_CONTRACT_ADDRESS;
+  const stableContract = new ethers.Contract(stableContractAddress, stableContractInterface, provider);
+
+  return stableContract;
+}
+
+/**
+ *
  * @returns {import("../../core/typechain-types/CountryTracker").CountryTracker}
  */
 async function getCountryTrackerContract(country) {
+  const stableContract = getStableContract();
   const address = await stableContract.countryTrackers(country);
-  const countryTrackerContract = new ethers.Contract(address, countryTrackerInterface, provider);
+  const countryTrackerContract = new ethers.Contract(address, countryTrackerInterface, stableContract.provider);
   return countryTrackerContract;
 }
 
@@ -186,8 +193,9 @@ async function getSZRContract() {
   if (_szrContract) {
     return _szrContract;
   }
+  const stableContract = getStableContract();
   const address = await stableContract.szrToken();
-  _szrContract = new ethers.Contract(address, szrContractInterface, provider);
+  _szrContract = new ethers.Contract(address, szrContractInterface, stableContract.provider);
   return _szrContract;
 }
 
@@ -197,8 +205,9 @@ async function getStableTokenContract() {
   if (_stableTokenContract) {
     return _stableTokenContract;
   }
+  const stableContract = getStableContract();
   const address = await stableContract.stableToken();
-  _stableTokenContract = new ethers.Contract(address, stableTokenContractInterface, provider);
+  _stableTokenContract = new ethers.Contract(address, stableTokenContractInterface, stableContract.provider);
   return _stableTokenContract;
 }
 
@@ -215,9 +224,11 @@ export async function getTokenBalance(address) {
 }
 
 export async function getTokenAllowance(address) {
+  const stableContract = getStableContract();
+
   const result = await Promise.all([
-    getSZRContract().then((c) => c.allowance(address, stableContractAddress)).then(formatToken),
-    getStableTokenContract().then((c) => c.allowance(address, stableContractAddress)).then(formatToken),
+    getSZRContract().then((c) => c.allowance(address, stableContract.address)).then(formatToken),
+    getStableTokenContract().then((c) => c.allowance(address, stableContract.address)).then(formatToken),
   ]);
 
   return {
@@ -227,6 +238,8 @@ export async function getTokenAllowance(address) {
 }
 
 export async function getTokenPrice() {
+  const stableContract = getStableContract();
+
   const result = await Promise.all([
     stableContract.getSZRPriceInUSD(),
     stableContract.getStableTokenPrice(),
@@ -239,6 +252,8 @@ export async function getTokenPrice() {
 }
 
 export async function getSupplier(address) {
+  const stableContract = getStableContract();
+
   const [result, szrWithdrawable] = await Promise.all([
     stableContract.suppliers(address),
     stableContract.getSZRWithdrawableBySupplier(address),
@@ -256,12 +271,16 @@ export async function getSupplier(address) {
 }
 
 export async function getRewardAmount(address) {
+  const stableContract = getStableContract();
+
   const rewardAmount = await stableContract.rewards(address);
 
   return formatToken(rewardAmount);
 }
 
 export async function getContractState() {
+  const stableContract = getStableContract();
+
   const [totalStablesRedeemable, overCollateralizationRatio, mintableStableTokenCount] = await Promise.all([
     stableContract.totalStablesRedeemable(),
     stableContract.overCollateralizationRatio(),
@@ -283,8 +302,10 @@ export async function getAggregationRoundId(country) {
 export async function submitPrices({
   address, priceMapping, country, source,
 }) {
+  const stableContract = getStableContract();
+
   const countryTrackerContract = await getCountryTrackerContract(country);
-  const signer = provider.getSigner(address);
+  const signer = stableContract.provider.getSigner(address);
 
   const productsIds = Object.keys(priceMapping);
   const prices = Object.keys(priceMapping).map((k) => priceMapping[k].price);
@@ -294,13 +315,15 @@ export async function submitPrices({
 }
 
 export async function mintStables(address, amount) {
+  const stableContract = getStableContract();
+
   const allowance = await getTokenAllowance(address);
   const amountInWei = ethers.utils.parseEther(amount.toString());
-  const signer = provider.getSigner(address);
+  const signer = stableContract.provider.getSigner(address);
 
   if (amount > allowance.SZR) {
     const tokenContract = await getSZRContract();
-    await tokenContract.connect(signer).approve(stableContractAddress, amountInWei.mul(10)); // Get higher allowance for future
+    await tokenContract.connect(signer).approve(stableContract.address, amountInWei.mul(10)); // Get higher allowance for future
   }
 
   const result = await stableContract.connect(signer).mintStable(amountInWei);
@@ -309,13 +332,15 @@ export async function mintStables(address, amount) {
 }
 
 export async function burnStables(address, amount) {
+  const stableContract = getStableContract();
+
   const allowance = await getTokenAllowance(address);
   const amountInWei = ethers.utils.parseEther(amount.toString());
-  const signer = provider.getSigner(address);
+  const signer = stableContract.provider.getSigner(address);
 
   if (amount > allowance.STABLE) {
     const tokenContract = await getStableTokenContract();
-    await tokenContract.connect(signer).approve(stableContractAddress, amountInWei.mul(10)); // Get higher allowance for future
+    await tokenContract.connect(signer).approve(stableContract.address, amountInWei.mul(10)); // Get higher allowance for future
   }
 
   const result = await stableContract.connect(signer).burnStable(amountInWei);
@@ -324,16 +349,19 @@ export async function burnStables(address, amount) {
 }
 
 export async function supplierWithdrawSZR(address, amount) {
+  const stableContract = getStableContract();
+
   const amountInWei = ethers.utils.parseEther(amount.toString());
-  const signer = provider.getSigner(address);
+  const signer = stableContract.provider.getSigner(address);
   const result = await stableContract.connect(signer).supplierWithdrawSZR(amountInWei);
 
   return result.hash;
 }
 
 export async function withdrawRewards(address, amount) {
+  const stableContract = getStableContract();
   const amountInWei = ethers.utils.parseEther(amount.toString());
-  const signer = provider.getSigner(address);
+  const signer = stableContract.provider.getSigner(address);
   const result = await stableContract.connect(signer).withdrawRewards(amountInWei);
 
   return result.hash;
