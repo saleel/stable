@@ -8,7 +8,7 @@ features:
 dataSources:
   - kind: ethereum/contract
     name: Stable
-    network: aurora-testnet
+    network: aurora
     source:
       address: '0xaFB36003d119b3976D915D74887F9568ca635854'
       abi: Stable
@@ -36,7 +36,7 @@ dataSources:
 templates:
   - name: CountryTracker
     kind: ethereum/contract
-    network: aurora-testnet
+    network: aurora
     source:
       abi: CountryTracker
     mapping:
