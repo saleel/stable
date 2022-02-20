@@ -9,8 +9,12 @@ function Layout() {
   return (
     <>
       <nav className="navbar" role="navigation" aria-label="main navigation">
+
         <div className="navbar-menu">
           <div className="navbar-start">
+            <div className="logo">
+              <img src="/assets/logo.png" alt="Project Stable" />
+            </div>
             <Link to="/" className="navbar-item">
               Home
             </Link>

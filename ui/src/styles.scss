@@ -29,6 +29,15 @@ body {
   color: var(--text-color);
 }
 
+.logo {
+  margin-left: -3.5rem;
+  margin-right: 0.75rem;
+
+  img {
+    width: 3rem;
+  }
+}
+
 .container {
   max-width: 900px !important;
   padding: 1rem !important;
