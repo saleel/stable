@@ -2,11 +2,12 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const hre = require("hardhat");
 const axios = require("axios");
+// const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
 
 const productsCID =
   "bafkreifmf5gcccn3dry4ddhsrqhhnexlyyyr7ntrmqw3usfwa4ohsyt55e";
 
-const sleep = (sec = 5) =>
+const sleep = (sec = 10) =>
   new Promise((resolve) => {
     setTimeout(resolve, sec * 1000);
   });
@@ -49,15 +50,23 @@ async function deploy() {
   const stable = await Stable.deploy(
     hre.ethers.utils.parseEther("100000000"), // 100M initial supply
     20,
-    Math.round(new Date("2022-01-01").getTime() / 1000),
+    Math.round(new Date("2022-02-01").getTime() / 1000),
     productsCID
   );
+
+  // const stable = (
+  //   await new hre.ethers.Contract(
+  //     "0xaFB36003d119b3976D915D74887F9568ca635854",
+  //     stableAbi.abi,
+  //     hre.ethers.provider
+  //   ).deployed()
+  // ).connect(hre.ethers.provider.getSigner());
 
   console.log("Stable contract deployed to:", stable.address);
 
   await sleep();
 
-  await stable.createCountryTracker("US", "USD", 75); // weightage to reflect currency value
+  await stable.createCountryTracker("US", "USD", 75); // equal weightage to reflect currency value
 
   console.log("Created country tracker for US");
 
@@ -70,6 +79,8 @@ async function deploy() {
   await sleep();
 
   await stable.createCountryTracker("IN", "INR", 1);
+
+  console.log("Created country tracker for IN");
 
   await sleep();
 

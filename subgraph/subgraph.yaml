@@ -8,11 +8,11 @@ features:
 dataSources:
   - kind: ethereum/contract
     name: Stable
-    network: aurora
+    network: aurora-testnet
     source:
-      address: '0xe630868e440D2A595632959297a4Cb9d170036f2'
+      address: '0xaFB36003d119b3976D915D74887F9568ca635854'
       abi: Stable
-      startBlock: 59732285
+      startBlock: 59906476
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -36,7 +36,7 @@ dataSources:
 templates:
   - name: CountryTracker
     kind: ethereum/contract
-    network: aurora
+    network: aurora-testnet
     source:
       abi: CountryTracker
     mapping:

@@ -1,16 +1,16 @@
 /* eslint-disable import/no-extraneous-dependencies */
-const ethers = require("ethers");
+const { ethers } = require("hardhat");
 const stableAbi = require("../artifacts/contracts/Stable.sol/Stable.json");
+const { stable: stableContractAddress } = require("./deployed.json");
 
-const stableContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-const address = "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc";
+const address = "0xAB797f723DCC4C63E8ac1f374B40809fD8FB03A9";
 const name = "ABC Hypermarket";
 const stablesRedeemable = ethers.utils.parseEther("1000");
 const claimPercent = 50;
 const rewards = ethers.utils.parseEther("1"); // SZR
 
 async function addSupplier() {
-  const provider = new ethers.providers.JsonRpcProvider();
+  const { provider } = ethers;
 
   const owner = provider.getSigner();
 

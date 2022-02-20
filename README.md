@@ -47,7 +47,7 @@ This is very `gas` efficient as the function only emits an event.
 
 ## Technologies
 
-- Contract deployed on `Aurora` chain (`0x5FbDB2315678afecb367f032d93F642f64180aa3`).
+- Contract deployed on `Aurora` chain (`0xaFB36003d119b3976D915D74887F9568ca635854`).
 - `TheGraph` for indexing contract - to track price submission, price history, etc.
 - `IPFS` for storing product details - CID stored in contract.
 - `React` for the UI.
