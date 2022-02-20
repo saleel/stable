@@ -7,7 +7,7 @@ import Chart from '../components/chart';
 import { getProduct, getUSDRate, getPriceSubmissions } from '../data';
 import usePromise from '../hooks/use-promise';
 import {
-  calculatePriceChange, formatContractDate, formatContractDateWithYear, formatPrice, trimAddress,
+  calculatePriceChange, formatContractDate, formatContractDateWithYear, formatPrice, sortByContractDate, trimAddress,
 } from '../utils';
 import Table from '../components/table';
 import { Countries } from '../constants';
@@ -40,7 +40,7 @@ function ProductPage() {
     return null;
   }
 
-  const pricesForCurrentCountry = product.prices.filter((p) => p.country === country);
+  const pricesForCurrentCountry = sortByContractDate(product.prices).filter((p) => p.country === country);
   const latestPrice = pricesForCurrentCountry[0];
   const priceChange24 = calculatePriceChange(pricesForCurrentCountry[1], latestPrice);
   const priceChange7D = calculatePriceChange(pricesForCurrentCountry[6], latestPrice);

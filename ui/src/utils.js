@@ -10,6 +10,10 @@ export function formatContractDate(integerDate) {
   return format(new Date(integerDate * 1000), 'MMM dd');
 }
 
+export function sortByContractDate(array) {
+  return array.sort((a, b) => b.createdAt - a.createdAt);
+}
+
 export function formatContractDateWithYear(integerDate) {
   return format(new Date(integerDate * 1000), 'MMM dd, yyyy');
 }
