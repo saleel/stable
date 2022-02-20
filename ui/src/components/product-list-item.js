@@ -78,6 +78,11 @@ function ProductListItem(props) {
           </LineChart>
         </div>
       </div>
+      {product.weightage !== 0 && product.weightage !== 100 && (
+        <div className="pli-weightage">
+          {(product.weightage / 100).toFixed(1)}
+        </div>
+      )}
     </div>
   );
 }

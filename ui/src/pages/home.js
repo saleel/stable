@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLocalStorage } from '@rehooks/local-storage';
 import ProductListItem from '../components/product-list-item';
 import MetricBox from '../components/metric-box';
-import { getLatestPriceIndex, getProducts, getTokenPrice } from '../data';
+import { getLatestPriceIndex, getProductsWithWeightage, getTokenPrice } from '../data';
 import usePromise from '../hooks/use-promise';
 import Intro from '../components/intro';
 import { Countries } from '../constants';
@@ -14,7 +14,7 @@ function HomePage() {
   const [country] = useLocalStorage('country', 'US');
   const [searchInput, setSearchInput] = React.useState('');
 
-  const [products, { isFetching: isFetchingProducts }] = usePromise(() => getProducts({ country }), {
+  const [products, { isFetching: isFetchingProducts }] = usePromise(() => getProductsWithWeightage({ country }), {
     defaultValue: [], dependencies: [country],
   });
 

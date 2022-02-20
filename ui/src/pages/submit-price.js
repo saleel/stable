@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState } from 'react';
 import { useLocalStorage } from '@rehooks/local-storage';
-import { getProducts, getAggregationRoundId, submitPrices } from '../data';
+import { getProductsWithWeightage, getAggregationRoundId, submitPrices } from '../data';
 import usePromise from '../hooks/use-promise';
 import useWallet from '../hooks/use-wallet';
 
@@ -16,7 +16,7 @@ function SubmitPricePage() {
   const [aggregationRoundId] = usePromise(() => getAggregationRoundId(country), {
     conditions: [country],
   });
-  const [products] = usePromise(() => getProducts({ country }), {
+  const [products] = usePromise(() => getProductsWithWeightage({ country }), {
     defaultValue: [],
     conditions: [country],
   });

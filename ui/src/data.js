@@ -6,6 +6,7 @@ import stableContractInterface from './abis/Stable.json';
 import szrContractInterface from './abis/StabilizerToken.json';
 import stableTokenContractInterface from './abis/StableToken.json';
 import { formatPrice, formatToken } from './utils';
+import { Currencies } from './constants';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
 
@@ -31,8 +32,8 @@ export function getUSDRate(currency, amount) {
   return USDConversionRates[currency] * amount;
 }
 
-export async function getProducts({ country }) {
-  const { products } = await axiosGraphql({
+export async function getProductsWithWeightage({ country }) {
+  const { products, countryTracker } = await axiosGraphql({
     data: {
       query: `
       {
@@ -47,12 +48,21 @@ export async function getProducts({ country }) {
             currency
           }
         }
+        countryTracker(id: "${country}-${Currencies[country]}") {
+          productBasket {
+            productId
+            weightage
+          }
+        }
       }
       `,
     },
   });
 
-  return products;
+  const { productBasket } = countryTracker;
+  const weightage = productBasket.reduce((acc, b) => { acc[b.productId] = b.weightage; return acc; }, {});
+
+  return products.map((p) => ({ ...p, weightage: weightage[p.id] || 0 }));
 }
 
 export async function getProduct(id) {
