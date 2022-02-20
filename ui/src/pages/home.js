@@ -46,6 +46,8 @@ function HomePage() {
     }
   }
 
+  const productInBasket = products.filter(p => Number(p.weightage)).length;
+
   return (
     <div className="home-page">
       <Intro />
@@ -91,7 +93,7 @@ function HomePage() {
             {`${products.length} products`}
           </span>
           <span>
-            {`${products.length} in ${country} basket`}
+            {`${productInBasket} in ${country} basket`}
           </span>
         </div>
       </div>

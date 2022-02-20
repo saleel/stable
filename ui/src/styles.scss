@@ -189,6 +189,7 @@ body {
   display: flex;
   justify-content: flex-start;
   align-self: center;
+  opacity: 0.9;
 
   img {
     height: 40px;
@@ -240,12 +241,12 @@ body {
 
 .pli-weightage {
   position: absolute;
-  right: -17px;
-  width: 34px;
-  height: 34px;
-  background-color: var(--gray-100);
-  border-radius: 50%;
-  border: 2px solid var(--gray-200);
+  right: -16px;
+  width: 32px;
+  height: 32px;
+  background-color: var(--gray-200);
+  border-radius: 3px;
+  border: 1px solid var(--gray-300);
   padding: 8px 6px;
   line-height: 12px;
   font-weight: 600;
