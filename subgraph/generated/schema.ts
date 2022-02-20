@@ -370,7 +370,7 @@ export class PriceIndex extends Entity {
     this.set("country", Value.fromString(""));
     this.set("currency", Value.fromString(""));
     this.set("value", Value.fromI32(0));
-    this.set("updatedAt", Value.fromI32(0));
+    this.set("createdAt", Value.fromI32(0));
   }
 
   save(): void {
@@ -435,13 +435,13 @@ export class PriceIndex extends Entity {
     this.set("value", Value.fromI32(value));
   }
 
-  get updatedAt(): i32 {
-    let value = this.get("updatedAt");
+  get createdAt(): i32 {
+    let value = this.get("createdAt");
     return value!.toI32();
   }
 
-  set updatedAt(value: i32) {
-    this.set("updatedAt", Value.fromI32(value));
+  set createdAt(value: i32) {
+    this.set("createdAt", Value.fromI32(value));
   }
 }
 
