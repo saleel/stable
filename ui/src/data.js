@@ -31,7 +31,7 @@ export function getUSDRate(currency, amount) {
   return USDConversionRates[currency] * amount;
 }
 
-export async function getProducts(country) {
+export async function getProducts({ country }) {
   const { products } = await axiosGraphql({
     data: {
       query: `
@@ -81,56 +81,80 @@ export async function getProduct(id) {
   return product;
 }
 
-export async function getPriceIndex(country) {
-  const { priceIndexes } = await axiosGraphql({
+export async function getLatestPriceIndex({ country }) {
+  const { priceIndexes, globalPriceIndexes } = await axiosGraphql({
     data: {
       query: `
-    {
-      priceIndexes(where: { country: "${country}" }, first: 1, orderBy:updatedAt, orderDirection:desc) {
-        value
-      }
-    }
-  `,
+        {
+          priceIndexes(where: { country: "${country}" }, first: 1, orderBy:createdAt, orderDirection:desc) {
+            value
+          }
+          globalPriceIndexes(first: 1, orderBy:createdAt, orderDirection:desc) {
+            value
+          }
+        }
+      `,
     },
   });
 
-  return priceIndexes[0]?.value;
-}
-
-export async function getGlobalPriceIndex() {
-  const { globalPriceIndexes } = await axiosGraphql({
-    data: {
-      query: `
-    {
-      globalPriceIndexes(first: 1, orderBy:createdAt, orderDirection:desc) {
-        value
-      }
-    }
-  `,
-    },
-  });
-
-  return globalPriceIndexes[0]?.value;
+  return {
+    [country]: formatPrice(priceIndexes[0]?.value),
+    GLOBAL: formatPrice(globalPriceIndexes[0]?.value),
+  };
 }
 
 export async function getPriceSubmissions({ country, productId }) {
   const { priceSubmissions } = await axiosGraphql({
     data: {
       query: `
-    {
-      priceSubmissions(where: { country: "${country}", product: "${productId}" }) {
-        transactionId
-        price
-        currency
-        createdBy
-        createdAt
-      }
-    }
-  `,
+        {
+          priceSubmissions(where: { country: "${country}", product: "${productId}" }) {
+            transactionId
+            price
+            currency
+            createdBy
+            createdAt
+          }
+        }
+      `,
     },
   });
 
   return priceSubmissions;
+}
+
+export async function getPriceIndexHistory({ country }) {
+  const { priceIndexes } = await axiosGraphql({
+    data: {
+      query: `
+        {
+          priceIndexes(where: {country: "${country}" }, orderBy:createdAt, orderDirection:desc) {
+            createdAt
+            value
+          }
+        }
+      `,
+    },
+  });
+
+  return priceIndexes;
+}
+
+export async function getGlobalPriceIndexHistory() {
+  const { globalPriceIndexes } = await axiosGraphql({
+    data: {
+      query: `
+        {
+          globalPriceIndexes(orderBy:createdAt, orderDirection:desc) {
+            createdAt
+            value
+          }
+        }
+      `,
+    },
+  });
+
+  return globalPriceIndexes;
 }
 
 /**

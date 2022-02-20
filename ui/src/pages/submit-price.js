@@ -3,10 +3,9 @@ import React, { useState } from 'react';
 import { useLocalStorage } from '@rehooks/local-storage';
 import { getProducts, getAggregationRoundId, submitPrices } from '../data';
 import usePromise from '../hooks/use-promise';
-import { formatContractDate } from '../utils';
 import useWallet from '../hooks/use-wallet';
 
-function AddPricePage() {
+function SubmitPricePage() {
   const { address, Component: WalletConnect } = useWallet();
 
   const [message, setMessage] = useState();
@@ -17,7 +16,7 @@ function AddPricePage() {
   const [aggregationRoundId] = usePromise(() => getAggregationRoundId(country), {
     conditions: [country],
   });
-  const [products] = usePromise(() => getProducts(country), {
+  const [products] = usePromise(() => getProducts({ country }), {
     defaultValue: [],
     conditions: [country],
   });
@@ -74,7 +73,7 @@ function AddPricePage() {
       )}
 
       {address && (
-        <div  className='add-price-form'>
+        <div className="add-price-form">
           <div className="info-box mb-5">
             Wallet connected. Address:<code>{address}</code>
           </div>
@@ -150,4 +149,4 @@ function AddPricePage() {
   );
 }
 
-export default AddPricePage;
+export default SubmitPricePage;

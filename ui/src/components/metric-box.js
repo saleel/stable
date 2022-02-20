@@ -1,10 +1,27 @@
+import { useNavigate } from 'react-router';
+
 function MetricBox(props) {
   const {
-    label, value, unit, style, showChangeIndicator, loading,
+    label, value, unit, style, showChangeIndicator, loading, to,
   } = props;
 
+  const navigate = useNavigate();
+
+  let className = 'metric-box';
+  if (loading) {
+    className += ' loading';
+  }
+  if (to) {
+    className += ' is-link';
+  }
+
   return (
-    <div style={style} className={loading ? 'metric-box loading' : 'metric-box'}>
+    <div
+      style={style}
+      className={className}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...to && { onClick: () => navigate(to) }}
+    >
       {!loading && (
         <>
           <div className="metric-box-label">{label}</div>

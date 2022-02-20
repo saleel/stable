@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLocalStorage } from '@rehooks/local-storage';
 import ProductListItem from '../components/product-list-item';
 import MetricBox from '../components/metric-box';
-import {
-  getGlobalPriceIndex, getPriceIndex, getProducts, getTokenPrice,
-} from '../data';
+import { getLatestPriceIndex, getProducts, getTokenPrice } from '../data';
 import usePromise from '../hooks/use-promise';
 import Intro from '../components/intro';
 import { Countries } from '../constants';
@@ -16,7 +14,7 @@ function HomePage() {
   const [country] = useLocalStorage('country', 'US');
   const [searchInput, setSearchInput] = React.useState('');
 
-  const [products, { isFetching: isFetchingProducts }] = usePromise(() => getProducts(country), {
+  const [products, { isFetching: isFetchingProducts }] = usePromise(() => getProducts({ country }), {
     defaultValue: [], dependencies: [country],
   });
 
@@ -24,11 +22,9 @@ function HomePage() {
     dependencies: country,
   });
 
-  const [priceIndex, { isFetching: isFetchingPI }] = usePromise(() => getPriceIndex(country), {
+  const [latestPriceIndex, { isFetching: isFetchingPI }] = usePromise(() => getLatestPriceIndex({ country }), {
     dependencies: country,
   });
-
-  const [globalPriceIndex, { isFetching: isFetchingGPI }] = usePromise(() => getGlobalPriceIndex(), {});
 
   let filteredProducts = products;
   if (searchInput) {
@@ -55,10 +51,31 @@ function HomePage() {
       <Intro />
 
       <div className="metrics">
-        <MetricBox loading={isFetchingGPI} style={{ backgroundColor: '#C6F6D5' }} label="Global Price Index" value={globalPriceIndex} />
-        <MetricBox loading={isFetchingPI} label={`${Countries[country]} Price Index`} value={priceIndex} />
-        <MetricBox loading={isFetchingTokenPrice} label="SZR Price" value={tokenPrice?.SZR} unit="USD" />
-        <MetricBox loading={isFetchingTokenPrice} label="Stable Price" value={tokenPrice?.STABLE} unit="USD" />
+        <MetricBox
+          loading={isFetchingPI}
+          style={{ backgroundColor: '#C6F6D5' }}
+          label="Global Price Index"
+          value={latestPriceIndex?.GLOBAL}
+          to="/global-price-index"
+        />
+        <MetricBox
+          loading={isFetchingPI}
+          label={`${Countries[country]} Price Index`}
+          value={latestPriceIndex?.[country]}
+          to="/price-index"
+        />
+        <MetricBox
+          loading={isFetchingTokenPrice}
+          label="SZR Price"
+          value={tokenPrice?.SZR}
+          unit="USD"
+        />
+        <MetricBox
+          loading={isFetchingTokenPrice}
+          label="Stable Price"
+          value={tokenPrice?.STABLE}
+          unit="USD"
+        />
       </div>
 
       <div className="product-search">
