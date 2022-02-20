@@ -79,13 +79,23 @@ function ProductPage() {
   }
 
   function priceComparisonView() {
-    const pricesPerCountries = product.prices.map((p) => ({
-      ...p,
-      [p.country]: formatPrice(p.value),
-      usdEquivalent: formatPrice(getUSDRate(p.currency, p.value)),
-    })).reverse();
+    const pricesCountryMapping = {};
+    const sortedPrices = product.prices.reverse();
 
-    const latestPricesForCountry = Object.keys(Countries).map((c) => pricesPerCountries.find((p) => p.country === c));
+    for (const price of sortedPrices) {
+      if (!pricesCountryMapping[price.createdAt]) {
+        pricesCountryMapping[price.createdAt] = { createdAt: price.createdAt };
+      }
+      pricesCountryMapping[price.createdAt][price.country] = formatPrice(getUSDRate(price.currency, price.value));
+    }
+
+    const pricesPerCountries = Object.values(pricesCountryMapping);
+
+    // First item would be the latest
+    const latestPricesForCountry = Object.keys(Countries).map((c) => sortedPrices.find((p) => p.country === c));
+
+    console.log(pricesPerCountries);
+    console.log(latestPricesForCountry);
 
     return (
       <>
@@ -95,7 +105,6 @@ function ProductPage() {
             xAxisKey="createdAt"
             yAxisKeys={Object.keys(Countries)}
             xAxisFormatter={formatContractDate}
-            yAxisFormatter={formatPrice}
           />
         </div>
 
@@ -103,12 +112,12 @@ function ProductPage() {
           data={latestPricesForCountry}
           fields={{
             country: (value) => Countries[value],
-            value: (_, row) => `${row.currency} ${row[row.country]}`,
-            usdEquivalent: (value) => `${value}`,
+            value: (_, row) => `${row.currency} ${formatPrice(row.value)}`,
+            usdEquivalent: (_, row) => `${formatPrice(getUSDRate(row.currency, row.value))}`,
           }}
           labels={{
             country: 'Country',
-            value: 'Price',
+            value: 'Latest Price',
             usdEquivalent: 'USD Equivalent',
           }}
         />
