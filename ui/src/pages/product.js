@@ -94,9 +94,6 @@ function ProductPage() {
     // First item would be the latest
     const latestPricesForCountry = Object.keys(Countries).map((c) => sortedPrices.find((p) => p.country === c));
 
-    console.log(pricesPerCountries);
-    console.log(latestPricesForCountry);
-
     return (
       <>
         <div className="price-history-chart mb-3">
