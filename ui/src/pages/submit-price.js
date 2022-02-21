@@ -60,7 +60,8 @@ function SubmitPricePage() {
 
       <h1 className="title">Submit Prices</h1>
       <div className="subtitle page-subtitle">
-        <span>Current Aggregation Round: {aggregationRoundId?.toString()}</span>
+        Submit prices of products to the contract
+        <div>{aggregationRoundId ? `Current Aggregation Round: ${aggregationRoundId.toString()}` : ''}</div>
       </div>
       <hr />
 
