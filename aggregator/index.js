@@ -15,6 +15,8 @@ const sleep = (sec = SLEEP_INTERVAL) => new Promise((resolve) => {
   setTimeout(resolve, sec * 1000);
 });
 
+const winningSubmissionAddresses = [];
+
 // Assume that contract priceAggregationMethod is "TOP3_AVG"
 // TODO: Need to explicitly check priceAggregationMethod
 function calculateAveragePrice({ priceSubmissions, minPriceConfirmations }) {
@@ -57,6 +59,9 @@ function calculateAveragePrice({ priceSubmissions, minPriceConfirmations }) {
     }
 
     productPrices[productId] = Math.round(average);
+
+    const winners = priceSubmissions.filter((ps) => ps.price === productPrices[productId]).map((ps) => ps.createdBy);
+    winningSubmissionAddresses.push(...winners);
   }
 
   return productPrices;
@@ -252,7 +257,13 @@ async function beginAggregation() {
 
   if (updatedCount) {
     await sleep(10);
-    await stableContract.completeAggregation([]);
+
+    // TODO: Implement a better logic to select one/few winners from price submissions. 
+    // Currently all submissions which equal aggregated price is decided as winner.
+    // The rule should be decided by the DAO
+    const winners = [...new Set(winningSubmissionAddresses)];
+
+    await stableContract.completeAggregation(winners);
     console.log('Aggregation round completed');
   }
 

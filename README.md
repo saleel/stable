@@ -10,9 +10,9 @@ Demo: [https://inflation.netlify.app/](https://inflation.netlify.app/)
 
 Subgraph: [https://thegraph.com/hosted-service/subgraph/saleel/stable-price-history](https://thegraph.com/hosted-service/subgraph/saleel/stable-price-history)
 
-[Presentation Slides](https://docs.google.com/presentation/d/1mJleFKS5Iu1r3NbQ3BMaUVnFMGz821PPpLterQprfFA/edit?usp=sharing)
+[Presentation Slides](https://docs.google.com/presentation/d/1mJleFKS5Iu1r3NbQ3BMaUVnFMGz821PPpLterQprfFA/)
 
-[Presentation Video](https://youtu.be/GWMyw3m_70Q)
+[Presentation Video](https://youtu.be/gRjCPNxg-lM)
 
 
 
@@ -112,6 +112,7 @@ Entire code for this project is in this repo
 - Implement the DAO functionality - proposal and voting features. Currently the `owner` of the contract is one address, but the ownership can be transferred to the DAO. 
 - The contract to derive the price of SZR from an oracle. It is currently simulated (based on supply) in the contract as the token is not traded on any exchange.
 - `subgraph` to also index the price submissions made through IPFS.
+- Implement a better logic to select one/few winners from price submissions. Currently all submissions which equal aggregated price is decided as winner.
 - A lot of these would depend on the direction of this project.
 
 <br />
