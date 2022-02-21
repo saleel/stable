@@ -15,7 +15,6 @@ Subgraph: [https://thegraph.com/hosted-service/subgraph/saleel/stable-price-hist
 [Presentation Video](https://youtu.be/gRjCPNxg-lM)
 
 
-
 Status: Testing/POC phase
 
 <br />
@@ -67,7 +66,7 @@ The starting idea for this was inspired by [this tweet](https://twitter.com/bala
 - Suppliers (super-market chains for example) stake their reputation, and  promise to redeem $STABLE in exchange of the goods in the product basket - and borrow equivalent $SZR. 
 - Instead of paying an interest, they would pay/redeem the product basket even if the price increase in the future.
 - Suppliers are approved and added to the contract by DAO. DAO also set a limit on the percentage of `SZR` they can withdraw with respect to the `STABLE` they promise to redeem. DAO can slow increase these limited based on the behavior of the supplier.
-- Suppliers are added to the contract by DAO after verification. Suppliers will have to show their identity publicly in the proposal they create for adding them. If they don't redeem the `STABLES` they promised, it can lead bad reputation on the brand.
+- Suppliers are added to the contract by DAO after verification. Suppliers will have to show their identity publicly in the proposal they create for adding them. If they don't redeem the `STABLES` they promised, it can lead to bad reputation on the brand.
 - The incentive for the Supplier is they can borrow money without any interest, which they can use to run their business. Even when a user redeem their Stable token with the supplier, they make profits on the sales. In addition to that they get rewards in `SZR` for each redemption they do.
 <br />
 
@@ -100,7 +99,7 @@ Entire code for this project is in this repo
 
 
 ## Things that can be done
-- Suppliers backing STABLE token is only one model. DAO can have a smart contract where users can lock BTC, ETH as collateral and borrow STABLE (i.e equivalent SZR).
+- Suppliers backing STABLE token is only one model. **DAO can have a smart contract where users can lock BTC, ETH as collateral and borrow STABLE (i.e equivalent SZR).**
 - Instead of paying interest, they would be paying the inflation rate as excess when they return.
 - The contract can also act as an Oracle feed for the Defi apps. And also can bridge the tokens to other chains.
 
