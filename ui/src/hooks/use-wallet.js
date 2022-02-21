@@ -5,6 +5,7 @@ const provider = window.ethereum && new providers.Web3Provider(window.ethereum);
 
 function useWallet() {
   const [isLoading, setIsLoading] = React.useState(!!provider);
+  const [isChainValid, setIsChainValid] = React.useState(false);
   const [signer, setSigner] = React.useState(provider && provider.getSigner());
   const [address, setAddress] = React.useState();
 
@@ -13,16 +14,36 @@ function useWallet() {
       return;
     }
 
-    if (signer) {
-      signer.getAddress().then((add) => setAddress(add));
-    }
-    setIsLoading(false);
+    window.ethereum.on('chainChanged', (newChainId) => {
+      const isValid = parseInt(newChainId, 16) === Number(process.env.REACT_APP_CHAIN_ID);
+      setIsChainValid(isValid);
 
-    window.ethereum.on('accountsChanged', (([account1]) => {
-      setAddress(account1.toLowerCase());
-    }));
+      if (!isValid) {
+        setAddress();
+      }
+    });
 
-    // window.ethereum.on('chainChanged', console.log);
+    (async () => {
+      const chainId = parseInt((await signer.getChainId()).toString(), 10);
+
+      if (chainId !== Number(process.env.REACT_APP_CHAIN_ID)) {
+        setIsLoading(false);
+        setIsChainValid(false);
+        return;
+      }
+
+      setIsChainValid(true);
+
+      if (signer) {
+        signer.getAddress().then((add) => setAddress(add));
+      }
+
+      setIsLoading(false);
+
+      window.ethereum.on('accountsChanged', (([account1]) => {
+        setAddress(account1.toLowerCase());
+      }));
+    })();
   }, [signer]);
 
   async function onConnectClick() {
@@ -43,6 +64,17 @@ function useWallet() {
           <div className="mt-3 mb-5">
             You need to have <a target="_blank" href="https://metamask.io/" rel="noreferrer">Metamask</a>
             {' '} or other similar browser plugin installed in order to interact with the Stable contract
+          </div>
+        </>
+      );
+    }
+
+    if (!isChainValid) {
+      return (
+        <>
+          <h4 className="subtitle">You are not on Aurora chain.</h4>
+          <div className="mt-3 mb-5">
+            Please change your Metamask chain to <a target="_blank" href="https://aurora.dev/start" rel="noreferrer">Aurora Mainnet</a>.
           </div>
         </>
       );
