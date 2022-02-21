@@ -12,9 +12,9 @@ function Layout() {
     <>
       <nav className="navbar" role="navigation" aria-label="main navigation">
         <div className="navbar-brand">
-          <a className="navbar-item" href="https://bulma.io">
+          <Link to="/" className="navbar-item">
             <img alt="Project Stable" src="/assets/logo.png" width="30" />
-          </a>
+          </Link>
 
           <a
             role="button"
