@@ -38,10 +38,10 @@ function ProductListItem(props) {
           {+(product.weightage / 100).toFixed(1)}
         </div>
       )}
-      <div className="column is-1 pli-image">
+      <div className="column is-1 is-2-mobile pli-image">
         <ProductImage product={product} />
       </div>
-      <div className="column is-5">
+      <div className="column is-5 is-7-mobile">
         <div className="pli-name">{product.name}</div>
         <div className="pli-id">
           {product.id}
@@ -49,7 +49,7 @@ function ProductListItem(props) {
           {product.description}
         </div>
       </div>
-      <div className="column is-3">
+      <div className="column is-3 is-3-mobile">
         <div className="pli-price">
           {currentPrice}
         </div>
@@ -57,7 +57,7 @@ function ProductListItem(props) {
           {currency}
         </div>
       </div>
-      <div className="column is-3 pli-change-container">
+      <div className="column is-3 pli-change-container is-hidden-mobile">
         <div>
           <div className={priceChange24 > 0 ? 'pli-change pli-change-up' : 'pli-change pli-change-down'}>
             {priceChange24 > 0 && (<span className="pli-icon-up" />)}

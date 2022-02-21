@@ -617,6 +617,54 @@ body {
   }
 }
 
+@media screen and (max-width: 880px) {
+  .metrics {
+    flex-wrap: wrap;
+  }
+
+  .metric-box {
+    margin: 1rem 0;
+    max-width: 170px;
+  }
+
+  .product-search input {
+    width: 80%;
+  }
+
+  .product-tracking-summary {
+    flex-wrap: wrap;
+  }
+
+  .product-list-item {
+    display: flex;
+    height: auto;
+  }
+
+  .logo {
+    display: none;
+  }
+
+  .navbar-item {
+    margin-bottom: 1rem;
+  }
+
+  .country-dropdown {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .pli-image img {
+    height: auto;
+    width: 40px;
+  }
+}
+
+@media screen and (min-width: 880px) {
+  .navbar-brand {
+    display: none;
+  }
+}
+
 @keyframes shimmer {
   100% {
     transform: translateX(100%);

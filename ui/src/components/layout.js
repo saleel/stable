@@ -4,13 +4,34 @@ import { writeStorage, useLocalStorage } from '@rehooks/local-storage';
 import { Countries } from '../constants';
 
 function Layout() {
+  const [isNavbarVisible, setIsNavbarVisible] = React.useState(false);
+
   const [country] = useLocalStorage('country');
 
   return (
     <>
       <nav className="navbar" role="navigation" aria-label="main navigation">
+        <div className="navbar-brand">
+          <a className="navbar-item" href="https://bulma.io">
+            <img alt="Project Stable" src="/assets/logo.png" width="30" />
+          </a>
 
-        <div className="navbar-menu">
+          <a
+            role="button"
+            tabIndex={0}
+            className="navbar-burger"
+            aria-label="menu"
+            aria-expanded="false"
+            onClick={() => { setIsNavbarVisible((e) => !e); }}
+          >
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+          </a>
+        </div>
+
+        <div className="navbar-menu" style={{ ...isNavbarVisible && { display: 'block' } }}>
+
           <div className="navbar-start">
             <div className="logo">
               <img src="/assets/logo.png" alt="Project Stable" />
