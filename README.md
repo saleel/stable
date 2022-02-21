@@ -7,7 +7,9 @@ see true inflation rates.
 It also allow users to mint an anti-inflationary asset called `STABLE` token.
 
 Demo: [https://inflation.netlify.app/](https://inflation.netlify.app/)
+
 [Presentation Slides](https://docs.google.com/presentation/d/1mJleFKS5Iu1r3NbQ3BMaUVnFMGz821PPpLterQprfFA/edit?usp=sharing)
+
 [Presentation Video](https://youtu.be/GWMyw3m_70Q)
 
 Status: Testing/POC phase
@@ -18,11 +20,11 @@ Status: Testing/POC phase
 - Prices collected from users.
 - Tracks Price Index (weighted average of all prices) - measure of true inflation.
 - Products to track and weightage chosen by DAO.
-- Project token Stabilizer  $SZR  - used for governance and rewards.
+- Project token Stabilizer `$SZR`  - used for governance and rewards.
 - Allow users to mint an anti inflationary crypto-currency `$STABLE`, that is pegged to the Global Price Index, and is "stable" in terms of purchasing power.
 
 ## How it works
-![Architecture](https://raw.githubusercontent.com/saleel/stable/main/architecture.png)
+![Architecture](https://raw.githubusercontent.com/saleel/stable/main/screenshots/architecture.png)
 
 - `Stable` is the main smart contract.
 - The product details are stored on IPFS and the hash/CID is stored in the contract.
