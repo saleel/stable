@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import { useLocalStorage } from '@rehooks/local-storage';
 import MetricBox from '../components/metric-box';
 import Chart from '../components/chart';
+import Loading from '../components/loading';
 import { getProduct, getUSDRate, getPriceSubmissions } from '../data';
 import usePromise from '../hooks/use-promise';
 import {
@@ -25,7 +26,7 @@ function ProductPage() {
 
   const [activeTab, setActiveTab] = React.useState(Tabs.PriceHistory);
 
-  const [product] = usePromise(() => getProduct(productId), {
+  const [product, { isFetching }] = usePromise(() => getProduct(productId), {
     dependencies: [productId],
     conditions: [productId],
   });
@@ -154,6 +155,12 @@ function ProductPage() {
           value: 'Price',
         }}
       />
+    );
+  }
+
+  if (isFetching) {
+    return (
+      <Loading />
     );
   }
 
