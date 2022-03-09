@@ -167,10 +167,42 @@ export async function getGlobalPriceIndexHistory() {
 
 /**
  *
+ * @param {boolean} readOnly
+ * @returns {Promise<ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider>}
+ */
+async function getProvider(readOnly = true) {
+  let provider;
+
+  if (window.ethereum) {
+    provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  } else {
+    provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_JSON_RPC_URL);
+  }
+
+  if (!readOnly) {
+    if (!window.ethereum) {
+      // eslint-disable-next-line no-alert
+      window.alert('Metamask not found');
+      return null;
+    }
+    const chainId = await provider.getSigner(0).getChainId();
+
+    if (chainId !== Number(process.env.REACT_APP_CHAIN_ID)) {
+      // eslint-disable-next-line no-alert
+      window.alert('Invalid chain ID');
+      return null;
+    }
+  }
+
+  return provider;
+}
+
+/**
+ * @param {ethers.providers.Provider | ethers.Signer} provider
+ *
  * @returns {import("../../core/typechain-types/Stable").Stable}
  */
-function getStableContract() {
-  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+function getStableContract(provider) {
   const stableContractAddress = process.env.REACT_APP_STABLE_CONTRACT_ADDRESS;
   const stableContract = new ethers.Contract(stableContractAddress, stableContractInterface, provider);
 
@@ -178,44 +210,47 @@ function getStableContract() {
 }
 
 /**
+ * @param {ethers.providers.Provider | ethers.Signer} provider
+ * @param {string} country
  *
- * @returns {import("../../core/typechain-types/CountryTracker").CountryTracker}
+ * @returns {Promise<import("../../core/typechain-types/CountryTracker").CountryTracker>}
  */
-async function getCountryTrackerContract(country) {
-  const stableContract = getStableContract();
+async function getCountryTrackerContract(provider, country) {
+  const stableContract = getStableContract(provider);
   const address = await stableContract.countryTrackers(country);
   const countryTrackerContract = new ethers.Contract(address, countryTrackerInterface, stableContract.provider);
+
   return countryTrackerContract;
 }
 
-/** @type{import("../../core/typechain-types/StabilizerToken").StabilizerToken} */
-let _szrContract;
-async function getSZRContract() {
-  if (_szrContract) {
-    return _szrContract;
-  }
-  const stableContract = getStableContract();
+/**
+ *
+ * @returns {Promise<import("../../core/typechain-types/StabilizerToken").StabilizerToken>}
+ */
+async function getSZRContract(provider) {
+  const stableContract = getStableContract(provider);
   const address = await stableContract.szrToken();
-  _szrContract = new ethers.Contract(address, szrContractInterface, stableContract.provider);
-  return _szrContract;
+
+  return new ethers.Contract(address, szrContractInterface, stableContract.provider);
 }
 
-/** @type{import("../../core/typechain-types/StableToken").StableToken} */
-let _stableTokenContract;
-async function getStableTokenContract() {
-  if (_stableTokenContract) {
-    return _stableTokenContract;
-  }
-  const stableContract = getStableContract();
+/**
+ *
+ * @returns {Promise<import("../../core/typechain-types/StableToken").StableToken>}
+ */
+async function getStableTokenContract(provider) {
+  const stableContract = getStableContract(provider);
   const address = await stableContract.stableToken();
-  _stableTokenContract = new ethers.Contract(address, stableTokenContractInterface, stableContract.provider);
-  return _stableTokenContract;
+
+  return new ethers.Contract(address, stableTokenContractInterface, stableContract.provider);
 }
 
 export async function getTokenBalance(address) {
+  const provider = await getProvider(true);
+
   const result = await Promise.all([
-    getSZRContract().then((c) => c.balanceOf(address)).then(formatToken),
-    getStableTokenContract().then((c) => c.balanceOf(address)).then(formatToken),
+    getSZRContract(provider).then((c) => c.balanceOf(address)).then(formatToken),
+    getStableTokenContract(provider).then((c) => c.balanceOf(address)).then(formatToken),
   ]);
 
   return {
@@ -225,7 +260,8 @@ export async function getTokenBalance(address) {
 }
 
 export async function getTokenAllowance(address) {
-  const stableContract = getStableContract();
+  const provider = await getProvider(true);
+  const stableContract = getStableContract(provider);
 
   const result = await Promise.all([
     getSZRContract().then((c) => c.allowance(address, stableContract.address)).then(formatToken),
@@ -239,7 +275,8 @@ export async function getTokenAllowance(address) {
 }
 
 export async function getTokenPrice() {
-  const stableContract = getStableContract();
+  const provider = await getProvider(true);
+  const stableContract = getStableContract(provider);
 
   const result = await Promise.all([
     stableContract.getSZRPriceInUSD(),
@@ -253,7 +290,8 @@ export async function getTokenPrice() {
 }
 
 export async function getSupplier(address) {
-  const stableContract = getStableContract();
+  const provider = await getProvider(true);
+  const stableContract = getStableContract(provider);
 
   const [result, szrWithdrawable] = await Promise.all([
     stableContract.suppliers(address),
@@ -272,7 +310,8 @@ export async function getSupplier(address) {
 }
 
 export async function getRewardAmount(address) {
-  const stableContract = getStableContract();
+  const provider = await getProvider(true);
+  const stableContract = getStableContract(provider);
 
   const rewardAmount = await stableContract.rewards(address);
 
@@ -280,7 +319,8 @@ export async function getRewardAmount(address) {
 }
 
 export async function getContractState() {
-  const stableContract = getStableContract();
+  const provider = await getProvider(true);
+  const stableContract = getStableContract(provider);
 
   const [totalStablesRedeemable, overCollateralizationRatio, mintableStableTokenCount] = await Promise.all([
     stableContract.totalStablesRedeemable(),
@@ -296,17 +336,18 @@ export async function getContractState() {
 }
 
 export async function getAggregationRoundId(country) {
-  const countryTrackerContract = await getCountryTrackerContract(country);
+  const provider = await getProvider(true);
+  const countryTrackerContract = await getCountryTrackerContract(provider, country);
   return countryTrackerContract.aggregationRoundId();
 }
 
 export async function submitPrices({
   address, priceMapping, country, source,
 }) {
-  const stableContract = getStableContract();
+  const provider = await getProvider(false);
 
-  const countryTrackerContract = await getCountryTrackerContract(country);
-  const signer = stableContract.provider.getSigner(address);
+  const countryTrackerContract = await getCountryTrackerContract(provider, country);
+  const signer = provider.getSigner(address);
 
   const productsIds = Object.keys(priceMapping);
   const prices = Object.keys(priceMapping).map((k) => priceMapping[k].price);
@@ -316,11 +357,12 @@ export async function submitPrices({
 }
 
 export async function mintStables(address, amount) {
-  const stableContract = getStableContract();
+  const provider = await getProvider(false);
+  const stableContract = getStableContract(provider);
 
   const allowance = await getTokenAllowance(address);
   const amountInWei = ethers.utils.parseEther(amount.toString());
-  const signer = stableContract.provider.getSigner(address);
+  const signer = provider.getSigner(address);
 
   if (amount > allowance.SZR) {
     const tokenContract = await getSZRContract();
@@ -333,11 +375,12 @@ export async function mintStables(address, amount) {
 }
 
 export async function burnStables(address, amount) {
-  const stableContract = getStableContract();
+  const provider = await getProvider(false);
+  const stableContract = getStableContract(provider);
 
   const allowance = await getTokenAllowance(address);
   const amountInWei = ethers.utils.parseEther(amount.toString());
-  const signer = stableContract.provider.getSigner(address);
+  const signer = provider.getSigner(address);
 
   if (amount > allowance.STABLE) {
     const tokenContract = await getStableTokenContract();
@@ -350,19 +393,22 @@ export async function burnStables(address, amount) {
 }
 
 export async function supplierWithdrawSZR(address, amount) {
-  const stableContract = getStableContract();
+  const provider = await getProvider(false);
+  const stableContract = getStableContract(provider);
 
   const amountInWei = ethers.utils.parseEther(amount.toString());
-  const signer = stableContract.provider.getSigner(address);
+  const signer = provider.getSigner(address);
   const result = await stableContract.connect(signer).supplierWithdrawSZR(amountInWei);
 
   return result.hash;
 }
 
 export async function withdrawRewards(address, amount) {
-  const stableContract = getStableContract();
+  const provider = await getProvider(false);
+  const stableContract = getStableContract(provider);
+
   const amountInWei = ethers.utils.parseEther(amount.toString());
-  const signer = stableContract.provider.getSigner(address);
+  const signer = provider.getSigner(address);
   const result = await stableContract.connect(signer).withdrawRewards(amountInWei);
 
   return result.hash;
