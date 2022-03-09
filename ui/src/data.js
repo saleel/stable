@@ -175,21 +175,19 @@ async function getProvider(readOnly = true) {
 
   if (window.ethereum) {
     provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-  } else {
-    provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_JSON_RPC_URL);
+
+    const chainId = await provider.getSigner(0).getChainId();
+    if (chainId !== Number(process.env.REACT_APP_CHAIN_ID)) {
+      provider = null;
+    }
   }
 
-  if (!readOnly) {
-    if (!window.ethereum) {
+  if (!provider) {
+    if (readOnly) {
+      provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_JSON_RPC_URL);
+    } else {
       // eslint-disable-next-line no-alert
-      window.alert('Metamask not found');
-      return null;
-    }
-    const chainId = await provider.getSigner(0).getChainId();
-
-    if (chainId !== Number(process.env.REACT_APP_CHAIN_ID)) {
-      // eslint-disable-next-line no-alert
-      window.alert('Invalid chain ID');
+      window.alert('Metamask not found or selected chain is not Aurora mainnet');
       return null;
     }
   }
