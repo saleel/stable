@@ -14,7 +14,7 @@ function ProductImage(props) {
 
   return (
     <img
-      src={`/assets/${product.id}.png`}
+      src={`/assets/${product.id?.toLowerCase()}.png`}
       alt={product.name}
       width={width}
       onError={function onError(e) {
