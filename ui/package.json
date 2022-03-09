@@ -2,6 +2,7 @@
   "name": "stable-ui",
   "version": "0.1.0",
   "private": true,
+  "homepage": "./",
   "dependencies": {
     "@apollo/client": "^3.5.8",
     "@rehooks/local-storage": "^2.4.4",
