@@ -11,7 +11,7 @@ import { Countries } from '../constants';
 function HomePage() {
   const navigate = useNavigate();
 
-  const [country] = useLocalStorage('country', 'US');
+  const [country] = useLocalStorage('country', Countries.US);
   const [searchInput, setSearchInput] = React.useState('');
 
   const [products, { isFetching: isFetchingProducts }] = usePromise(() => getProductsWithWeightage({ country }), {

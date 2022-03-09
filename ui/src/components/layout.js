@@ -6,7 +6,7 @@ import { Countries } from '../constants';
 function Layout() {
   const [isNavbarVisible, setIsNavbarVisible] = React.useState(false);
 
-  const [country] = useLocalStorage('country');
+  const [country] = useLocalStorage('country', Countries.US);
 
   return (
     <>

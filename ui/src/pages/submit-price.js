@@ -4,6 +4,7 @@ import { useLocalStorage } from '@rehooks/local-storage';
 import { getProductsWithWeightage, getAggregationRoundId, submitPrices } from '../data';
 import usePromise from '../hooks/use-promise';
 import useWallet from '../hooks/use-wallet';
+import { Countries } from '../constants';
 
 function SubmitPricePage() {
   const { address, Component: WalletConnect } = useWallet();
@@ -11,7 +12,7 @@ function SubmitPricePage() {
   const [message, setMessage] = useState();
 
   const [pricesToAdd, setPricesToAdd] = useState({});
-  const [country] = useLocalStorage('country', 'US');
+  const [country] = useLocalStorage('country', Countries.US);
 
   const [aggregationRoundId] = usePromise(() => getAggregationRoundId(country), {
     conditions: [country, address],

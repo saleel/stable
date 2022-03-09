@@ -15,7 +15,7 @@ const Tabs = {
 };
 
 function PriceIndexPAge() {
-  const [country] = useLocalStorage('country', 'US');
+  const [country] = useLocalStorage('country', Countries.US);
 
   const [activeTab, setActiveTab] = React.useState(Tabs.PriceIndex);
 
